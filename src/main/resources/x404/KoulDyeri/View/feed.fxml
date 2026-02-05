@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="x404.KoulDyeri.View.FeedView"
+            style="-fx-background-color: #fff8f0;">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-background-color: linear-gradient(to right, #d32f2f, #c62828); -fx-padding: 8 18; -fx-border-color: #d32f2f; -fx-border-width: 0 0 1 0;">
+
+            <!-- Logo Image -->
+            <ImageView fitHeight="40" fitWidth="40" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@logo.png" />
+                </image>
+            </ImageView>
+
+            <Label text="KoulDyeri" style="-fx-font-family: 'Georgia'; -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+            <Region HBox.hgrow="ALWAYS" />
+
+            <Label text="Accueil" style="-fx-font-family: 'Segoe UI'; -fx-font-size: 16px; -fx-text-fill: #fff8f0;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: #fff8f0; -fx-border-width: 0;">
+            <VBox spacing="20" alignment="TOP_CENTER" style="-fx-padding: 20;">
+
+                <!-- Composer -->
+                <VBox spacing="12" maxWidth="Infinity"
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #ffccbc; -fx-border-width: 1.5; -fx-border-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(211,47,47,0.08), 10, 0, 0, 4);">
+
+                    <Label text="Partagez votre recette ou avis"
+                           style="-fx-font-family: 'Georgia'; -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #6d4c41;"/>
+
+                    <VBox spacing="10">
+                        <TextField fx:id="titleField" promptText="Titre de la publication"
+                                   style="-fx-background-color: #fff1e6; -fx-background-radius: 10; -fx-border-color: #ffccbc; -fx-border-radius: 10; -fx-padding: 10; -fx-font-size: 14px;"/>
+
+                        <TextArea fx:id="contentField" promptText="Quoi de bon aujourd'hui ?"
+                                  prefRowCount="3" wrapText="true"
+                                  style="-fx-background-color: #fff1e6; -fx-background-radius: 10; -fx-border-color: #ffccbc; -fx-border-radius: 10; -fx-padding: 10; -fx-font-size: 14px; -fx-control-inner-background: #fff1e6; -fx-text-box-border: transparent; -fx-focus-color: transparent;"/>
+                    </VBox>
+
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button fx:id="addPostBtn" text="Publier"
+                                style="-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 10 40; -fx-background-radius: 25; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Feed -->
+                <ListView fx:id="postList" VBox.vgrow="ALWAYS" maxWidth="Infinity"
+                          style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0; -fx-border-width: 0;"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-padding: 15; -fx-background-color: white; -fx-border-color: #ffccbc; -fx-border-width: 1 0 0 0;">
+            <Label text="© 2026 KoulDyeri - La communauté des gourmands" style="-fx-text-fill: #8d6e63; -fx-font-size: 13px; -fx-font-style: italic;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
