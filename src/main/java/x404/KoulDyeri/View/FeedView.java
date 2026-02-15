@@ -5,26 +5,36 @@ import x404.KoulDyeri.Controller.PostController;
 import x404.KoulDyeri.Model.Commentaire;
 import x404.KoulDyeri.Model.Post;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.shape.Circle;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.geometry.Side;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 public class FeedView {
 
     @FXML private TextField titleField;
     @FXML private TextArea contentField;
     @FXML private Button addPostBtn;
+    @FXML private Button uploadImageBtn;
     @FXML private ListView<Post> postList;
+    @FXML private Button profileMenuBtn;
+
+    private String selectedImagePath = null;
 
     private final PostController postService = new PostController();
     private final CommentaireController commentService = new CommentaireController();
@@ -38,12 +48,26 @@ public class FeedView {
         postList.setPlaceholder(placeholder);
 
         refreshPosts();
+
         addPostBtn.setOnAction(e -> addPost());
+        uploadImageBtn.setOnAction(e -> chooseImage());
+    }
+
+    private void chooseImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une image");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+        File selectedFile = fileChooser.showOpenDialog(addPostBtn.getScene().getWindow());
+        if (selectedFile != null) {
+            selectedImagePath = selectedFile.getAbsolutePath();
+        }
     }
 
     private void refreshPosts() {
         try {
-            var posts = postService.getAll();
+            List<Post> posts = postService.getAll();
             postList.getItems().setAll(posts);
             postList.refresh();
         } catch (Exception e) {
@@ -55,19 +79,72 @@ public class FeedView {
         String title = titleField.getText().trim();
         String content = contentField.getText().trim();
 
-        if (!content.isEmpty()) {
-            try {
-                String finalTitle = title.isEmpty() ? "Gourmand" : title;
-                Post newPost = new Post(finalTitle, content);
-                if (postService.add(newPost)) {
-                    titleField.clear();
-                    contentField.clear();
-                    refreshPosts();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        // ===== CONTROLE DE SAISIE =====
+        if (content.isEmpty()) {
+
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Champ vide");
+            alert.setHeaderText(null);
+            alert.setContentText("⚠️ Veuillez écrire un contenu avant de publier.");
+            alert.showAndWait();
+
+            return; // stop ici
         }
+
+        try {
+            String finalTitle = title.isEmpty() ? "Gourmand" : title;
+
+            Post newPost = new Post(finalTitle, content, selectedImagePath);
+
+            if (postService.add(newPost)) {
+                titleField.clear();
+                contentField.clear();
+                selectedImagePath = null;
+                refreshPosts();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // ---------------- LOGIQUE DE DECONNEXION ----------------
+    @FXML
+    private void handleProfileClick() {
+        ContextMenu menu = new ContextMenu();
+        MenuItem logoutItem = new MenuItem("Se déconnecter");
+
+        logoutItem.setOnAction(e -> {
+            try {
+                // 1. Charger le fichier FXML de la page de connexion
+                // Assurez-vous que le chemin "LoginView.fxml" est correct par rapport à ce fichier
+                Parent loginRoot = FXMLLoader.load(getClass().getResource("LoginView.fxml"));
+
+                // 2. Récupérer la fenêtre actuelle (Stage)
+                Stage stage = (Stage) profileMenuBtn.getScene().getWindow();
+
+                // 3. Créer la nouvelle scène et l'afficher
+                Scene scene = new Scene(loginRoot);
+                stage.setScene(scene);
+                stage.setTitle("KoulDyeri - Connexion");
+                stage.centerOnScreen();
+                stage.show();
+
+                System.out.println("Déconnexion réussie.");
+            } catch (IOException ex) {
+                System.err.println("Erreur lors du retour à la page de connexion : " + ex.getMessage());
+                ex.printStackTrace();
+
+                // Option de secours : Message d'erreur à l'utilisateur
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Impossible de charger la page de connexion.");
+                alert.showAndWait();
+            }
+        });
+
+        menu.getItems().add(logoutItem);
+        // Affiche le menu juste en dessous du bouton profil
+        menu.show(profileMenuBtn, Side.BOTTOM, 0, 0);
     }
 
     private class KoulDyeriPostCell extends ListCell<Post> {
@@ -83,7 +160,6 @@ public class FeedView {
                 VBox postCard = createPostCard(post);
                 setGraphic(postCard);
                 setText(null);
-                // Important: Forcer la cellule à ne pas dépasser la largeur de la ListView
                 setStyle("-fx-background-color: transparent; -fx-padding: 0 0 20 0;");
                 prefWidthProperty().bind(getListView().widthProperty().subtract(40));
                 setMaxWidth(Control.USE_PREF_SIZE);
@@ -93,15 +169,19 @@ public class FeedView {
         private VBox createPostCard(Post post) {
             VBox card = new VBox(15);
             card.setPadding(new Insets(20));
-            card.setStyle(
-                    "-fx-background-color: white; " +
-                            "-fx-background-radius: 15; " +
-                            "-fx-border-color: #ffccbc; " +
-                            "-fx-border-width: 1; " +
-                            "-fx-effect: dropshadow(gaussian, rgba(211,47,47,0.05), 8, 0, 0, 3);"
-            );
+            card.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #ffccbc; -fx-border-width: 1; -fx-effect: dropshadow(gaussian, rgba(211,47,47,0.05), 8, 0, 0, 3);");
 
-            // Header
+            if (post.getImagePath() != null) {
+                try {
+                    ImageView imageView = new ImageView(new Image("file:" + post.getImagePath()));
+                    imageView.setFitWidth(600);
+                    imageView.setPreserveRatio(true);
+                    card.getChildren().add(imageView);
+                } catch (Exception e) {
+                    System.err.println("Erreur chargement image : " + e.getMessage());
+                }
+            }
+
             HBox header = new HBox(12);
             header.setAlignment(Pos.CENTER_LEFT);
             Circle avatar = new Circle(25, Color.web("#fff1e6"));
@@ -112,44 +192,61 @@ public class FeedView {
             Label timeLabel = new Label("Posté le " + post.getCreatedAt().toString());
             timeLabel.setStyle("-fx-text-fill: #95a5a6; -fx-font-size: 12px;");
             nameTime.getChildren().addAll(nameLabel, timeLabel);
+
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
+
             MenuButton optionsBtn = createOptionsMenu(() -> handleEditPost(post), () -> handleDeletePost(post));
             header.getChildren().addAll(avatar, nameTime, spacer, optionsBtn);
 
-            // Content
             Text contentText = new Text(post.getContent());
             contentText.setStyle("-fx-font-size: 15px; -fx-fill: #3e2723;");
-            // Liaison robuste pour éviter le dépassement
             contentText.wrappingWidthProperty().bind(card.widthProperty().subtract(50));
 
-            // Actions
             Separator sep1 = new Separator();
-            HBox actions = new HBox(40);
-            actions.setAlignment(Pos.CENTER);
-            Button likeBtn = new Button("🍴 J'aime");
-            Button commentBtn = new Button("💬 Commenter");
-            likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-font-weight: bold; -fx-cursor: hand;");
-            commentBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #6d4c41; -fx-font-weight: bold; -fx-cursor: hand;");
-            actions.getChildren().addAll(likeBtn, commentBtn);
-            Separator sep2 = new Separator();
+            HBox actions = new HBox(20);
+            actions.setAlignment(Pos.CENTER_LEFT);
 
-            // Comments
-            VBox commentsArea = new VBox(10);
-            try {
-                List<Commentaire> comments = commentService.getByPostId(post.getId());
-                for (Commentaire c : comments) {
-                    commentsArea.getChildren().add(createCommentView(c, card));
-                }
-            } catch (Exception e) {}
+            int[] reactionCounts = new int[5];
+            MenuButton reactBtn = new MenuButton("❤️ J'aime");
+            reactBtn.setStyle("-fx-background-color: transparent; -fx-font-weight: bold; -fx-cursor: hand;");
+            String[] emojis = {"❤️","😆","😮","😢","😡"};
+            String[] names = {"J'aime","Haha","Wow","Triste","Grr"};
 
-            // Add Comment Field
-            HBox addCommentBox = new HBox(10);
-            addCommentBox.setAlignment(Pos.CENTER_LEFT);
+            for (int i = 0; i < emojis.length; i++) {
+                final int idx = i;
+                MenuItem item = new MenuItem(emojis[i] + " " + names[i]);
+                item.setOnAction(e -> {
+                    reactionCounts[idx]++;
+                    reactBtn.setText(emojis[idx] + " " + names[idx] + " " + reactionCounts[idx]);
+                });
+                reactBtn.getItems().add(item);
+            }
+
             TextField newCommentField = new TextField();
             newCommentField.setPromptText("Ajouter un commentaire...");
             newCommentField.setStyle("-fx-background-color: #fff1e6; -fx-background-radius: 20; -fx-border-color: #ffccbc; -fx-border-radius: 20; -fx-padding: 10 15;");
             HBox.setHgrow(newCommentField, Priority.ALWAYS);
+
+            Button commentBtn = new Button("💬 Commenter");
+            commentBtn.setStyle("-fx-background-color: transparent; -fx-font-weight: bold; -fx-cursor: hand;");
+            commentBtn.setOnAction(e -> newCommentField.requestFocus());
+
+            actions.getChildren().addAll(reactBtn, commentBtn);
+            Separator sep2 = new Separator();
+
+            VBox commentsArea = new VBox(10);
+            try {
+                List<Commentaire> comments = commentService.getByPostId(post.getId());
+                for (Commentaire c : comments) {
+                    ajouterCommentaireDansFeed(c, commentsArea, commentService);
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+
+            HBox addCommentBox = new HBox(10);
+            addCommentBox.setAlignment(Pos.CENTER_LEFT);
+            addCommentBox.getChildren().add(newCommentField);
+
             newCommentField.setOnAction(e -> {
                 String text = newCommentField.getText().trim();
                 if (!text.isEmpty()) {
@@ -157,42 +254,74 @@ public class FeedView {
                         Commentaire c = new Commentaire(post.getId(), "Moi", text);
                         if (commentService.add(c)) {
                             newCommentField.clear();
-                            commentsArea.getChildren().add(createCommentView(c, card));
+                            ajouterCommentaireDansFeed(c, commentsArea, commentService);
                         }
-                    } catch (Exception ex) {}
+                    } catch (Exception ex) { ex.printStackTrace(); }
                 }
             });
-            addCommentBox.getChildren().add(newCommentField);
 
             card.getChildren().addAll(header, contentText, sep1, actions, sep2, commentsArea, addCommentBox);
             return card;
         }
 
-        private HBox createCommentView(Commentaire comment, VBox parentCard) {
-            HBox commentBox = new HBox(8);
-            commentBox.setAlignment(Pos.TOP_LEFT);
-            VBox bubble = new VBox(4);
-            bubble.setPadding(new Insets(10, 15, 10, 15));
-            bubble.setStyle("-fx-background-color: #fff1e6; -fx-background-radius: 18; -fx-border-color: #ffccbc; -fx-border-width: 0.5;");
-            HBox.setHgrow(bubble, Priority.ALWAYS);
+        private void ajouterCommentaireDansFeed(Commentaire commentaire, VBox commentsArea, CommentaireController commentaireController) {
+            VBox commentBox = new VBox();
+            commentBox.setPadding(new Insets(10));
+            commentBox.setSpacing(5);
+            commentBox.setStyle("-fx-border-color: #ffccbc; -fx-border-width: 0.5; -fx-background-color: #fff8f0; -fx-background-radius: 12;");
 
-            HBox cHeader = new HBox(10);
-            cHeader.setAlignment(Pos.CENTER_LEFT);
-            Label cAuthor = new Label(comment.getAuthor());
-            cAuthor.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #d32f2f;");
+            HBox commentHeader = new HBox(10);
+            commentHeader.setAlignment(Pos.CENTER_LEFT);
+            Label authorLabel = new Label(commentaire.getAuthor());
+            authorLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #d32f2f;");
             Region cSpacer = new Region();
             HBox.setHgrow(cSpacer, Priority.ALWAYS);
-            MenuButton cOptions = createOptionsMenu(() -> handleEditComment(comment), () -> handleDeleteComment(comment));
+            MenuButton cOptions = createOptionsMenu(() -> handleEditComment(commentaire), () -> handleDeleteComment(commentaire, commentsArea, commentBox));
             cOptions.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-            cHeader.getChildren().addAll(cAuthor, cSpacer, cOptions);
+            commentHeader.getChildren().addAll(authorLabel, cSpacer, cOptions);
 
-            Text cText = new Text(comment.getContent());
-            cText.setStyle("-fx-fill: #3e2723; -fx-font-size: 13px;");
-            cText.wrappingWidthProperty().bind(parentCard.widthProperty().subtract(100));
+            Label dateLabel = new Label("Posté le " + commentaire.getCreatedAt());
+            dateLabel.setStyle("-fx-font-size: 10; -fx-text-fill: gray;");
+            Label contentLabel = new Label(commentaire.getContent());
+            contentLabel.setWrapText(true);
 
-            bubble.getChildren().addAll(cHeader, cText);
-            commentBox.getChildren().addAll(bubble);
-            return commentBox;
+            HBox buttonsBox = new HBox(10);
+            int[] reactionCounts = new int[5];
+            MenuButton reactBtn = new MenuButton("❤️ 0");
+            reactBtn.setStyle("-fx-background-color: transparent; -fx-font-weight: bold; -fx-cursor: hand;");
+            String[] emojis = {"❤️","😆","😮","😢","😡"};
+            for (int i = 0; i < emojis.length; i++) {
+                final int idx = i;
+                MenuItem item = new MenuItem(emojis[i]);
+                item.setOnAction(e -> {
+                    reactionCounts[idx]++;
+                    reactBtn.setText(emojis[idx] + " " + reactionCounts[idx]);
+                });
+                reactBtn.getItems().add(item);
+            }
+
+            Button replyBtn = new Button("Répondre");
+            replyBtn.setStyle("-fx-background-color: transparent; -fx-font-weight: bold; -fx-cursor: hand;");
+            replyBtn.setOnAction(e -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Répondre au commentaire");
+                dialog.setHeaderText("Répondre à " + commentaire.getAuthor());
+                dialog.setContentText("Votre commentaire :");
+                dialog.showAndWait().ifPresent(response -> {
+                    if (!response.isBlank()) {
+                        Commentaire newComment = new Commentaire(commentaire.getPostId(), "Moi", response);
+                        try {
+                            if (commentaireController.add(newComment)) {
+                                ajouterCommentaireDansFeed(newComment, commentsArea, commentaireController);
+                            }
+                        } catch (Exception ex) { ex.printStackTrace(); }
+                    }
+                });
+            });
+
+            buttonsBox.getChildren().addAll(reactBtn, replyBtn);
+            commentBox.getChildren().addAll(commentHeader, dateLabel, contentLabel, buttonsBox);
+            commentsArea.getChildren().add(commentBox);
         }
 
         private MenuButton createOptionsMenu(Runnable onEdit, Runnable onDelete) {
@@ -213,7 +342,7 @@ public class FeedView {
                 try {
                     post.setContent(newContent);
                     if (postService.update(post)) refreshPosts();
-                } catch (Exception e) {}
+                } catch (Exception e) { e.printStackTrace(); }
             });
         }
 
@@ -222,27 +351,28 @@ public class FeedView {
             if (alert.showAndWait().get() == ButtonType.YES) {
                 try {
                     if (postService.delete(post.getId())) refreshPosts();
-                } catch (Exception e) {}
+                } catch (Exception e) { e.printStackTrace(); }
             }
         }
 
         private void handleEditComment(Commentaire comment) {
             TextInputDialog dialog = new TextInputDialog(comment.getContent());
-            dialog.setTitle("Modifier");
+            dialog.setTitle("Modifier le commentaire");
+            dialog.setHeaderText("Modifier votre message :");
             dialog.showAndWait().ifPresent(newContent -> {
                 try {
                     comment.setContent(newContent);
                     if (commentService.update(comment)) refreshPosts();
-                } catch (Exception e) {}
+                } catch (Exception e) { e.printStackTrace(); }
             });
         }
 
-        private void handleDeleteComment(Commentaire comment) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer ?", ButtonType.YES, ButtonType.NO);
+        private void handleDeleteComment(Commentaire comment, VBox commentsArea, VBox commentBox) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer ce commentaire ?", ButtonType.YES, ButtonType.NO);
             if (alert.showAndWait().get() == ButtonType.YES) {
                 try {
-                    if (commentService.delete(comment.getId())) refreshPosts();
-                } catch (Exception e) {}
+                    if (commentService.delete(comment.getId())) commentsArea.getChildren().remove(commentBox);
+                } catch (Exception e) { e.printStackTrace(); }
             }
         }
     }

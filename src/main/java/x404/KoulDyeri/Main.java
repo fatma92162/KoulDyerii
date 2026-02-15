@@ -13,7 +13,7 @@ public class Main {
         CommentaireController commentService = new CommentaireController();
 
         // ADD POST
-        Post p = new Post("First dish 🍝", "Today I cooked pasta at KoulDiery");
+        Post p = new Post("First dish 🍝", "Today I cooked pasta at KoulDyeri", null);
         postService.add(p);
 
         // SHOW POSTS
