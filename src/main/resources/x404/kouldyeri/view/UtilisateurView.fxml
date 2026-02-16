@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="x404.kouldyeri.controller.UtilisateurController"
+            style="-fx-background-color: #f5f7fa;">
+
+    <!-- Sidebar Gauche -->
+    <left>
+        <VBox spacing="0" prefWidth="280"
+              style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2a2a2a); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 5, 0);">
+
+            <!-- Logo Section -->
+            <VBox alignment="CENTER" spacing="15" style="-fx-padding: 40 20 30 20;">
+                <StackPane>
+                    <Circle radius="55"
+                            style="-fx-fill: linear-gradient(to bottom right, #CE1126, #8B0000);
+                   -fx-effect: dropshadow(gaussian, rgba(206,17,38,0.6), 15, 0, 0, 5);"/>
+
+                    <ImageView fitWidth="70" fitHeight="70" preserveRatio="true">
+                        <image>
+                            <Image url="@/x404/kouldyeri/view/images/logo.png"/>
+                        </image>
+                    </ImageView>
+                </StackPane>
+
+                <Label text="KoulDyeri"
+                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Système de Gestion"
+                       style="-fx-font-size: 12px; -fx-text-fill: #CE1126; -fx-font-weight: bold; letter-spacing: 2px;"/>
+            </VBox>
+
+            <Separator style="-fx-background-color: #CE1126; -fx-pref-height: 2px;"/>
+
+            <!-- Menu Navigation -->
+            <VBox spacing="5" style="-fx-padding: 20;">
+                <Label text="NAVIGATION"
+                       style="-fx-text-fill: #666; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 10 15 5 15;"/>
+
+                <Button text="📊 Tableau de Bord"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Button text="👥 Utilisateurs"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="🚚 Livraisons" onAction="#goLivraisons"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT;
+               -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="🧑‍✈️ Livreurs" onAction="#goLivreurs"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT;
+               -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+
+
+                <Button text="📈 Statistiques"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="⚙️ Paramètres"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- Statistiques Rapides -->
+            <VBox spacing="15" style="-fx-padding: 20;">
+                <Label text="STATISTIQUES"
+                       style="-fx-text-fill: #666; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 5 0;"/>
+
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: rgba(206,17,38,0.1); -fx-padding: 12; -fx-background-radius: 8;">
+                    <Label text="👥" style="-fx-font-size: 24px;"/>
+                    <VBox>
+                        <Label fx:id="lblTotalUsers" text="0"
+                               style="-fx-text-fill: #CE1126; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                        <Label text="Total" style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: rgba(206,17,38,0.1); -fx-padding: 12; -fx-background-radius: 8;">
+                    <Label text="👑" style="-fx-font-size: 24px;"/>
+                    <VBox>
+                        <Label fx:id="lblTotalAdmins" text="0"
+                               style="-fx-text-fill: #CE1126; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                        <Label text="Admins" style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: rgba(206,17,38,0.1); -fx-padding: 12; -fx-background-radius: 8;">
+                    <Label text="👤" style="-fx-font-size: 24px;"/>
+                    <VBox>
+                        <Label fx:id="lblTotalRegular" text="0"
+                               style="-fx-text-fill: #CE1126; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                        <Label text="Users" style="-fx-text-fill: #999; -fx-font-size: 10px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Profil et Déconnexion -->
+            <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.2);">
+                <HBox spacing="12" alignment="CENTER_LEFT" onMouseClicked="#handleShowProfile"
+                      style="-fx-cursor: hand; -fx-padding: 10; -fx-background-color: rgba(206,17,38,0.1); -fx-background-radius: 10;">
+                    <StackPane>
+                        <Circle radius="25" style="-fx-fill: linear-gradient(to bottom right, #CE1126, #8B0000);"/>
+                        <Label fx:id="lblProfileInitials" text="AT"
+                               style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    </StackPane>
+                    <VBox>
+                        <Label text="Mon Profil"
+                               style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                        <Label text="Administrateur"
+                               style="-fx-text-fill: #CE1126; -fx-font-size: 10px;"/>
+                    </VBox>
+                </HBox>
+
+                <Button fx:id="btnDeconnexion" text="🚪 Déconnexion" onAction="#handleDeconnexion" maxWidth="Infinity"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Contenu Principal -->
+    <center>
+        <StackPane>
+            <!-- Vue Principale -->
+            <VBox fx:id="mainView" spacing="25" style="-fx-padding: 30;">
+
+                <!-- Header avec Recherche et Profil -->
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <VBox spacing="5">
+                        <Label text="Gestion des Utilisateurs"
+                               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+                        <Label text="Gérez tous les utilisateurs de votre système"
+                               style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                    </VBox>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <HBox spacing="12" alignment="CENTER_RIGHT">
+                        <TextField fx:id="searchField" promptText="🔍 Rechercher..."
+                                   prefWidth="350" onKeyReleased="#handleRechercher"
+                                   style="-fx-font-size: 14px; -fx-padding: 14; -fx-background-radius: 10; -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+
+                        <Button text="🔄" onAction="#handleActualiser"
+                                style="-fx-background-color: white; -fx-text-fill: #CE1126; -fx-font-size: 18px; -fx-padding: 12 18; -fx-background-radius: 10; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+
+                        <!-- Icône Profil Cliquable -->
+                        <StackPane fx:id="profileIcon" onMouseClicked="#handleShowProfilePopup"
+                                   style="-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 3);">
+                            <Circle radius="30" style="-fx-fill: linear-gradient(to bottom right, #CE1126, #8B0000);"/>
+                            <Label fx:id="lblHeaderProfileInitials" text="AT"
+                                   style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        </StackPane>
+                    </HBox>
+                </HBox>
+
+                <!-- Tableau Moderne avec Actions -->
+                <VBox VBox.vgrow="ALWAYS" spacing="15"
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5); -fx-padding: 25;">
+
+                    <!-- Header du Tableau -->
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="📋 Liste des Utilisateurs"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <Button fx:id="btnAjouter" text="+ Ajouter Utilisateur" onAction="#handleAjouter"
+                                style="-fx-background-color: linear-gradient(to right, #CE1126, #8B0000); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                    </HBox>
+
+                    <Separator style="-fx-background-color: #eee;"/>
+
+                    <!-- TableView Professionnelle -->
+                    <TableView fx:id="tableUtilisateurs" VBox.vgrow="ALWAYS"
+                               style="-fx-background-color: transparent; -fx-background-radius: 10;">
+                        <columns>
+                            <TableColumn fx:id="colPhoto" text="📸 Photo" prefWidth="90"
+                                         style="-fx-alignment: CENTER;"/>
+
+                            <TableColumn fx:id="colId" text="ID" prefWidth="60" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="colNom" text="👤 Nom Complet" prefWidth="200"/>
+                            <TableColumn fx:id="colEmail" text="📧 Email" prefWidth="240"/>
+                            <TableColumn fx:id="colDateNaissance" text="🎂 Date Naissance" prefWidth="140" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="colRegion" text="📍 Région" prefWidth="140" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="colRole" text="🎭 Rôle" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="colActions" text="⚙️ Actions" prefWidth="180" style="-fx-alignment: CENTER;"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+
+            <!-- Overlay sombre pour le popup -->
+            <StackPane fx:id="overlayPane" visible="false" style="-fx-background-color: rgba(0, 0, 0, 0.5);"
+                       onMouseClicked="#handleCloseProfilePopup">
+
+                <!-- Card Profil Popup -->
+                <VBox fx:id="profilePopup" spacing="0" maxWidth="450"
+                      style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 30, 0, 0, 10);"
+                      onMouseClicked="#consumeEvent">
+
+                    <!-- En-tête avec gradient -->
+                    <VBox alignment="CENTER" spacing="15"
+                          style="-fx-background-color: linear-gradient(to bottom right, #CE1126, #8B0000); -fx-padding: 40 30 40 30; -fx-background-radius: 20 20 0 0;">
+                        <StackPane>
+                            <Circle radius="60" style="-fx-fill: white; -fx-opacity: 0.2;"/>
+                            <Circle radius="55" style="-fx-fill: white;"/>
+                            <Label fx:id="lblPopupInitials" text="AT"
+                                   style="-fx-text-fill: #CE1126; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                        </StackPane>
+                        <Label fx:id="lblPopupNom" text="Ahmed Trabelsi"
+                               style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblPopupRole" text="👑 Administrateur"
+                               style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 14px; -fx-padding: 6 16; -fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 15;"/>
+                    </VBox>
+
+                    <!-- Informations détaillées -->
+                    <VBox spacing="0" style="-fx-padding: 30;">
+
+                        <!-- Email -->
+                        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-background-radius: 10; -fx-margin-bottom: 10;">
+                            <StackPane style="-fx-min-width: 45; -fx-min-height: 45; -fx-background-color: #CE1126; -fx-background-radius: 10;">
+                                <Label text="📧" style="-fx-font-size: 22px;"/>
+                            </StackPane>
+                            <VBox spacing="3">
+                                <Label text="Email" style="-fx-font-size: 11px; -fx-text-fill: #666; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblPopupEmail" text="ahmed@example.com"
+                                       style="-fx-font-size: 15px; -fx-text-fill: #1a1a1a; -fx-font-weight: 600;"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Date de naissance -->
+                        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-background-radius: 10; -fx-margin-bottom: 10;">
+                            <StackPane style="-fx-min-width: 45; -fx-min-height: 45; -fx-background-color: #8B0000; -fx-background-radius: 10;">
+                                <Label text="🎂" style="-fx-font-size: 22px;"/>
+                            </StackPane>
+                            <VBox spacing="3">
+                                <Label text="Date de naissance" style="-fx-font-size: 11px; -fx-text-fill: #666; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblPopupDateNaissance" text="01/01/1990"
+                                       style="-fx-font-size: 15px; -fx-text-fill: #1a1a1a; -fx-font-weight: 600;"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Région -->
+                        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-background-radius: 10; -fx-margin-bottom: 10;">
+                            <StackPane style="-fx-min-width: 45; -fx-min-height: 45; -fx-background-color: #CE1126; -fx-background-radius: 10;">
+                                <Label text="📍" style="-fx-font-size: 22px;"/>
+                            </StackPane>
+                            <VBox spacing="3">
+                                <Label text="Région" style="-fx-font-size: 11px; -fx-text-fill: #666; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblPopupRegion" text="Tunis"
+                                       style="-fx-font-size: 15px; -fx-text-fill: #1a1a1a; -fx-font-weight: 600;"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- ID Utilisateur -->
+                        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-background-radius: 10;">
+                            <StackPane style="-fx-min-width: 45; -fx-min-height: 45; -fx-background-color: #8B0000; -fx-background-radius: 10;">
+                                <Label text="🆔" style="-fx-font-size: 22px;"/>
+                            </StackPane>
+                            <VBox spacing="3">
+                                <Label text="ID Utilisateur" style="-fx-font-size: 11px; -fx-text-fill: #666; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblPopupId" text="1"
+                                       style="-fx-font-size: 15px; -fx-text-fill: #1a1a1a; -fx-font-weight: 600;"/>
+                            </VBox>
+                        </HBox>
+
+                    </VBox>
+
+                    <!-- Actions -->
+                    <HBox spacing="12" alignment="CENTER" style="-fx-padding: 0 30 30 30;">
+                        <Button text="✏️ Modifier mon profil" onAction="#handleModifierProfilFromPopup"
+                                style="-fx-background-color: linear-gradient(to right, #CE1126, #8B0000); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 14 30; -fx-background-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(206,17,38,0.3), 10, 0, 0, 3);"
+                                maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                        <Button text="✖" onAction="#handleCloseProfilePopup"
+                                style="-fx-background-color: #f8f9fa; -fx-text-fill: #666; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 14 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+                    </HBox>
+
+                </VBox>
+            </StackPane>
+
+        </StackPane>
+    </center>
+
+</BorderPane>

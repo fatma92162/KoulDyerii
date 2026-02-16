@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="x404.kouldyeri.controller.LivreurController"
+            style="-fx-background-color: #f5f7fa;">
+
+    <left>
+        <VBox spacing="0" prefWidth="280"
+              style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2a2a2a);
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 5, 0);">
+
+            <VBox alignment="CENTER" spacing="15" style="-fx-padding: 40 20 30 20;">
+                <StackPane>
+                    <Circle radius="55"
+                            style="-fx-fill: linear-gradient(to bottom right, #CE1126, #8B0000);
+                                   -fx-effect: dropshadow(gaussian, rgba(206,17,38,0.6), 15, 0, 0, 5);"/>
+                    <ImageView fitWidth="70" fitHeight="70" preserveRatio="true">
+                        <image><Image url="@/x404/kouldyeri/view/images/logo.png"/></image>
+                    </ImageView>
+                </StackPane>
+                <Label text="KoulDyeri" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Système de Gestion" style="-fx-font-size: 12px; -fx-text-fill: #CE1126; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <Separator style="-fx-background-color: #CE1126; -fx-pref-height: 2px;"/>
+
+            <VBox spacing="5" style="-fx-padding: 20;">
+                <Label text="NAVIGATION" style="-fx-text-fill: #666; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 10 15 5 15;"/>
+
+                <Button text="👥 Utilisateurs" onAction="#goUtilisateurs"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="🚚 Livraisons" onAction="#goLivraisons"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="🧑‍✈️ Livreurs"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <VBox style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.2);">
+                <Button fx:id="btnDeconnexion" text="🚪 Déconnexion" onAction="#handleDeconnexion" maxWidth="Infinity"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;
+                               -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="25" style="-fx-padding: 30;">
+
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <VBox spacing="5">
+                    <Label text="Gestion des Livreurs"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+                    <Label text="Ajoutez, modifiez et supprimez les livreurs"
+                           style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <TextField fx:id="searchField" promptText="🔍 Rechercher..."
+                           onKeyReleased="#handleRechercher"
+                           prefWidth="350"
+                           style="-fx-font-size: 14px; -fx-padding: 14; -fx-background-radius: 10;
+                                  -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+            </HBox>
+
+            <VBox VBox.vgrow="ALWAYS" spacing="15"
+                  style="-fx-background-color: white; -fx-background-radius: 15;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5);
+                         -fx-padding: 25;">
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Label text="🧑‍✈️ Liste des Livreurs"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Ajouter Livreur" onAction="#ajouter"
+                            style="-fx-background-color: linear-gradient(to right, #CE1126, #8B0000);
+                                   -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;
+                                   -fx-padding: 12 25; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                </HBox>
+
+                <Separator/>
+
+                <GridPane hgap="12" vgap="12">
+                    <Label text="Nom" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill:#666; -fx-font-weight:bold;"/>
+                    <TextField fx:id="tfNom" promptText="Ex: Ahmed" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                               style="-fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10;
+                                      -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+
+                    <Label text="Prénom" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-text-fill:#666; -fx-font-weight:bold;"/>
+                    <TextField fx:id="tfPrenom" promptText="Ex: Ben Ali" GridPane.rowIndex="0" GridPane.columnIndex="3"
+                               style="-fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10;
+                                      -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+
+                    <Label text="Téléphone" GridPane.rowIndex="0" GridPane.columnIndex="4" style="-fx-text-fill:#666; -fx-font-weight:bold;"/>
+                    <TextField fx:id="tfTelephone" promptText="Ex: 20111222" GridPane.rowIndex="0" GridPane.columnIndex="5"
+                               style="-fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10;
+                                      -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+
+                    <Label text="Disponible" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill:#666; -fx-font-weight:bold;"/>
+                    <CheckBox fx:id="cbDisponible" text="Oui" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="1" GridPane.columnIndex="3" GridPane.columnSpan="3">
+                        <Button text="Modifier" onAction="#modifier"
+                                style="-fx-background-color: white; -fx-text-fill: #1a1a1a; -fx-font-weight: bold;
+                                       -fx-padding: 10 20; -fx-background-radius: 8; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+                        <Button text="Supprimer" onAction="#supprimer"
+                                style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-weight: bold;
+                                       -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                        <Button text="Vider" onAction="#clearFields"
+                                style="-fx-background-color: white; -fx-text-fill: #CE1126; -fx-font-weight: bold;
+                                       -fx-padding: 10 20; -fx-background-radius: 8; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+                    </HBox>
+                </GridPane>
+
+                <Separator/>
+
+                <TableView fx:id="tableLivreur" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+                        <TableColumn fx:id="colNom" text="Nom" prefWidth="200"/>
+                        <TableColumn fx:id="colPrenom" text="Prénom" prefWidth="220"/>
+                        <TableColumn fx:id="colTel" text="Téléphone" prefWidth="200"/>
+                        <TableColumn fx:id="colDisp" text="Disponible" prefWidth="140"/>
+                    </columns>
+                </TableView>
+
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

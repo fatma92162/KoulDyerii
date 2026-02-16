@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="x404.kouldyeri.controller.InscriptionController"
+           style="-fx-background-color: linear-gradient(to bottom right, #0f0f0f, #1a1a1a);">
+
+    <VBox alignment="CENTER" spacing="25"
+          maxWidth="420"
+          style="-fx-background-color: #121212;
+                 -fx-padding: 45;
+                 -fx-background-radius: 25;
+                 -fx-border-color: linear-gradient(to bottom, #c1121f, #d6c6a5);
+                 -fx-border-width: 2;
+                 -fx-border-radius: 25;
+                 -fx-effect: dropshadow(gaussian, rgba(214,198,165,0.35), 25, 0, 0, 10);">
+
+        <Label text="Créer un compte KoulDyeri"
+               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #efe6d2;"/>
+
+        <!-- PHOTO -->
+        <ImageView fx:id="photoImageView"
+                   fitWidth="120"
+                   fitHeight="120"
+                   preserveRatio="true"
+                   style="-fx-border-color: #d6c6a5;
+                          -fx-border-radius: 60;
+                          -fx-background-radius: 60;"/>
+
+        <Button text="📷 Choisir une photo"
+                onAction="#choisirPhoto"
+                style="-fx-background-color: #1e1e1e;
+                       -fx-text-fill: #efe6d2;
+                       -fx-border-color: #d6c6a5;
+                       -fx-border-radius: 20;
+                       -fx-padding: 8 20;"/>
+
+        <TextField fx:id="nomField" promptText="🖊 Nom" prefWidth="300"/>
+        <TextField fx:id="emailField" promptText="📧 Email" prefWidth="300"/>
+        <PasswordField fx:id="passwordField" promptText="🔒 Mot de passe" prefWidth="300"/>
+        <DatePicker fx:id="dateNaissancePicker" prefWidth="300"/>
+
+        <ComboBox fx:id="regionComboBox" prefWidth="300" promptText="🌍 Région"/>
+        <ComboBox fx:id="roleComboBox" prefWidth="300" promptText="👤 Rôle"/>
+
+        <Button text="S'inscrire"
+                prefWidth="300"
+                onAction="#handleInscription"
+                style="-fx-background-color: linear-gradient(to right, #e50914, #b20710);
+                       -fx-text-fill: #efe6d2;
+                       -fx-font-size: 16px;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 25;"/>
+
+        <Label fx:id="messageLabel"
+               wrapText="true"
+               style="-fx-text-fill: #ffb4a2;"/>
+
+        <Button text="← Retour à la connexion"
+                onAction="#retourLogin"
+                style="-fx-background-color: transparent;
+                       -fx-text-fill: #cfc2a2;
+                       -fx-underline: true;"/>
+    </VBox>
+</StackPane>
