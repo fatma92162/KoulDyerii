@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.image.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="x404.kouldyeri.controller.ProduitController"
+            style="-fx-background-color: #f5f7fa;">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox spacing="0" prefWidth="280"
+              style="-fx-background-color: linear-gradient(to bottom, #1a1a1a, #2a2a2a); -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 5, 0);">
+
+            <VBox alignment="CENTER" spacing="15" style="-fx-padding: 40 20 30 20;">
+                <StackPane>
+                    <Circle radius="55"
+                            style="-fx-fill: linear-gradient(to bottom right, #CE1126, #8B0000);
+                            -fx-effect: dropshadow(gaussian, rgba(206,17,38,0.6), 15, 0, 0, 5);"/>
+                    <Label text="🛍️" style="-fx-font-size: 34px; -fx-text-fill: white;"/>
+                </StackPane>
+
+                <Label text="KoulDyeri"
+                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Système de Gestion"
+                       style="-fx-font-size: 12px; -fx-text-fill: #CE1126; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <Separator style="-fx-background-color: #CE1126; -fx-pref-height: 2px;"/>
+
+            <VBox spacing="5" style="-fx-padding: 20;">
+                <Label text="NAVIGATION"
+                       style="-fx-text-fill: #666; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 10 15 5 15;"/>
+
+                <Button text="👥 Utilisateurs" onAction="#goUsers"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <Button text="📦 Produits" disable="true"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Button text="🧾 Commandes" onAction="#goCommandes"
+                        style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+            </VBox>
+            <Button text="🛒 Commandes"
+                    onAction="#goCommandes"
+                    style="-fx-background-color: transparent; -fx-text-fill: #aaa; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 15 20; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.2);">
+                <Button fx:id="btnDeconnexion" text="🚪 Déconnexion" onAction="#handleDeconnexion" maxWidth="Infinity"
+                        style="-fx-background-color: #CE1126; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Center -->
+    <center>
+        <VBox spacing="20" style="-fx-padding: 30;">
+
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <VBox spacing="5">
+                    <Label text="Gestion des Produits"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+                    <Label text="Ajoutez, modifiez et supprimez les produits"
+                           style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <TextField fx:id="searchField" promptText="🔍 Rechercher..."
+                           prefWidth="320" onKeyReleased="#handleRechercher"
+                           style="-fx-font-size: 14px; -fx-padding: 14; -fx-background-radius: 10; -fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-color: white;"/>
+
+                <Button text="🔄" onAction="#handleActualiser"
+                        style="-fx-background-color: white; -fx-text-fill: #CE1126; -fx-font-size: 18px; -fx-padding: 12 18; -fx-background-radius: 10; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+            </HBox>
+
+            <VBox spacing="15"
+                  style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5); -fx-padding: 25;"
+                  VBox.vgrow="ALWAYS">
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Label text="📋 Liste des Produits"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="+ Ajouter Produit" onAction="#handleAjouter"
+                            style="-fx-background-color: linear-gradient(to right, #CE1126, #8B0000); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                </HBox>
+
+                <Separator style="-fx-background-color: #eee;"/>
+
+                <TableView fx:id="tableProduits" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: transparent; -fx-background-radius: 10;">
+                    <columns>
+                        <TableColumn fx:id="colPhoto" text="📸 Photo" prefWidth="100"
+                                     style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colNom" text="📦 Nom" prefWidth="220"/>
+                        <TableColumn fx:id="colDescription" text="📝 Description" prefWidth="260"/>
+                        <TableColumn fx:id="colPrix" text="💰 Prix" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colDisponible" text="✅ Disponible" prefWidth="140" style="-fx-alignment: CENTER;"/>
+
+                        <TableColumn fx:id="colActions" text="⚙️ Actions" prefWidth="180" style="-fx-alignment: CENTER;"/>
+                    </columns>
+                </TableView>
+
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>

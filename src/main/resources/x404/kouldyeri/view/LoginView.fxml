@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="x404.kouldyeri.controller.LoginController"
+           style="-fx-background-color: linear-gradient(to bottom right, #0f0f0f, #1a1a1a);">
+
+    <!-- Carte centrale -->
+    <VBox alignment="CENTER" spacing="25"
+          style="-fx-background-color: #121212;
+                 -fx-padding: 45;
+                 -fx-background-radius: 25;
+                 -fx-border-color: linear-gradient(to bottom, #c1121f, #d6c6a5);
+                 -fx-border-width: 2;
+                 -fx-border-radius: 25;
+                 -fx-effect: dropshadow(gaussian, rgba(214,198,165,0.35), 25, 0, 0, 10);"
+          maxWidth="420">
+
+        <!-- Logo -->
+        <StackPane>
+            <Circle radius="60"
+                    style="-fx-fill: linear-gradient(to bottom right, #e50914, #b20710);
+                           -fx-stroke: #d6c6a5;
+                           -fx-stroke-width: 3;
+                           -fx-effect: dropshadow(gaussian, rgba(214,198,165,0.6), 12, 0, 0, 4);"/>
+            <ImageView fitWidth="80" fitHeight="80" preserveRatio="true">
+                <Image url="@images/logo.png"/>
+            </ImageView>
+        </StackPane>
+
+        <!-- Nom App -->
+        <Label text="KoulDyeri"
+               style="-fx-font-size: 32px;
+                      -fx-font-weight: bold;
+                      -fx-text-fill: #efe6d2;"/>
+
+        <Label text="Connexion à votre espace"
+               style="-fx-font-size: 14px;
+                      -fx-text-fill: #cfc2a2;"/>
+
+        <!-- Formulaire -->
+        <VBox spacing="15" alignment="CENTER">
+
+            <TextField fx:id="emailField"
+                       promptText="📧 Email"
+                       prefWidth="300"
+                       style="-fx-font-size: 14px;
+                              -fx-padding: 12;
+                              -fx-background-color: #1e1e1e;
+                              -fx-text-fill: #efe6d2;
+                              -fx-prompt-text-fill: #9c9078;
+                              -fx-background-radius: 12;
+                              -fx-border-radius: 12;
+                              -fx-border-color: #d6c6a5;
+                              -fx-border-width: 1.2;"/>
+
+            <PasswordField fx:id="passwordField"
+                           promptText="🔒 Mot de passe"
+                           prefWidth="300"
+                           style="-fx-font-size: 14px;
+                                  -fx-padding: 12;
+                                  -fx-background-color: #1e1e1e;
+                                  -fx-text-fill: #efe6d2;
+                                  -fx-prompt-text-fill: #9c9078;
+                                  -fx-background-radius: 12;
+                                  -fx-border-radius: 12;
+                                  -fx-border-color: #d6c6a5;
+                                  -fx-border-width: 1.2;"/>
+
+            <Button fx:id="loginButton"
+                    text="Se connecter"
+                    prefWidth="300"
+                    onAction="#handleLogin"
+                    style="-fx-background-color: linear-gradient(to right, #e50914, #b20710);
+                           -fx-text-fill: #efe6d2;
+                           -fx-font-size: 16px;
+                           -fx-font-weight: bold;
+                           -fx-padding: 14;
+                           -fx-background-radius: 25;
+                           -fx-cursor: hand;
+                           -fx-border-color: #d6c6a5;
+                           -fx-border-width: 1.5;
+                           -fx-effect: dropshadow(gaussian, rgba(214,198,165,0.6), 10, 0, 0, 3);"/>
+
+            <Label fx:id="messageLabel"
+                   wrapText="true"
+                   alignment="CENTER"
+                   style="-fx-font-size: 13px;
+                          -fx-text-fill: #ffb4a2;"/>
+
+            <!-- Lien vers l'inscription -->
+            <Hyperlink text="Pas de compte ? Inscrivez-vous ici"
+                       onAction="#openInscriptionView"
+                       style="-fx-text-fill: #d6c6a5; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- Footer -->
+        <Label text="© 2026 KoulDyeri • Tous droits réservés"
+               style="-fx-font-size: 11px;
+                      -fx-text-fill: #a89c82;"/>
+
+    </VBox>
+
+</StackPane>

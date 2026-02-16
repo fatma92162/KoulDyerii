@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controller.CommandeController"
+            style="-fx-background-color: #f5f7fa;">
+
+    <!-- TOP BAR -->
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT"
+              style="-fx-padding: 12 15; -fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 3);">
+            <Label text="🛒 Commande" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Buttons navigation (same design spirit) -->
+            <Button text="📦 Produits" onAction="#goProduits"
+                    style="-fx-background-color: white; -fx-text-fill: #CE1126; -fx-font-size: 14px; -fx-padding: 10 18; -fx-background-radius: 10; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+
+            <Button text="👥 Utilisateurs" onAction="#goUtilisateurs"
+                    style="-fx-background-color: white; -fx-text-fill: #CE1126; -fx-font-size: 14px; -fx-padding: 10 18; -fx-background-radius: 10; -fx-border-color: #CE1126; -fx-border-width: 2; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+
+            <!-- PRODUITS CARD -->
+            <VBox spacing="12"
+                  style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5); -fx-padding: 18;">
+
+                <Label text="Produits disponibles" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+
+                <TableView fx:id="productsTable" prefHeight="260"
+                           style="-fx-background-color: transparent; -fx-background-radius: 10;">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="80" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colName" text="Nom" prefWidth="260"/>
+                        <TableColumn fx:id="colPrice" text="Prix" prefWidth="140" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colAction" text="Action" prefWidth="160" style="-fx-alignment: CENTER;"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- ORDERS CARD -->
+            <VBox spacing="12"
+                  style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 20, 0, 0, 5); -fx-padding: 18;"
+                  VBox.vgrow="ALWAYS">
+
+                <Label text="Commandes passées" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;"/>
+
+                <TableView fx:id="ordersTable" prefHeight="280"
+                           style="-fx-background-color: transparent; -fx-background-radius: 10;">
+                    <columns>
+                        <TableColumn fx:id="orderColId" text="ID" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="orderColProduct" text="Produit" prefWidth="200"/>
+                        <TableColumn fx:id="orderColName" text="Nom" prefWidth="160"/>
+                        <TableColumn fx:id="orderColPhone" text="Téléphone" prefWidth="140" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="orderColLocation" text="Location" prefWidth="180"/>
+                        <TableColumn fx:id="orderColStatus" text="Status" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="orderColAction" text="Action" prefWidth="200" style="-fx-alignment: CENTER;"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>
