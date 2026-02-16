@@ -9,36 +9,15 @@ import java.util.List;
 
 public class PostController {
 
-    // ================= VALIDATION =================
     private boolean isValid(Post post) {
-
         if (post == null) return false;
-
-        // ----- TITLE -----
-        if (post.getTitle() == null) return false;
-        String title = post.getTitle().trim();
-
-        if (title.isEmpty()) return false;       // champ vide
-        if (title.length() < 3) return false;    // minimum
-        if (title.length() > 100) return false;  // maximum
-
-        // ----- CONTENT -----
-        if (post.getContent() == null) return false;
-        String content = post.getContent().trim();
-
-        if (content.isEmpty()) return false;
-        if (content.length() < 5) return false;
-        if (content.length() > 2000) return false;
-
-        // ----- IMAGE PATH (optionnel) -----
-        if (post.getImagePath() != null &&
-                post.getImagePath().length() > 255)
-            return false;
-
+        if (post.getTitle() == null || post.getTitle().trim().isEmpty()) return false;
+        if (post.getTitle().length() > 100) return false;
+        if (post.getContent() == null || post.getContent().trim().isEmpty()) return false;
+        if (post.getContent().length() > 2000) return false;
         return true;
     }
 
-    // ================= ADD =================
     public boolean add(Post post) {
         if (!isValid(post)) return false;
 
@@ -47,8 +26,8 @@ public class PostController {
         try (Connection conn = DBConnexion.getInstance();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, post.getTitle().trim());
-            pstmt.setString(2, post.getContent().trim());
+            pstmt.setString(1, post.getTitle());
+            pstmt.setString(2, post.getContent());
             pstmt.setString(3, post.getImagePath());
 
             return pstmt.executeUpdate() > 0;
@@ -59,9 +38,7 @@ public class PostController {
         }
     }
 
-    // ================= GET ALL =================
     public List<Post> getAll() {
-
         List<Post> posts = new ArrayList<>();
         String query = "SELECT * FROM posts ORDER BY created_at DESC";
 
@@ -70,7 +47,6 @@ public class PostController {
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
-
                 Post post = new Post(
                         rs.getInt("id"),
                         rs.getString("title"),
@@ -78,7 +54,6 @@ public class PostController {
                         rs.getTimestamp("created_at"),
                         rs.getString("image_path")
                 );
-
                 posts.add(post);
             }
 
@@ -89,11 +64,8 @@ public class PostController {
         return posts;
     }
 
-    // ================= GET BY ID =================
     public Post getById(int id) {
-
         String query = "SELECT * FROM posts WHERE id = ?";
-
         try (Connection conn = DBConnexion.getInstance();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
@@ -113,13 +85,10 @@ public class PostController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
-    // ================= UPDATE =================
     public boolean update(Post post) {
-
         if (!isValid(post)) return false;
 
         String query = "UPDATE posts SET title = ?, content = ?, image_path = ? WHERE id = ?";
@@ -127,8 +96,8 @@ public class PostController {
         try (Connection conn = DBConnexion.getInstance();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, post.getTitle().trim());
-            pstmt.setString(2, post.getContent().trim());
+            pstmt.setString(1, post.getTitle());
+            pstmt.setString(2, post.getContent());
             pstmt.setString(3, post.getImagePath());
             pstmt.setInt(4, post.getId());
 
@@ -140,9 +109,7 @@ public class PostController {
         }
     }
 
-    // ================= DELETE =================
     public boolean delete(int id) {
-
         String query = "DELETE FROM posts WHERE id = ?";
 
         try (Connection conn = DBConnexion.getInstance();
@@ -157,9 +124,7 @@ public class PostController {
         }
     }
 
-    // ================= SEARCH =================
     public List<Post> search(String keyword) {
-
         List<Post> posts = new ArrayList<>();
         String query = "SELECT * FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY created_at DESC";
 

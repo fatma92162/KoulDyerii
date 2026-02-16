@@ -81,13 +81,11 @@ public class FeedView {
 
         // ===== CONTROLE DE SAISIE =====
         if (content.isEmpty()) {
-
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Champ vide");
             alert.setHeaderText(null);
             alert.setContentText("⚠️ Veuillez écrire un contenu avant de publier.");
             alert.showAndWait();
-
             return; // stop ici
         }
 
@@ -108,7 +106,6 @@ public class FeedView {
         }
     }
 
-
     // ---------------- LOGIQUE DE DECONNEXION ----------------
     @FXML
     private void handleProfileClick() {
@@ -117,33 +114,21 @@ public class FeedView {
 
         logoutItem.setOnAction(e -> {
             try {
-                // 1. Charger le fichier FXML de la page de connexion
-                // Assurez-vous que le chemin "LoginView.fxml" est correct par rapport à ce fichier
                 Parent loginRoot = FXMLLoader.load(getClass().getResource("LoginView.fxml"));
-
-                // 2. Récupérer la fenêtre actuelle (Stage)
                 Stage stage = (Stage) profileMenuBtn.getScene().getWindow();
-
-                // 3. Créer la nouvelle scène et l'afficher
                 Scene scene = new Scene(loginRoot);
                 stage.setScene(scene);
                 stage.setTitle("KoulDyeri - Connexion");
                 stage.centerOnScreen();
                 stage.show();
-
-                System.out.println("Déconnexion réussie.");
             } catch (IOException ex) {
-                System.err.println("Erreur lors du retour à la page de connexion : " + ex.getMessage());
                 ex.printStackTrace();
-
-                // Option de secours : Message d'erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Impossible de charger la page de connexion.");
                 alert.showAndWait();
             }
         });
 
         menu.getItems().add(logoutItem);
-        // Affiche le menu juste en dessous du bouton profil
         menu.show(profileMenuBtn, Side.BOTTOM, 0, 0);
     }
 
@@ -247,17 +232,24 @@ public class FeedView {
             addCommentBox.setAlignment(Pos.CENTER_LEFT);
             addCommentBox.getChildren().add(newCommentField);
 
+            // ===== CONTROLE DE SAISIE POUR LES COMMENTAIRES =====
             newCommentField.setOnAction(e -> {
                 String text = newCommentField.getText().trim();
-                if (!text.isEmpty()) {
-                    try {
-                        Commentaire c = new Commentaire(post.getId(), "Moi", text);
-                        if (commentService.add(c)) {
-                            newCommentField.clear();
-                            ajouterCommentaireDansFeed(c, commentsArea, commentService);
-                        }
-                    } catch (Exception ex) { ex.printStackTrace(); }
+                if (text.isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Champ vide");
+                    alert.setHeaderText(null);
+                    alert.setContentText("⚠️ Veuillez écrire un commentaire avant de publier.");
+                    alert.showAndWait();
+                    return;
                 }
+                try {
+                    Commentaire c = new Commentaire(post.getId(), "Moi", text);
+                    if (commentService.add(c)) {
+                        newCommentField.clear();
+                        ajouterCommentaireDansFeed(c, commentsArea, commentService);
+                    }
+                } catch (Exception ex) { ex.printStackTrace(); }
             });
 
             card.getChildren().addAll(header, contentText, sep1, actions, sep2, commentsArea, addCommentBox);
@@ -308,14 +300,22 @@ public class FeedView {
                 dialog.setHeaderText("Répondre à " + commentaire.getAuthor());
                 dialog.setContentText("Votre commentaire :");
                 dialog.showAndWait().ifPresent(response -> {
-                    if (!response.isBlank()) {
-                        Commentaire newComment = new Commentaire(commentaire.getPostId(), "Moi", response);
-                        try {
-                            if (commentaireController.add(newComment)) {
-                                ajouterCommentaireDansFeed(newComment, commentsArea, commentaireController);
-                            }
-                        } catch (Exception ex) { ex.printStackTrace(); }
+                    // ===== CONTROLE DE SAISIE POUR LES RÉPONSES =====
+                    if (response.isBlank()) {
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Champ vide");
+                        alert.setHeaderText(null);
+                        alert.setContentText("⚠️ Veuillez écrire un commentaire avant de publier.");
+                        alert.showAndWait();
+                        return;
                     }
+
+                    Commentaire newComment = new Commentaire(commentaire.getPostId(), "Moi", response);
+                    try {
+                        if (commentaireController.add(newComment)) {
+                            ajouterCommentaireDansFeed(newComment, commentsArea, commentaireController);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
                 });
             });
 
@@ -338,11 +338,39 @@ public class FeedView {
         private void handleEditPost(Post post) {
             TextInputDialog dialog = new TextInputDialog(post.getContent());
             dialog.setTitle("Modifier");
+            dialog.setHeaderText("Modifier votre publication :");
+
             dialog.showAndWait().ifPresent(newContent -> {
+
+                String text = newContent.trim();
+
+                // ===== CONTROLE DE SAISIE =====
+                if (text.isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Champ vide");
+                    alert.setHeaderText(null);
+                    alert.setContentText("⚠️ Le contenu ne peut pas être vide.");
+                    alert.showAndWait();
+                    return;
+                }
+
+                if (text.length() < 5) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Texte trop court");
+                    alert.setHeaderText(null);
+                    alert.setContentText("⚠️ Le contenu doit contenir au moins 5 caractères.");
+                    alert.showAndWait();
+                    return;
+                }
+
                 try {
-                    post.setContent(newContent);
-                    if (postService.update(post)) refreshPosts();
-                } catch (Exception e) { e.printStackTrace(); }
+                    post.setContent(text);
+                    if (postService.update(post)) {
+                        refreshPosts();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             });
         }
 
@@ -359,13 +387,41 @@ public class FeedView {
             TextInputDialog dialog = new TextInputDialog(comment.getContent());
             dialog.setTitle("Modifier le commentaire");
             dialog.setHeaderText("Modifier votre message :");
+
             dialog.showAndWait().ifPresent(newContent -> {
+
+                String text = newContent.trim();
+
+                // ===== CONTROLE DE SAISIE =====
+                if (text.isEmpty()) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Champ vide");
+                    alert.setHeaderText(null);
+                    alert.setContentText("⚠️ Le commentaire ne peut pas être vide.");
+                    alert.showAndWait();
+                    return;
+                }
+
+                if (text.length() < 2) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Texte trop court");
+                    alert.setHeaderText(null);
+                    alert.setContentText("⚠️ Le commentaire doit contenir au moins 2 caractères.");
+                    alert.showAndWait();
+                    return;
+                }
+
                 try {
-                    comment.setContent(newContent);
-                    if (commentService.update(comment)) refreshPosts();
-                } catch (Exception e) { e.printStackTrace(); }
+                    comment.setContent(text);
+                    if (commentService.update(comment)) {
+                        refreshPosts();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             });
         }
+
 
         private void handleDeleteComment(Commentaire comment, VBox commentsArea, VBox commentBox) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer ce commentaire ?", ButtonType.YES, ButtonType.NO);
