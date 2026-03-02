@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.Cursor?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="x404.kouldyeri.view.FeedView"
+           style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #5D2E2E 0%, #8B4513 50%, #5D2E2E 100%);">
+
+    <BorderPane>
+
+        <!-- Header amélioré -->
+        <top>
+            <VBox style="-fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #5D2E2E, #8B1E1E);">
+                <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 15 40;">
+
+                    <!-- Logo et titre -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <StackPane>
+                            <Circle radius="30" style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #8B1E1E, #5D2E2E); -fx-stroke: #F5F5DC; -fx-stroke-width: 2;"/>
+                            <Circle radius="26" style="-fx-fill: #F5F5DC; -fx-opacity: 0.2;"/>
+                            <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
+                                <image>
+                                    <Image url="@/x404/kouldyeri/images/logo.png"/>
+                                </image>
+                            </ImageView>
+                            <effect>
+                                <DropShadow color="#8B1E1E" radius="15" offsetY="0"/>
+                            </effect>
+                        </StackPane>
+                        <VBox>
+                            <Label text="KoulDyeri" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #F5F5DC; -fx-effect: dropshadow(gaussian, #8B1E1E, 5, 0.5, 0, 0);"/>
+                            <Label text="Fil d'actualité" style="-fx-font-size: 11px; -fx-text-fill: #F5F5DC; -fx-opacity: 0.8; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <!-- Nom de l'utilisateur connecté -->
+                    <Label fx:id="lblNomUtilisateur" text=""
+                           style="-fx-text-fill: #F5F5DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: rgba(245,245,220,0.2); -fx-padding: 5 15; -fx-background-radius: 20;"/>
+
+                    <!-- Bouton notifications -->
+                    <Button fx:id="notificationBtn" onAction="#handleNotificationClick" text="🔔"
+                            style="-fx-background-color: transparent; -fx-text-fill: #F5F5DC; -fx-font-size: 20px; -fx-cursor: hand; -fx-padding: 10 15; -fx-effect: dropshadow(gaussian, #8B1E1E, 5, 0.5, 0, 2);"/>
+
+                    <!-- Bouton retour -->
+                    <Button fx:id="btnRetour" text="⬅ Retour" onAction="#handleRetour"
+                            style="-fx-background-color: transparent; -fx-text-fill: #F5F5DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-border-color: #F5F5DC; -fx-border-width: 2; -fx-border-radius: 20; -fx-cursor: hand;"/>
+
+                    <!-- Bouton profil -->
+                    <Button fx:id="profileMenuBtn" text="👤 Mon compte" onAction="#handleProfileClick"
+                            style="-fx-background-color: transparent; -fx-text-fill: #F5F5DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 20; -fx-border-color: #F5F5DC; -fx-border-width: 2; -fx-border-radius: 20; -fx-cursor: hand;"/>
+                </HBox>
+
+                <!-- Barre de progression décorative -->
+                <Region prefHeight="3" style="-fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #F5F5DC, #8B1E1E, #F5F5DC);"/>
+            </VBox>
+        </top>
+
+        <center>
+            <ScrollPane fitToWidth="true" fitToHeight="true"
+                        vbarPolicy="ALWAYS"
+                        hbarPolicy="NEVER"
+                        style="-fx-background: #F5F5DC; -fx-background-color: #F5F5DC;">
+                <style>
+                    .scroll-bar:vertical { -fx-background-color: #E8D9C5; -fx-background-radius: 10; -fx-pref-width: 12; }
+                    .scroll-bar:vertical .thumb { -fx-background-color: #8B1E1E; -fx-background-radius: 10; }
+                    .scroll-bar:vertical .thumb:hover { -fx-background-color: #5D2E2E; }
+                    .scroll-bar:vertical .increment-button, .scroll-bar:vertical .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
+                </style>
+
+                <VBox spacing="30" style="-fx-padding: 40 80; -fx-background-color: #F5F5DC;">
+
+                    <!-- Formulaire de création de post -->
+                    <VBox spacing="20"
+                          style="-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 30; -fx-border-color: #8B1E1E; -fx-border-width: 2; -fx-border-radius: 25; -fx-effect: dropshadow(gaussian, #8B1E1E, 15, 0.5, 0, 5);">
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <StackPane>
+                                <Circle radius="30" style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #8B1E1E, #5D2E2E);"/>
+                                <Label text="✍️" style="-fx-font-size: 25px; -fx-text-fill: #F5F5DC;"/>
+                            </StackPane>
+                            <VBox>
+                                <Label text="Nouvelle publication"
+                                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #5D2E2E;"/>
+                                <Label text="Partagez votre expérience culinaire"
+                                       style="-fx-font-size: 13px; -fx-text-fill: #8B4513;"/>
+                            </VBox>
+                        </HBox>
+
+                        <TextField fx:id="titleField"
+                                   promptText="Titre de votre publication..."
+                                   style="-fx-background-color: #F5F5DC; -fx-text-fill: #5D2E2E; -fx-prompt-text-fill: #8B4513; -fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #8B1E1E; -fx-border-width: 2; -fx-border-radius: 10;"/>
+
+                        <TextArea fx:id="contentField"
+                                  promptText="Écrivez votre publication ici... (max 2000 caractères)"
+                                  prefHeight="120"
+                                  wrapText="true"
+                                  style="-fx-background-color: #F5F5DC; -fx-text-fill: #5D2E2E; -fx-prompt-text-fill: #8B4513; -fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #8B1E1E; -fx-border-width: 2; -fx-border-radius: 10;"/>
+
+                        <!-- Compteur de caractères -->
+                        <HBox alignment="CENTER_RIGHT">
+                            <Label fx:id="lblCharCount" text="0/2000"
+                                   style="-fx-text-fill: #8B4513; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        </HBox>
+
+                        <HBox spacing="15" alignment="CENTER_RIGHT">
+                            <Button fx:id="uploadImageBtn" text="🖼️ Ajouter une image" onAction="#handleUploadImage"
+                                    style="-fx-background-color: transparent; -fx-text-fill: #8B1E1E; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 20; -fx-border-color: #8B1E1E; -fx-border-width: 2; -fx-border-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, #8B1E1E, 5, 0.5, 0, 2);"/>
+
+                            <Button fx:id="addPostBtn" text="📢 Publier" onAction="#handleAddPost"
+                                    prefWidth="150" prefHeight="40"
+                                    style="-fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #8B1E1E, #5D2E2E); -fx-text-fill: #F5F5DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, #8B1E1E, 10, 0.5, 0, 4);"/>
+                        </HBox>
+
+                        <Label fx:id="lblImageSelected" text=""
+                               style="-fx-text-fill: #5D2E2E; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- Liste des posts avec bouton de résumé -->
+                    <VBox spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="📰 Fil d'actualité"
+                                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #5D2E2E;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblPostCount" text="0 publications"
+                                   style="-fx-text-fill: #8B4513; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: #E8D9C5; -fx-padding: 5 15; -fx-background-radius: 20;"/>
+                        </HBox>
+
+                        <ListView fx:id="postList"
+                                  style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                                  prefHeight="800">
+                            <effect>
+                                <DropShadow color="#8B1E1E" radius="5" offsetX="0" offsetY="2"/>
+                            </effect>
+                        </ListView>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+        </center>
+
+        <!-- POPUP NOTIFICATIONS -->
+        <StackPane fx:id="notificationOverlay" visible="false"
+                   style="-fx-background-color: rgba(0,0,0,0.5); -fx-cursor: hand;"
+                   onMouseClicked="#closeNotificationPopup">
+
+            <VBox fx:id="notificationPopup" maxWidth="400" spacing="15"
+                  style="-fx-background-color: #F5F5DC; -fx-background-radius: 20; -fx-padding: 25; -fx-border-color: #8B1E1E; -fx-border-width: 3; -fx-border-radius: 20; -fx-effect: dropshadow(gaussian, #8B1E1E, 30, 0.5, 0, 15); -fx-cursor: default;"
+                  onMouseClicked="#consumeEvent">
+
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="🔔" style="-fx-font-size: 30px; -fx-text-fill: #8B1E1E;"/>
+                    <Label text="Notifications" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #5D2E2E;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="✖" onAction="#closeNotificationPopup"
+                            style="-fx-background-color: transparent; -fx-text-fill: #8B1E1E; -fx-font-size: 16px; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 10;"/>
+                </HBox>
+
+                <Separator style="-fx-background-color: #8B1E1E; -fx-opacity: 0.5;"/>
+
+                <ListView fx:id="notificationList" prefHeight="300"
+                          style="-fx-background-color: transparent; -fx-border-color: #E8D9C5; -fx-border-width: 2; -fx-border-radius: 10;">
+                    <style>
+                        .list-cell { -fx-background-color: transparent; -fx-padding: 10; }
+                        .list-cell:filled:hover { -fx-background-color: rgba(139,30,30,0.1); -fx-cursor: hand; }
+                    </style>
+                </ListView>
+
+                <Button text="Marquer tout comme lu" onAction="#markAllAsRead"
+                        style="-fx-background-color: #8B1E1E; -fx-text-fill: #F5F5DC; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 15; -fx-cursor: hand; -fx-border-color: #F5F5DC; -fx-border-width: 1; -fx-border-radius: 15;"/>
+            </VBox>
+        </StackPane>
+
+        <!-- POPUP PROFIL -->
+        <StackPane fx:id="profileOverlay" visible="false"
+                   style="-fx-background-color: rgba(0,0,0,0.5); -fx-cursor: hand;"
+                   onMouseClicked="#closeProfilePopup">
+
+            <VBox fx:id="profilePopup" maxWidth="400" spacing="15"
+                  style="-fx-background-color: #F5F5DC; -fx-background-radius: 20; -fx-padding: 25; -fx-border-color: #8B1E1E; -fx-border-width: 3; -fx-border-radius: 20; -fx-effect: dropshadow(gaussian, #8B1E1E, 30, 0.5, 0, 15); -fx-cursor: default;"
+                  onMouseClicked="#consumeEvent">
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <StackPane>
+                        <Circle radius="35" style="-fx-fill: linear-gradient(from 0% 0% to 100% 100%, #8B1E1E, #5D2E2E);"/>
+                        <Label fx:id="profileInitials" text="CL"
+                               style="-fx-text-fill: #F5F5DC; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </StackPane>
+                    <VBox>
+                        <Label fx:id="profileName" text="Client"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #5D2E2E;"/>
+                        <Label fx:id="profileEmail" text="email@example.com"
+                               style="-fx-font-size: 12px; -fx-text-fill: #8B4513;"/>
+                    </VBox>
+                </HBox>
+
+                <Separator style="-fx-background-color: #8B1E1E; -fx-opacity: 0.5;"/>
+
+                <Button text="✏️ Modifier le profil" onAction="#handleModifierProfil"
+                        style="-fx-background-color: #8B1E1E; -fx-text-fill: #F5F5DC; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, #8B1E1E, 8, 0.5, 0, 2);" maxWidth="Infinity"/>
+
+                <Button text="🔐 Se déconnecter" onAction="#handleLogout"
+                        style="-fx-background-color: transparent; -fx-text-fill: #8B1E1E; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 20; -fx-border-color: #8B1E1E; -fx-border-width: 2; -fx-cursor: hand;" maxWidth="Infinity"/>
+            </VBox>
+        </StackPane>
+    </BorderPane>
+</StackPane>
