@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fil d'actualité - Kouldiery{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h1 class="mb-4 text-danger">🔥 Kouldiery</h1>
+
+            {# Affichage du rôle #}
+            {% if role == 'admin' %}
+                <div class="alert alert-red text-center">⚠️ Mode administrateur – tous les droits</div>
+            {% elseif role == 'user' %}
+                <div class="alert alert-info text-center">👤 Mode utilisateur – gérez vos articles et commentaires</div>
+            {% else %}
+                <div class="alert alert-secondary text-center">🌐 Mode public – consultation uniquement</div>
+            {% endif %}
+
+            {# BARRE DE RECHERCHE ET FILTRES #}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control" placeholder="🔍 Rechercher par titre ou contenu..." value="{{ search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="author" class="form-control" placeholder="👤 Filtre par auteur (nom/email)" value="{{ author }}">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="sort" class="form-select">
+                                <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Trier par date</option>
+                                <option value="title" {% if sort == 'title' %}selected{% endif %}>Trier par titre</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <select name="order" class="form-select">
+                                <option value="DESC" {% if order == 'DESC' %}selected{% endif %}>↓ Décroissant</option>
+                                <option value="ASC" {% if order == 'ASC' %}selected{% endif %}>↑ Croissant</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-red w-100">Filtrer</button>
+                        </div>
+                    </form>
+                    {% if search or author or sort != 'created_at' or order != 'DESC' %}
+                        <div class="mt-3">
+                            <a href="{{ path(current_route) }}" class="btn btn-sm btn-outline-secondary">Réinitialiser les filtres</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Bouton de création d'article #}
+            <div class="d-grid gap-2 mb-4">
+                {% if role == 'admin' %}
+                    <a href="{{ path('admin_post_new') }}" class="btn btn-red">➕ Créer un article (admin)</a>
+                {% elseif role == 'user' %}
+                    <a href="{{ path('user_post_new') }}" class="btn btn-red">➕ Créer un article (user)</a>
+                {% else %}
+                    <button class="btn btn-secondary" disabled>➕ Créer un article (réservé)</button>
+                {% endif %}
+            </div>
+
+            {# Affichage des posts #}
+            {% for post in posts %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.content|nl2br }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Posté par {{ post.user_id ? post.user_id.email : 'Anonyme' }} le {{ post.createdAt|date('d/m/Y H:i') }}</small>
+                            <div>
+                                {% if role == 'admin' %}
+                                    <a href="{{ path('admin_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                                    <form method="post" action="{{ path('admin_post_delete', {'id': post.id}) }}" style="display:inline-block">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+                                    </form>
+                                {% elseif role == 'user' %}
+                                    <a href="{{ path('user_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                                    <form method="post" action="{{ path('user_post_delete', {'id': post.id}) }}" style="display:inline-block">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-light">
+                        <h6>Commentaires ({{ post.commentaires|length }})</h6>
+                        {% for commentaire in post.commentaires %}
+                            <div class="mb-2 pb-2 border-bottom">
+                                <p class="mb-1">{{ commentaire.content }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">Par {{ commentaire.utilisateur ? commentaire.utilisateur.email : 'Anonyme' }} le {{ commentaire.createdAt|date('d/m/Y H:i') }}</small>
+                                    <div>
+                                        {% if role == 'admin' %}
+                                            <a href="{{ path('admin_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                            <form method="post" action="{{ path('admin_commentaire_delete', {'id': commentaire.id}) }}" style="display:inline-block">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+                                                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+                                            </form>
+                                        {% elseif role == 'user' %}
+                                            <a href="{{ path('user_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                            <form method="post" action="{{ path('user_commentaire_delete', {'id': commentaire.id}) }}" style="display:inline-block">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+                                                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Aucun commentaire. Soyez le premier !</p>
+                        {% endfor %}
+
+                        <hr>
+                        <h6>Ajouter un commentaire</h6>
+                        {{ form_start(forms[post.id], {'attr': {'novalidate': 'novalidate'}}) }}
+                            {{ form_widget(forms[post.id]) }}
+                            <input type="hidden" name="post_id" value="{{ post.id }}">
+                            <button class="btn btn-primary btn-sm mt-2">Envoyer</button>
+                        {{ form_end(forms[post.id]) }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">Aucun article trouvé. Modifiez les filtres.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
