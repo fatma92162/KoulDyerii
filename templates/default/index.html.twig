@@ -1,9 +1,187 @@
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .hero-section {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .hero-card {
+        background: white;
+        border-radius: 40px;
+        padding: 60px 50px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.7s ease-out;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .logo-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+    
+    .hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+    }
+    
+    .slogan {
+        font-size: 28px;
+        color: #FF6B6B;
+        font-style: italic;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    
+    .description {
+        color: #666;
+        font-size: 16px;
+        line-height: 1.8;
+        margin-bottom: 40px;
+    }
+    
+    .btn-group-custom {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 14px 40px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        color: white;
+    }
+    
+    .btn-outline-custom {
+        background: transparent;
+        border: 2px solid #FF6B6B;
+        border-radius: 50px;
+        padding: 14px 40px;
+        color: #FF6B6B;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+    }
+    
+    .btn-outline-custom:hover {
+        background: #FF6B6B;
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .welcome-message {
+        background: linear-gradient(135deg, #FF6B6B20 0%, #FF8E5320 100%);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-card {
+            padding: 40px 25px;
+        }
+        .hero-title {
+            font-size: 32px;
+        }
+        .slogan {
+            font-size: 20px;
+        }
+        .logo-icon {
+            font-size: 60px;
+        }
+        .btn-primary-custom, .btn-outline-custom {
+            padding: 12px 30px;
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
-    <div class='container mt-5'>
-        <h1>Bienvenue sur Kouldiery</h1>
-        <p>Ceci est la page d'accueil par défaut.</p>
-        <a href='{{ path('forum_index') }}' class='btn btn-primary'>Accéder au forum</a>
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-card">
+            <div class="logo-icon">🍽️</div>
+            <h1 class="hero-title">KOUL DYERI</h1>
+            <div class="slogan">"Kojintek Bin Ydik"</div>
+            <p class="description">
+                Découvrez une expérience culinaire unique avec Koul Dyeri. 
+                Des plats savoureux préparés avec passion et des ingrédients frais.
+            </p>
+            
+            {% if app.user %}
+                <div class="welcome-message">
+                    <h3>👋 Bonjour, <strong>{{ app.user.nom }}</strong> !</h3>
+                    <p>Bienvenue sur Koul Dyeri. Que souhaitez-vous faire aujourd'hui ?</p>
+                </div>
+                <div class="btn-group-custom">
+                    <a href="{{ path('app_mon_profil') }}" class="btn-primary-custom">
+                        <i class="fas fa-user"></i> Voir mon profil
+                    </a>
+                </div>
+            {% else %}
+                <div class="btn-group-custom">
+                    <a href="{{ path('app_register') }}" class="btn-primary-custom">
+                        <i class="fas fa-user-plus"></i> Créer un compte
+                    </a>
+                    <a href="{{ path('app_login') }}" class="btn-outline-custom">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </a>
+                </div>
+            {% endif %}
+        </div>
     </div>
+</div>
 {% endblock %}

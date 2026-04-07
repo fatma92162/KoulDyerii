@@ -1,0 +1,588 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fil d'actualité | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .feed-container { 
+        max-width: 700px; 
+        margin: 0 auto; 
+        padding: 20px 0; 
+    }
+
+    .feed-header {
+        background: white; 
+        border-radius: 20px; 
+        padding: 20px 25px;
+        margin-bottom: 25px; 
+        display: flex; 
+        justify-content: space-between;
+        align-items: center; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .feed-header h2 { 
+        font-size: 22px; 
+        font-weight: 700; 
+        color: #333; 
+        margin: 0; 
+    }
+
+    .btn-new-post {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white; 
+        border: none; 
+        border-radius: 50px; 
+        padding: 10px 20px;
+        font-weight: 600; 
+        text-decoration: none; 
+        display: inline-flex;
+        align-items: center; 
+        gap: 8px; 
+        transition: all 0.3s ease;
+    }
+
+    .btn-new-post:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 8px 20px rgba(255,107,107,0.4); 
+        color: white; 
+    }
+
+    /* Barre de recherche */
+    .search-bar {
+        background: white;
+        border-radius: 60px;
+        padding: 8px 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .search-bar .form-control,
+    .search-bar .form-select {
+        border-radius: 50px;
+        border: 1px solid #f0e6d6;
+        padding: 10px 18px;
+    }
+    
+    .search-bar .form-control:focus,
+    .search-bar .form-select:focus {
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.15);
+    }
+    
+    .search-bar .btn {
+        padding: 10px 25px;
+        white-space: nowrap;
+    }
+
+    .post-card {
+        background: white; 
+        border-radius: 20px; 
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+        overflow: hidden; 
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+    .post-card:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12); 
+    }
+
+    .post-card.pinned {
+        border-left: 5px solid #5bc0de;
+        background: #f8fcff;
+    }
+
+    .pin-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #5bc0de;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .post-author { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        margin-bottom: 15px; 
+    }
+
+    .author-avatar {
+        width: 45px; 
+        height: 45px; 
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        overflow: hidden; 
+        flex-shrink: 0;
+    }
+
+    .author-avatar img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+    }
+
+    .author-avatar span { 
+        color: white; 
+        font-weight: 700; 
+        font-size: 18px; 
+    }
+
+    .author-info strong { 
+        display: block; 
+        color: #333; 
+        font-size: 15px; 
+    }
+
+    .author-info small { 
+        color: #999; 
+        font-size: 12px; 
+    }
+
+    .post-title { 
+        font-size: 18px; 
+        font-weight: 700; 
+        color: #333; 
+        margin-bottom: 10px; 
+    }
+
+    .post-content { 
+        color: #666; 
+        font-size: 14px; 
+        line-height: 1.6; 
+        margin-bottom: 15px; 
+    }
+
+    .post-image { 
+        width: 100%; 
+        max-height: 350px; 
+        object-fit: cover; 
+        border-radius: 12px; 
+        margin-bottom: 15px; 
+    }
+
+    .post-actions {
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+        padding-top: 15px; 
+        border-top: 1px solid #f0e6d6; 
+        flex-wrap: wrap;
+    }
+
+    .reaction-wrapper { 
+        position: relative; 
+        display: inline-flex; 
+    }
+
+    .btn-reaction-main {
+        background: none; 
+        border: 2px solid #f0e6d6; 
+        border-radius: 50px;
+        padding: 7px 18px; 
+        cursor: pointer; 
+        font-size: 14px; 
+        font-weight: 600;
+        color: #999; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 7px;
+        transition: all 0.3s ease; 
+        user-select: none;
+    }
+
+    .btn-reaction-main:hover, 
+    .btn-reaction-main.reacted { 
+        border-color: #FF6B6B; 
+        color: #FF6B6B; 
+        background: #fff0f0; 
+    }
+
+    .reaction-picker {
+        position: absolute; 
+        bottom: 50px; 
+        left: 0; 
+        background: white;
+        border-radius: 50px; 
+        padding: 8px 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        display: none; 
+        gap: 8px; 
+        z-index: 100;
+        animation: popUp 0.2s ease;
+    }
+
+    .reaction-picker.show { 
+        display: flex; 
+    }
+
+    @keyframes popUp {
+        from { opacity: 0; transform: translateY(10px) scale(0.8); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .reaction-emoji {
+        font-size: 24px; 
+        cursor: pointer; 
+        transition: transform 0.2s ease;
+        border: none; 
+        background: none; 
+        padding: 2px; 
+        border-radius: 50%; 
+        position: relative;
+    }
+
+    .reaction-emoji:hover { 
+        transform: scale(1.4); 
+    }
+
+    .btn-comment, 
+    .btn-read-more, 
+    .btn-pin {
+        background: none; 
+        border: 2px solid #f0e6d6; 
+        border-radius: 50px;
+        padding: 7px 18px; 
+        font-size: 14px; 
+        font-weight: 600; 
+        color: #999;
+        text-decoration: none; 
+        display: inline-flex; 
+        align-items: center;
+        gap: 7px; 
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-comment:hover, 
+    .btn-read-more:hover, 
+    .btn-pin:hover { 
+        border-color: #FF6B6B; 
+        color: #FF6B6B; 
+        background: #fff0f0; 
+    }
+
+    .btn-pin {
+        color: #5bc0de;
+    }
+    
+    .btn-pin:hover {
+        border-color: #5bc0de;
+        color: #5bc0de;
+        background: #f0f8ff;
+    }
+    
+    .btn-pin.pinned {
+        border-color: #5bc0de;
+        color: white;
+        background: #5bc0de;
+    }
+
+    .empty-state {
+        background: white; 
+        border-radius: 20px; 
+        padding: 60px 30px;
+        text-align: center; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .empty-state i { 
+        font-size: 60px; 
+        color: #f0e6d6; 
+        margin-bottom: 20px; 
+        display: block; 
+    }
+    
+    /* Styles pour les messages flash */
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* ✅ Styles pour les messages d'erreur sous les champs */
+    .error-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    @media (max-width: 768px) {
+        .search-bar form {
+            flex-direction: column;
+        }
+        .search-bar .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="feed-container">
+
+    <div class="feed-header">
+        <h2>📝 Fil d'actualité</h2>
+        <a href="{{ path('app_post_new') }}" class="btn-new-post">
+            <i class="fas fa-plus"></i> Nouvelle publication
+        </a>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-bar">
+        <form method="get" action="{{ path('app_posts_index') }}" class="d-flex gap-2">
+            <div class="flex-grow-1">
+                <input type="text" 
+                       name="search" 
+                       class="form-control" 
+                       placeholder="🔍 Rechercher un post par titre ou contenu..." 
+                       value="{{ search|default('') }}">
+            </div>
+            <div>
+                <select name="sort" class="form-select">
+                    <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>📅 Les plus récents</option>
+                    <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>📅 Les plus anciens</option>
+                    <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>🔥 Les plus populaires</option>
+                    <option value="pinned" {{ sort == 'pinned' ? 'selected' : '' }}>📌 Épinglés d'abord</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Chercher
+            </button>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success rounded-3 mb-3">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger rounded-3 mb-3">{{ message }}</div>
+    {% endfor %}
+
+    {% for post in posts %}
+        <div class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-card-{{ post.id }}">
+            
+            {# Badge Épinglé #}
+            {% if post.isPinned %}
+                <div class="pin-badge">
+                    <i class="fas fa-thumbtack"></i> Épinglé
+                </div>
+            {% endif %}
+            
+            <div class="post-card-body">
+
+                <div class="post-author">
+                    <div class="author-avatar">
+                        {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
+                            <img src="{{ post.utilisateur.photo }}" alt="Photo de profil">
+                        {% else %}
+                            <span>{{ post.utilisateur.nom|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="author-info">
+                        <strong>{{ post.utilisateur.nom }}</strong>
+                        <small>{{ post.createdAt|date('d/m/Y à H:i') }}</small>
+                    </div>
+                    
+                    {# Menu Modifier / Supprimer (seulement pour l'auteur ou admin) #}
+                    {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                        <div class="ms-auto dropdown">
+                            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 32px; height: 32px;">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ path('app_post_edit', {id: post.id}) }}">
+                                        <i class="fas fa-edit text-warning"></i> Modifier
+                                    </a>
+                                </li>
+                                <li>
+                                    <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer cette publication ?')">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="post-title">{{ post.title }}</div>
+                <div class="post-content">
+                    {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                </div>
+
+                {% if post.imagePath %}
+                    <img src="{{ post.imagePath }}" class="post-image" alt="Image du post" loading="lazy">
+                {% endif %}
+
+                <div class="post-actions">
+                    {# Réactions #}
+                    <div class="reaction-wrapper" id="wrapper-{{ post.id }}"
+                         onmouseenter="showPicker({{ post.id }})"
+                         onmouseleave="hidePicker({{ post.id }})">
+
+                        <button class="btn-reaction-main {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}"
+                                onclick="sendReaction({{ post.id }}, 'like', '👍')"
+                                id="btn-{{ post.id }}">
+                            <span id="current-emoji-{{ post.id }}">
+                                {% if userLikes[post.id] is defined and userLikes[post.id] %}❤️{% else %}👍{% endif %}
+                            </span>
+                            <span id="like-count-{{ post.id }}">{{ likesCount[post.id] ?? 0 }}</span>
+                        </button>
+
+                        <div class="reaction-picker" id="picker-{{ post.id }}">
+                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="like" data-emoji="👍">👍 <span class="tooltip-label">J'aime</span></button>
+                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="love" data-emoji="❤️">❤️ <span class="tooltip-label">J'adore</span></button>
+                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="haha" data-emoji="😂">😂 <span class="tooltip-label">Haha</span></button>
+                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="triste" data-emoji="😢">😢 <span class="tooltip-label">Triste</span></button>
+                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="grr" data-emoji="😡">😡 <span class="tooltip-label">Grr</span></button>
+                        </div>
+                    </div>
+
+                    <a href="{{ path('app_post_show', {id: post.id}) }}" class="btn-comment">
+                        <i class="fas fa-comment"></i> Commenter
+                    </a>
+
+                    {# Bouton Épingler / Désépingler → Visible pour TOUS les utilisateurs connectés #}
+                    {% if app.user %}
+                        <button class="btn-pin {% if post.isPinned %}pinned{% endif %}" 
+                                id="pin-btn-{{ post.id }}"
+                                onclick="togglePin({{ post.id }})">
+                            <i class="fas fa-thumbtack"></i>
+                            <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
+                        </button>
+                    {% endif %}
+
+                    <a href="{{ path('app_post_show', {id: post.id}) }}" class="btn-read-more">
+                        Lire la suite <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-newspaper"></i>
+            <p>Aucune publication pour le moment.</p>
+            <a href="{{ path('app_post_new') }}" class="btn-new-post">
+                Soyez le premier à publier !
+            </a>
+        </div>
+    {% endfor %}
+
+</div>
+
+<script>
+let hideTimeout = {};
+
+function showPicker(postId) {
+    clearTimeout(hideTimeout[postId]);
+    document.querySelectorAll('.reaction-picker').forEach(p => {
+        if (p.id !== 'picker-' + postId) p.classList.remove('show');
+    });
+    const picker = document.getElementById('picker-' + postId);
+    if (picker) picker.classList.add('show');
+}
+
+function hidePicker(postId) {
+    hideTimeout[postId] = setTimeout(() => {
+        const picker = document.getElementById('picker-' + postId);
+        if (picker) picker.classList.remove('show');
+    }, 300);
+}
+
+// Fonction améliorée pour gérer tous les emojis
+function sendReaction(postId, type, emoji) {
+    const picker = document.getElementById('picker-' + postId);
+    if (picker) picker.classList.remove('show');
+
+    fetch(`/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: type })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('like-count-' + postId);
+            const emojiEl = document.getElementById('current-emoji-' + postId);
+            const btn = document.getElementById('btn-' + postId);
+            
+            if (countEl) countEl.textContent = data.count;
+            
+            if (data.liked) {
+                if (emojiEl) emojiEl.textContent = emoji;
+                if (btn) btn.classList.add('reacted');
+            } else {
+                if (emojiEl) emojiEl.textContent = '👍';
+                if (btn) btn.classList.remove('reacted');
+            }
+        }
+    })
+    .catch(err => console.error('Erreur réaction :', err));
+}
+
+// Attacher les événements aux boutons d'emoji après chargement
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.reaction-emoji').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const type = this.getAttribute('data-type');
+            const emoji = this.getAttribute('data-emoji');
+            sendReaction(postId, type, emoji);
+        });
+    });
+});
+
+// Fonction pour épingler / désépingler (accessible à tous les utilisateurs connectés)
+function togglePin(postId) {
+    fetch(`/posts/${postId}/pin`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(err => {
+        console.error('Erreur épinglage :', err);
+        alert('Erreur de connexion');
+    });
+}
+</script>
+{% endblock %}

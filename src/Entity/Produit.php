@@ -2,125 +2,116 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Utilisateur;
-use Doctrine\Common\Collections\Collection;
-use App\Entity\Favoris;
-use App\Entity\Commande_produit;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ProduitRepository::class)]
+#[ORM\Table(name: 'produit')]
 class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "idProduit", type: "integer")]
-    private int $idProduit;
+    #[ORM\Column(type: 'integer')]
+    private ?int $idProduit = null;
 
-    #[ORM\Column(type: "string", length: 100)]
-    private string $nom;
-
-    #[ORM\Column(type: "text")]
-    private string $description;
-
-    #[ORM\Column(type: "float")]
-    private float $prix;
-
-    #[ORM\Column(type: "boolean")]
-    private bool $disponible;
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "produits")]
-    #[ORM\JoinColumn(name: 'idVendeuse', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE')]
-    private Utilisateur $idVendeuse;
-
-    public function getIdProduit()
+    public function getIdProduit(): ?int
     {
         return $this->idProduit;
     }
 
-    public function setIdProduit($value)
+    public function setIdProduit(?int $idProduit): self
     {
-        $this->idProduit = $value;
+        $this->idProduit = $idProduit;
+        return $this;
     }
 
-    public function getNom()
+    #[ORM\Column(type: 'string', nullable: false)]
+    private ?string $nom = null;
+
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom(?string $nom): self
     {
-        $this->nom = $value;
+        $this->nom = $nom;
+        return $this;
     }
 
-    public function getDescription()
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(?string $description): self
     {
-        $this->description = $value;
+        $this->description = $description;
+        return $this;
     }
 
-    public function getPrix()
+    #[ORM\Column(type: 'float', nullable: false)]
+    private ?float $prix = null;
+
+    public function getPrix(): ?float
     {
         return $this->prix;
     }
 
-    public function setPrix($value)
+    public function setPrix(?float $prix): self
     {
-        $this->prix = $value;
+        $this->prix = $prix;
+        return $this;
     }
 
-    public function getDisponible()
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $photo = null;
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): self
+    {
+        $this->photo = $photo;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $disponible = null;
+
+    public function getDisponible(): ?bool
     {
         return $this->disponible;
     }
 
-    public function setDisponible($value)
+    public function setDisponible(?bool $disponible): self
     {
-        $this->disponible = $value;
+        $this->disponible = $disponible;
+        return $this;
     }
 
-    public function getIdVendeuse()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $idVendeuse = null;
+
+    public function getIdVendeuse(): ?int
     {
         return $this->idVendeuse;
     }
 
-    public function setIdVendeuse($value)
+    public function setIdVendeuse(?int $idVendeuse): self
     {
-        $this->idVendeuse = $value;
-    }
-
-    #[ORM\OneToMany(mappedBy: "idProduit", targetEntity: Commande_produit::class)]
-    private Collection $commande_produits;
-
-    public function getCommande_produits(): Collection
-    {
-        return $this->commande_produits;
-    }
-
-    public function addCommande_produit(Commande_produit $commande_produit): self
-    {
-        if (!$this->commande_produits->contains($commande_produit)) {
-            $this->commande_produits[] = $commande_produit;
-            $commande_produit->setIdProduit($this);
-        }
-
+        $this->idVendeuse = $idVendeuse;
         return $this;
     }
 
-    public function removeCommande_produit(Commande_produit $commande_produit): self
+    public function isDisponible(): ?bool
     {
-        if ($this->commande_produits->removeElement($commande_produit)) {
-            if ($commande_produit->getIdProduit() === $this) {
-                $commande_produit->setIdProduit(null);
-            }
-        }
-
-        return $this;
+        return $this->disponible;
     }
 
-    #[ORM\OneToMany(mappedBy: "idProduit", targetEntity: Favoris::class)]
-    private Collection $favoriss;
 }

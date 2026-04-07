@@ -4,39 +4,41 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
+use App\Repository\PostRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PostRepository::class)]
+#[ORM\Table(name: 'post')]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "posts")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE', nullable: true)]
-    private ?Utilisateur $user_id = null;
+    #[ORM\Column(type: 'string', nullable: false)]
+    private ?string $title = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
-    #[Assert\Length(min: 3, max: 255, minMessage: "Le titre doit faire au moins 3 caractères.", maxMessage: "Le titre ne peut pas dépasser 255 caractères.")]
-    private string $title;
+    #[ORM\Column(type: 'text', nullable: false)]
+    private ?string $content = null;
 
-    #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "Le contenu est obligatoire.")]
-    #[Assert\Length(min: 10, minMessage: "Le contenu doit faire au moins 10 caractères.")]
-    private string $content;
-
-    #[ORM\Column(type: "string", length: 500, nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true)]
     private ?string $image_path = null;
 
-    #[ORM\Column(type: "datetime_immutable")]
-    private \DateTimeImmutable $created_at;
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private ?\DateTimeInterface $created_at = null;
 
-    #[ORM\OneToMany(mappedBy: "post", targetEntity: Commentaire::class, orphanRemoval: true)]
-    #[ORM\OrderBy(["created_at" => "DESC"])]  // Tri des commentaires du plus récent au plus ancien
+    // ✅ AJOUT : Champ pour épingler un post
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => false])]
+    private ?bool $is_pinned = false;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', nullable: false)]
+    private ?Utilisateur $utilisateur = null;
+
+    // Relation OneToMany avec Commentaire
+    #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'post', cascade: ['remove'])]
     private Collection $commentaires;
 
     public function __construct()
@@ -44,39 +46,29 @@ class Post
         $this->commentaires = new ArrayCollection();
     }
 
-    public function getId(): int
+    // Getters et Setters
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUser_id(): ?Utilisateur
-    {
-        return $this->user_id;
-    }
-
-    public function setUser_id(?Utilisateur $user_id): self
-    {
-        $this->user_id = $user_id;
-        return $this;
-    }
-
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    public function setTitle(string $title): self
+    public function setTitle(?string $title): self
     {
         $this->title = $title;
         return $this;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    public function setContent(string $content): self
+    public function setContent(?string $content): self
     {
         $this->content = $content;
         return $this;
@@ -93,20 +85,41 @@ class Post
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): self
+    public function setCreatedAt(?\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
         return $this;
     }
 
-    /**
-     * @return Collection<int, Commentaire>
-     */
+    // ✅ Getter et Setter pour is_pinned
+    public function isPinned(): ?bool
+    {
+        return $this->is_pinned;
+    }
+
+    public function setIsPinned(?bool $is_pinned): self
+    {
+        $this->is_pinned = $is_pinned;
+        return $this;
+    }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    // Getter et Setter pour les commentaires
     public function getCommentaires(): Collection
     {
         return $this->commentaires;
@@ -115,7 +128,7 @@ class Post
     public function addCommentaire(Commentaire $commentaire): self
     {
         if (!$this->commentaires->contains($commentaire)) {
-            $this->commentaires[] = $commentaire;
+            $this->commentaires->add($commentaire);
             $commentaire->setPost($this);
         }
         return $this;

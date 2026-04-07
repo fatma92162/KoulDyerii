@@ -3,50 +3,53 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Utilisateur;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PointfideliteRepository::class)]
+#[ORM\Table(name: 'pointfidelite')]
 class Pointfidelite
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "idPoint", type: "integer")]
-    private int $idPoint;
+    #[ORM\Column(type: 'integer')]
+    private ?int $idPoint = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $solde;
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "pointfidelites")]
-    #[ORM\JoinColumn(name: 'idUtilisateur', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE')]
-    private Utilisateur $idUtilisateur;
-
-    public function getIdPoint()
+    public function getIdPoint(): ?int
     {
         return $this->idPoint;
     }
 
-    public function setIdPoint($value)
+    public function setIdPoint(?int $idPoint): self
     {
-        $this->idPoint = $value;
+        $this->idPoint = $idPoint;
+        return $this;
     }
 
-    public function getSolde()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $solde = null;
+
+    public function getSolde(): ?int
     {
         return $this->solde;
     }
 
-    public function setSolde($value)
+    public function setSolde(?int $solde): self
     {
-        $this->solde = $value;
+        $this->solde = $solde;
+        return $this;
     }
 
-    public function getIdUtilisateur()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $idUtilisateur = null;
+
+    public function getIdUtilisateur(): ?int
     {
         return $this->idUtilisateur;
     }
 
-    public function setIdUtilisateur($value)
+    public function setIdUtilisateur(?int $idUtilisateur): self
     {
-        $this->idUtilisateur = $value;
+        $this->idUtilisateur = $idUtilisateur;
+        return $this;
     }
+
 }

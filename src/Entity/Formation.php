@@ -2,108 +2,97 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Utilisateur;
-use Doctrine\Common\Collections\Collection;
-use App\Entity\Inscription_formation;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FormationRepository::class)]
+#[ORM\Table(name: 'formation')]
 class Formation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "idFormation", type: "integer")]
-    private int $idFormation;
+    #[ORM\Column(type: 'integer')]
+    private ?int $idFormation = null;
 
-    #[ORM\Column(type: "string", length: 100)]
-    private string $titre;
-
-    #[ORM\Column(type: "text")]
-    private string $description;
-
-    #[ORM\Column(type: "float")]
-    private float $prix;
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "formations")]
-    #[ORM\JoinColumn(name: 'idVendeuse', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE')]
-    private Utilisateur $idVendeuse;
-
-    public function getIdFormation()
+    public function getIdFormation(): ?int
     {
         return $this->idFormation;
     }
 
-    public function setIdFormation($value)
+    public function setIdFormation(?int $idFormation): self
     {
-        $this->idFormation = $value;
+        $this->idFormation = $idFormation;
+        return $this;
     }
 
-    public function getTitre()
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $titre = null;
+
+    public function getTitre(): ?string
     {
         return $this->titre;
     }
 
-    public function setTitre($value)
+    public function setTitre(?string $titre): self
     {
-        $this->titre = $value;
+        $this->titre = $titre;
+        return $this;
     }
 
-    public function getDescription()
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(?string $description): self
     {
-        $this->description = $value;
+        $this->description = $description;
+        return $this;
     }
 
-    public function getPrix()
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $prix = null;
+
+    public function getPrix(): ?float
     {
         return $this->prix;
     }
 
-    public function setPrix($value)
+    public function setPrix(?float $prix): self
     {
-        $this->prix = $value;
+        $this->prix = $prix;
+        return $this;
     }
 
-    public function getIdVendeuse()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $idVendeuse = null;
+
+    public function getIdVendeuse(): ?int
     {
         return $this->idVendeuse;
     }
 
-    public function setIdVendeuse($value)
+    public function setIdVendeuse(?int $idVendeuse): self
     {
-        $this->idVendeuse = $value;
-    }
-
-    #[ORM\OneToMany(mappedBy: "idFormation", targetEntity: Inscription_formation::class)]
-    private Collection $inscription_formations;
-
-    public function getInscription_formations(): Collection
-    {
-        return $this->inscription_formations;
-    }
-
-    public function addInscription_formation(Inscription_formation $inscription_formation): self
-    {
-        if (!$this->inscription_formations->contains($inscription_formation)) {
-            $this->inscription_formations[] = $inscription_formation;
-            $inscription_formation->setIdFormation($this);
-        }
-
+        $this->idVendeuse = $idVendeuse;
         return $this;
     }
 
-    public function removeInscription_formation(Inscription_formation $inscription_formation): self
-    {
-        if ($this->inscription_formations->removeElement($inscription_formation)) {
-            if ($inscription_formation->getIdFormation() === $this) {
-                $inscription_formation->setIdFormation(null);
-            }
-        }
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $statut = null;
 
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(?string $statut): self
+    {
+        $this->statut = $statut;
         return $this;
     }
+
 }

@@ -2,87 +2,93 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UtilisateurRepository;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity]
-#[ORM\Table(name: "utilisateur")]
-class Utilisateur
+#[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
+#[ORM\Table(name: 'utilisateur')]
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "idUtilisateur", type: "integer")]
-    private int $idUtilisateur;
+    #[ORM\Column(type: 'integer', name: 'idUtilisateur')]
+    private ?int $idUtilisateur = null;
 
-    #[ORM\Column(name: "nom", type: "string", length: 100)]
-    private string $nom;
+    #[ORM\Column(type: 'string', nullable: false, name: 'nom')]
+    private ?string $nom = null;
 
-    #[ORM\Column(name: "email", type: "string", length: 100, unique: true)]
-    private string $email;
+    #[ORM\Column(type: 'string', nullable: false, name: 'email')]
+    private ?string $email = null;
 
-    #[ORM\Column(name: "motDePasse", type: "string", length: 255)]
-    private string $motDePasse;
+    #[ORM\Column(type: 'string', nullable: false, name: 'motDePasse')]
+    private ?string $motDePasse = null;
 
-    #[ORM\Column(name: "dateNaissance", type: "date", nullable: true)]
+    #[ORM\Column(type: 'date', nullable: true, name: 'dateNaissance')]
     private ?\DateTimeInterface $dateNaissance = null;
 
-    #[ORM\Column(name: "region", type: "string", length: 50, nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true, name: 'region')]
     private ?string $region = null;
 
-    #[ORM\Column(name: "role", type: "string", length: 20)]
-    private string $role;
+    #[ORM\Column(type: 'string', nullable: false, name: 'role')]
+    private ?string $role = null;
 
-    #[ORM\Column(name: "empreinte", type: "text", nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true, name: 'photo')]
+    private ?string $photo = null;
+
+    #[ORM\Column(type: 'text', nullable: true, name: 'empreinte')]
     private ?string $empreinte = null;
 
-    // Relations
-    #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Post::class)]
-    private Collection $posts;
+    // ✅ RELATION VERS POINTS SOLDE - Version simplifiée
+    #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: Pointssolde::class, cascade: ['persist', 'remove'])]
+    private ?Pointssolde $pointsSolde = null;
 
-    #[ORM\OneToMany(mappedBy: "utilisateur", targetEntity: Commentaire::class)]
-    private Collection $commentaires;
+    // Propriété virtuelle pour les points
+    private ?int $pointsFidelite = null;
 
-    public function __construct()
-    {
-        $this->posts = new ArrayCollection();
-        $this->commentaires = new ArrayCollection();
-    }
+    // ========== GETTERS ET SETTERS ==========
 
-    // Getters et setters
-    public function getIdUtilisateur(): int
+    public function getIdUtilisateur(): ?int
     {
         return $this->idUtilisateur;
     }
 
-    public function getNom(): string
+    public function setIdUtilisateur(?int $idUtilisateur): self
+    {
+        $this->idUtilisateur = $idUtilisateur;
+        return $this;
+    }
+
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(?string $nom): self
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
         return $this;
     }
 
-    public function getMotDePasse(): string
+    public function getMotDePasse(): ?string
     {
         return $this->motDePasse;
     }
 
-    public function setMotDePasse(string $motDePasse): self
+    public function setMotDePasse(?string $motDePasse): self
     {
         $this->motDePasse = $motDePasse;
         return $this;
@@ -110,14 +116,25 @@ class Utilisateur
         return $this;
     }
 
-    public function getRole(): string
+    public function getRole(): ?string
     {
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(?string $role): self
     {
         $this->role = $role;
+        return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): self
+    {
+        $this->photo = $photo;
         return $this;
     }
 
@@ -132,57 +149,63 @@ class Utilisateur
         return $this;
     }
 
-    /**
-     * @return Collection<int, Post>
-     */
-    public function getPosts(): Collection
+    public function getPointsSolde(): ?Pointssolde
     {
-        return $this->posts;
+        return $this->pointsSolde;
     }
 
-    public function addPost(Post $post): self
+    public function setPointsSolde(?Pointssolde $pointsSolde): self
     {
-        if (!$this->posts->contains($post)) {
-            $this->posts[] = $post;
-            $post->setUtilisateur($this);
-        }
+        $this->pointsSolde = $pointsSolde;
         return $this;
     }
 
-    public function removePost(Post $post): self
+    public function getPointsFidelite(): ?int
     {
-        if ($this->posts->removeElement($post)) {
-            if ($post->getUtilisateur() === $this) {
-                $post->setUtilisateur(null);
-            }
+        if ($this->pointsFidelite !== null) {
+            return $this->pointsFidelite;
         }
+        if ($this->pointsSolde) {
+            return $this->pointsSolde->getSolde();
+        }
+        return 0;
+    }
+
+    public function setPointsFidelite(?int $pointsFidelite): self
+    {
+        $this->pointsFidelite = $pointsFidelite;
         return $this;
     }
 
-    /**
-     * @return Collection<int, Commentaire>
-     */
-    public function getCommentaires(): Collection
+    // ========== MÉTHODES REQUISES PAR UserInterface ==========
+
+    public function getUserIdentifier(): string
     {
-        return $this->commentaires;
+        return $this->email;
     }
 
-    public function addCommentaire(Commentaire $commentaire): self
+    public function getPassword(): string
     {
-        if (!$this->commentaires->contains($commentaire)) {
-            $this->commentaires[] = $commentaire;
-            $commentaire->setUtilisateur($this);
-        }
-        return $this;
+        return $this->motDePasse;
     }
 
-    public function removeCommentaire(Commentaire $commentaire): self
+    public function getRoles(): array
     {
-        if ($this->commentaires->removeElement($commentaire)) {
-            if ($commentaire->getUtilisateur() === $this) {
-                $commentaire->setUtilisateur(null);
-            }
-        }
-        return $this;
+        return [$this->role];
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Effacer les données sensibles si nécessaire
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->email;
     }
 }

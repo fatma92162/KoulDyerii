@@ -3,133 +3,209 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Utilisateur;
-use App\Entity\Post;
-use App\Entity\Commentaire;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: NotificationRepository::class)]
+#[ORM\Table(name: 'notification')]
 class Notification
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "notifications")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE')]
-    private Utilisateur $user_id;
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "notificationsFrom")]
-    #[ORM\JoinColumn(name: 'from_user_id', referencedColumnName: 'idUtilisateur', onDelete: 'CASCADE')]
-    private Utilisateur $from_user_id;
-
-    #[ORM\Column(type: "string", length: 50)]
-    private string $type;
-
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: "notifications")]
-    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Post $post_id;
-
-    #[ORM\ManyToOne(targetEntity: Commentaire::class, inversedBy: "notifications")]
-    #[ORM\JoinColumn(name: 'commentaire_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Commentaire $commentaire_id;
-
-    #[ORM\Column(type: "string", length: 255)]
-    private string $message;
-
-    #[ORM\Column(type: "boolean")]
-    private bool $is_read;
-
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $created_at;
-
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
+    public function setId(?int $id): self
     {
-        $this->id = $value;
+        $this->id = $id;
+        return $this;
     }
 
-    public function getUser_id()
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $user_id = null;
+
+    public function getUser_id(): ?int
     {
         return $this->user_id;
     }
 
-    public function setUser_id($value)
+    public function setUser_id(?int $user_id): self
     {
-        $this->user_id = $value;
+        $this->user_id = $user_id;
+        return $this;
     }
 
-    public function getFrom_user_id()
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $from_user_id = null;
+
+    public function getFrom_user_id(): ?int
     {
         return $this->from_user_id;
     }
 
-    public function setFrom_user_id($value)
+    public function setFrom_user_id(?int $from_user_id): self
     {
-        $this->from_user_id = $value;
+        $this->from_user_id = $from_user_id;
+        return $this;
     }
 
-    public function getType()
+    #[ORM\Column(type: 'string', nullable: false)]
+    private ?string $type = null;
+
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function setType($value)
+    public function setType(?string $type): self
     {
-        $this->type = $value;
+        $this->type = $type;
+        return $this;
     }
 
-    public function getPost_id()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $post_id = null;
+
+    public function getPost_id(): ?int
     {
         return $this->post_id;
     }
 
-    public function setPost_id($value)
+    public function setPost_id(?int $post_id): self
     {
-        $this->post_id = $value;
+        $this->post_id = $post_id;
+        return $this;
     }
 
-    public function getCommentaire_id()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $commentaire_id = null;
+
+    public function getCommentaire_id(): ?int
     {
         return $this->commentaire_id;
     }
 
-    public function setCommentaire_id($value)
+    public function setCommentaire_id(?int $commentaire_id): self
     {
-        $this->commentaire_id = $value;
+        $this->commentaire_id = $commentaire_id;
+        return $this;
     }
 
-    public function getMessage()
+    #[ORM\Column(type: 'string', nullable: false)]
+    private ?string $message = null;
+
+    public function getMessage(): ?string
     {
         return $this->message;
     }
 
-    public function setMessage($value)
+    public function setMessage(?string $message): self
     {
-        $this->message = $value;
+        $this->message = $message;
+        return $this;
     }
 
-    public function getIs_read()
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $is_read = null;
+
+    public function is_read(): ?bool
     {
         return $this->is_read;
     }
 
-    public function setIs_read($value)
+    public function setIs_read(?bool $is_read): self
     {
-        $this->is_read = $value;
+        $this->is_read = $is_read;
+        return $this;
     }
 
-    public function getCreated_at()
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private ?\DateTimeInterface $created_at = null;
+
+    public function getCreated_at(): ?\DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreated_at($value)
+    public function setCreated_at(?\DateTimeInterface $created_at): self
     {
-        $this->created_at = $value;
+        $this->created_at = $created_at;
+        return $this;
     }
+
+    public function getUserId(): ?int
+    {
+        return $this->user_id;
+    }
+
+    public function setUserId(int $user_id): static
+    {
+        $this->user_id = $user_id;
+
+        return $this;
+    }
+
+    public function getFromUserId(): ?int
+    {
+        return $this->from_user_id;
+    }
+
+    public function setFromUserId(int $from_user_id): static
+    {
+        $this->from_user_id = $from_user_id;
+
+        return $this;
+    }
+
+    public function getPostId(): ?int
+    {
+        return $this->post_id;
+    }
+
+    public function setPostId(?int $post_id): static
+    {
+        $this->post_id = $post_id;
+
+        return $this;
+    }
+
+    public function getCommentaireId(): ?int
+    {
+        return $this->commentaire_id;
+    }
+
+    public function setCommentaireId(?int $commentaire_id): static
+    {
+        $this->commentaire_id = $commentaire_id;
+
+        return $this;
+    }
+
+    public function isRead(): ?bool
+    {
+        return $this->is_read;
+    }
+
+    public function setIsRead(?bool $is_read): static
+    {
+        $this->is_read = $is_read;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTime
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTime $created_at): static
+    {
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
 }

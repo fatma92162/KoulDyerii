@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes commentaires{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Mes commentaires</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Contenu</th>
+                <th>Article</th>
+                <th>Créé le</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for commentaire in commentaires %}
+            <tr>
+                <td>{{ commentaire.id }}</td>
+                <td>{{ commentaire.content|slice(0, 50) }}...</td>
+                <td>{{ commentaire.post.title }}</td>
+                <td>{{ commentaire.createdAt|date('d/m/Y H:i') }}</td>
+                <td>
+                    <a href="{{ path('user_commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                    <a href="{{ path('user_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                    <form method="post" action="{{ path('user_commentaire_delete', {'id': commentaire.id}) }}" style="display:inline-block">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+                        <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce commentaire ?')">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">Aucun commentaire trouvé</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ path('user_forum') }}" class="btn btn-secondary">Retour au forum</a>
+</div>
+{% endblock %}

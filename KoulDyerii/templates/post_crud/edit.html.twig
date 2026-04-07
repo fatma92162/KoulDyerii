@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'article{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Modifier l'article</h1>
+    {{ include('post_crud/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    <a href="{{ path('admin_post_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    {{ include('post_crud/_delete_form.html.twig') }}
+</div>
+{% endblock %}

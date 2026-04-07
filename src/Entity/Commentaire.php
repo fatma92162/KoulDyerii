@@ -2,44 +2,67 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
+use App\Repository\CommentaireRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: CommentaireRepository::class)]
+#[ORM\Table(name: 'commentaire')]
 class Commentaire
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: "commentaires")]
-    #[ORM\JoinColumn(name: "post_id", referencedColumnName: "id", nullable: false)]
-    private Post $post;
+    #[ORM\Column(type: 'text', nullable: false)]
+    private ?string $content = null;
+
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'commentaires')]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: false)]
+    private ?Post $post = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "idUtilisateur", nullable: true)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "Le commentaire ne peut pas être vide.")]
-    #[Assert\Length(min: 2, max: 1000, minMessage: "Le commentaire doit faire au moins 2 caractères.", maxMessage: "Le commentaire ne peut pas dépasser 1000 caractères.")]
-    private string $content;
-
-    #[ORM\Column(type: "datetime_immutable")]
-    private \DateTimeImmutable $created_at;
-
-    public function getId(): int
+    // Getters et Setters
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getPost(): Post
+    public function getContent(): ?string
+    {
+        return $this->content;
+    }
+
+    public function setContent(?string $content): self
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    {
+        $this->created_at = $created_at;
+        return $this;
+    }
+
+    public function getPost(): ?Post
     {
         return $this->post;
     }
 
-    public function setPost(Post $post): self
+    public function setPost(?Post $post): self
     {
         $this->post = $post;
         return $this;
@@ -53,28 +76,6 @@ class Commentaire
     public function setUtilisateur(?Utilisateur $utilisateur): self
     {
         $this->utilisateur = $utilisateur;
-        return $this;
-    }
-
-    public function getContent(): string
-    {
-        return $this->content;
-    }
-
-    public function setContent(string $content): self
-    {
-        $this->content = $content;
-        return $this;
-    }
-
-    public function getCreatedAt(): \DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): self
-    {
-        $this->created_at = $created_at;
         return $this;
     }
 }

@@ -1,0 +1,222 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des utilisateurs{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Liste des utilisateurs</h3>
+        <a href="{{ path('app_utilisateur_nouveau') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un utilisateur
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div style="background: #fefcf8; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #f0e6d6;">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">🔍 Recherche (ID ou Nom)</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="ID ou nom...">
+            </div>
+            <div class="col-md-2">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">📧 Email</label>
+                <input type="text" id="searchEmail" class="form-control" placeholder="Email...">
+            </div>
+            <div class="col-md-2">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">👤 Rôle</label>
+                <select id="filterRole" class="form-control">
+                    <option value="">Tous</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">📍 Région</label>
+                <select id="filterRegion" class="form-control">
+                    <option value="">Toutes</option>
+                    {% set regions = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'] %}
+                    {% for r in regions %}
+                        <option value="{{ r }}">{{ r }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">🔃 Trier par</label>
+                <select id="sortBy" class="form-control">
+                    <option value="">-- Trier --</option>
+                    <option value="id-asc">ID ↑</option>
+                    <option value="id-desc">ID ↓</option>
+                    <option value="nom-asc">Nom A→Z</option>
+                    <option value="nom-desc">Nom Z→A</option>
+                    <option value="role-asc">Rôle A→Z</option>
+                    <option value="region-asc">Région A→Z</option>
+                    <option value="points-asc">Points ↑</option>
+                    <option value="points-desc">Points ↓</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button onclick="resetFilters()" class="btn btn-secondary w-100">↺</button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <small id="resultCount" style="color: #666;"></small>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" id="usersTable">
+            <thead class="table-dark">
+                <tr>
+                    <th style="cursor:pointer;" onclick="sortTable('id')">ID <span id="sort-id">↕</span></th>
+                    <th style="cursor:pointer;" onclick="sortTable('nom')">Nom <span id="sort-nom">↕</span></th>
+                    <th>Email</th>
+                    <th style="cursor:pointer;" onclick="sortTable('role')">Rôle <span id="sort-role">↕</span></th>
+                    <th style="cursor:pointer;" onclick="sortTable('region')">Région <span id="sort-region">↕</span></th>
+                    <th>Date naissance</th>
+                    <th style="cursor:pointer;" onclick="sortTable('points')">⭐ Points <span id="sort-points">↕</span></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersBody">
+                {% for u in utilisateurs %}
+                <tr
+                    data-id="{{ u.idUtilisateur }}"
+                    data-nom="{{ u.nom|lower }}"
+                    data-email="{{ u.email|lower }}"
+                    data-role="{{ u.role }}"
+                    data-region="{{ u.region|lower }}"
+                    data-points="{{ u.pointsFidelite|default(0) }}"
+                >
+                    <td>{{ u.idUtilisateur }}</td>
+                    <td>{{ u.nom }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        {% if u.role == 'admin' %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                            <span class="badge bg-success">User</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.region ?: '-' }}</td>
+                    <td>{{ u.dateNaissance ? u.dateNaissance|date('d/m/Y') : '-' }}</td>
+                    <td>
+                        <span class="badge bg-warning text-dark" style="font-size: 14px; padding: 6px 12px;">
+                            ⭐ {{ u.pointsFidelite|default(0) }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_utilisateur_editer', {id: u.idUtilisateur}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        {% if u.idUtilisateur != app.user.idUtilisateur %}
+                            <form action="{{ path('app_utilisateur_delete', {id: u.idUtilisateur}) }}" method="post" style="display:inline-block">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer {{ u.nom }} ?')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="noResults" style="display:none; text-align:center; padding: 30px; color: #999;">
+            😕 Aucun utilisateur trouvé
+        </div>
+    </div>
+</div>
+
+<script>
+let sortDirections = { id: 'asc', nom: 'asc', role: 'asc', region: 'asc', points: 'asc' };
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const email  = document.getElementById('searchEmail').value.toLowerCase();
+    const role   = document.getElementById('filterRole').value;
+    const region = document.getElementById('filterRegion').value.toLowerCase();
+    const rows   = document.querySelectorAll('#usersBody tr');
+
+    let visible = 0;
+    rows.forEach(row => {
+        const id        = row.dataset.id;
+        const nom       = row.dataset.nom;
+        const rowEmail  = row.dataset.email;
+        const rowRole   = row.dataset.role;
+        const rowRegion = row.dataset.region;
+
+        const matchSearch = !search || id.includes(search) || nom.includes(search);
+        const matchEmail  = !email  || rowEmail.includes(email);
+        const matchRole   = !role   || rowRole === role;
+        const matchRegion = !region || rowRegion.includes(region);
+
+        if (matchSearch && matchEmail && matchRole && matchRegion) {
+            row.style.display = '';
+            visible++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    document.getElementById('resultCount').textContent = visible + ' utilisateur(s) trouvé(s)';
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function sortTable(col) {
+    const tbody = document.getElementById('usersBody');
+    const rows  = Array.from(tbody.querySelectorAll('tr'));
+    const dir   = sortDirections[col] === 'asc' ? 1 : -1;
+
+    ['id','nom','role','region','points'].forEach(c => {
+        const el = document.getElementById('sort-' + c);
+        if (el) el.textContent = '↕';
+    });
+
+    rows.sort((a, b) => {
+        let valA = a.dataset[col] || '';
+        let valB = b.dataset[col] || '';
+        if (col === 'id' || col === 'points') {
+            return (parseInt(valA) - parseInt(valB)) * dir;
+        }
+        return valA.localeCompare(valB) * dir;
+    });
+
+    sortDirections[col] = sortDirections[col] === 'asc' ? 'desc' : 'asc';
+    document.getElementById('sort-' + col).textContent = dir === 1 ? '↑' : '↓';
+
+    rows.forEach(row => tbody.appendChild(row));
+    applyFilters();
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value  = '';
+    document.getElementById('searchEmail').value  = '';
+    document.getElementById('filterRole').value   = '';
+    document.getElementById('filterRegion').value = '';
+    document.getElementById('sortBy').value       = '';
+    document.getElementById('resultCount').textContent = '';
+    document.querySelectorAll('#usersBody tr').forEach(r => r.style.display = '');
+    document.getElementById('noResults').style.display = 'none';
+    ['id','nom','role','region','points'].forEach(c => {
+        const el = document.getElementById('sort-' + c);
+        if (el) el.textContent = '↕';
+    });
+    sortDirections = { id: 'asc', nom: 'asc', role: 'asc', region: 'asc', points: 'asc' };
+}
+
+document.getElementById('sortBy').addEventListener('change', function() {
+    const val = this.value;
+    if (!val) return;
+    const [col, dir] = val.split('-');
+    sortDirections[col] = dir === 'asc' ? 'desc' : 'asc';
+    sortTable(col);
+});
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('searchEmail').addEventListener('input', applyFilters);
+document.getElementById('filterRole').addEventListener('change', applyFilters);
+document.getElementById('filterRegion').addEventListener('change', applyFilters);
+</script>
+{% endblock %}

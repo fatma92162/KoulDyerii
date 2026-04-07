@@ -3,63 +3,81 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Commande;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: LivraisonRepository::class)]
+#[ORM\Table(name: 'livraison')]
 class Livraison
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "idLivraison", type: "integer")]
-    private int $idLivraison;
+    #[ORM\Column(type: 'integer')]
+    private ?int $idLivraison = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $adresse;
-
-    #[ORM\Column(type: "string", length: 50)]
-    private string $statutLivraison;
-
-    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: "livraisons")]
-    #[ORM\JoinColumn(name: 'idCommande', referencedColumnName: 'idCommande', onDelete: 'CASCADE')]
-    private Commande $idCommande;
-
-    public function getIdLivraison()
+    public function getIdLivraison(): ?int
     {
         return $this->idLivraison;
     }
 
-    public function setIdLivraison($value)
+    public function setIdLivraison(?int $idLivraison): self
     {
-        $this->idLivraison = $value;
+        $this->idLivraison = $idLivraison;
+        return $this;
     }
 
-    public function getAdresse()
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $adresse = null;
+
+    public function getAdresse(): ?string
     {
         return $this->adresse;
     }
 
-    public function setAdresse($value)
+    public function setAdresse(?string $adresse): self
     {
-        $this->adresse = $value;
+        $this->adresse = $adresse;
+        return $this;
     }
 
-    public function getStatutLivraison()
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $statutLivraison = null;
+
+    public function getStatutLivraison(): ?string
     {
         return $this->statutLivraison;
     }
 
-    public function setStatutLivraison($value)
+    public function setStatutLivraison(?string $statutLivraison): self
     {
-        $this->statutLivraison = $value;
+        $this->statutLivraison = $statutLivraison;
+        return $this;
     }
 
-    public function getIdCommande()
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $idCommande = null;
+
+    public function getIdCommande(): ?int
     {
         return $this->idCommande;
     }
 
-    public function setIdCommande($value)
+    public function setIdCommande(?int $idCommande): self
     {
-        $this->idCommande = $value;
+        $this->idCommande = $idCommande;
+        return $this;
     }
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $idLivreur = null;
+
+    public function getIdLivreur(): ?int
+    {
+        return $this->idLivreur;
+    }
+
+    public function setIdLivreur(?int $idLivreur): self
+    {
+        $this->idLivreur = $idLivreur;
+        return $this;
+    }
+
 }

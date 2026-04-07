@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Repository;
+namespace App\Entity;
 
-use App\Entity\Pointfidelite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Pointfidelite>
+ */
 class PointfideliteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,5 +15,28 @@ class PointfideliteRepository extends ServiceEntityRepository
         parent::__construct($registry, Pointfidelite::class);
     }
 
-    // Add custom methods as needed
+    //    /**
+    //     * @return Pointfidelite[] Returns an array of Pointfidelite objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('p.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Pointfidelite
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }

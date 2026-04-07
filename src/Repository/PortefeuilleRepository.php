@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Repository;
+namespace App\Entity;
 
-use App\Entity\Portefeuille;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Portefeuille>
+ */
 class PortefeuilleRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,5 +15,28 @@ class PortefeuilleRepository extends ServiceEntityRepository
         parent::__construct($registry, Portefeuille::class);
     }
 
-    // Add custom methods as needed
+    //    /**
+    //     * @return Portefeuille[] Returns an array of Portefeuille objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('p.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Portefeuille
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }

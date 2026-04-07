@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Article{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Article</h1>
+    <table class="table">
+        <tbody>
+            <tr><th>Id</th><td>{{ post.id }}</td></tr>
+            <tr><th>Titre</th><td>{{ post.title }}</td></tr>
+            <tr><th>Contenu</th><td>{{ post.content }}</td></tr>
+            <tr><th>Image</th>
+                <td>{% if post.imagePath %}<img src="{{ asset('uploads/' ~ post.imagePath) }}" width="100">{% else %}—{% endif %}</td>
+            </tr>
+            <tr><th>Créé le</th><td>{{ post.createdAt ? post.createdAt|date('Y-m-d H:i:s') : '' }}</td></tr>
+        </tbody>
+    </table>
+    <a href="{{ path('admin_post_index') }}" class="btn btn-secondary">Retour à la liste</a>
+    <a href="{{ path('admin_post_edit', {'id': post.id}) }}" class="btn btn-primary">Modifier</a>
+    {{ include('post_crud/_delete_form.html.twig') }}
+</div>
+{% endblock %}
