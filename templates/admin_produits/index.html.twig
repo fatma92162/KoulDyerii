@@ -1,0 +1,223 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des produits{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.1);
+    }
+    
+    .stat-card.active {
+        border-color: var(--bordeaux);
+        background: var(--beige-clair);
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--bordeaux);
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .filter-bar {
+        background: var(--beige-clair);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid var(--beige-fonce);
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        border: 1px solid var(--beige-fonce);
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .product-image {
+        height: 180px;
+        object-fit: cover;
+        width: 100%;
+    }
+    
+    .product-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--bordeaux);
+    }
+    
+    .badge-disponible {
+        background: #4CAF50;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+    
+    .badge-indisponible {
+        background: #f44336;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📦 Gestion des produits</h3>
+        <a href="{{ path('app_admin_produits_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un produit
+        </a>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card {% if disponible == '' %}active{% endif %}" onclick="filterByDisponible('')">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total produits</div>
+        </div>
+        <div class="stat-card {% if disponible == 'disponible' %}active{% endif %}" onclick="filterByDisponible('disponible')">
+            <div class="stat-number">{{ stats.disponibles }}</div>
+            <div class="stat-label">✅ Disponibles</div>
+        </div>
+        <div class="stat-card {% if disponible == 'indisponible' %}active{% endif %}" onclick="filterByDisponible('indisponible')">
+            <div class="stat-number">{{ stats.indisponibles }}</div>
+            <div class="stat-label">❌ Indisponibles</div>
+        </div>
+    </div>
+
+    <!-- Barre de filtres -->
+    <div class="filter-bar">
+        <form method="get" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="🔍 Rechercher un produit..." 
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="disponible" class="form-select" onchange="this.form.submit()">
+                        <option value="">📊 Tous les produits</option>
+                        <option value="disponible" {% if disponible == 'disponible' %}selected{% endif %}>✅ Disponibles</option>
+                        <option value="indisponible" {% if disponible == 'indisponible' %}selected{% endif %}>❌ Indisponibles</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>📅 Plus récents</option>
+                        <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>📅 Plus anciens</option>
+                        <option value="nom_asc" {% if sort == 'nom_asc' %}selected{% endif %}>🔤 Nom A→Z</option>
+                        <option value="nom_desc" {% if sort == 'nom_desc' %}selected{% endif %}>🔤 Nom Z→A</option>
+                        <option value="prix_asc" {% if sort == 'prix_asc' %}selected{% endif %}>💰 Prix croissant</option>
+                        <option value="prix_desc" {% if sort == 'prix_desc' %}selected{% endif %}>💰 Prix décroissant</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ path('app_admin_produits_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> Réinitialiser les filtres
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row">
+        {% for produit in produits %}
+        <div class="col-md-4">
+            <div class="product-card">
+                {% if produit.photo %}
+                    <img src="{{ produit.photo }}" class="product-image" alt="{{ produit.nom }}">
+                {% else %}
+                    <div class="product-image d-flex align-items-center justify-content-center" style="background: var(--beige);">
+                        <i class="fas fa-box" style="font-size: 48px; color: var(--bordeaux);"></i>
+                    </div>
+                {% endif %}
+                <div class="p-3">
+                    <h5 class="mb-2">{{ produit.nom }}</h5>
+                    <p class="text-muted small">{{ produit.description|slice(0, 80) }}...</p>
+                    <div class="product-price mb-2">{{ produit.prix|number_format(2, ',', ' ') }} €</div>
+                    <div class="mb-3">
+                        {% if produit.disponible %}
+                            <span class="badge-disponible">✅ Disponible</span>
+                        {% else %}
+                            <span class="badge-indisponible">❌ Indisponible</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('app_admin_produits_edit', {id: produit.idProduit, search: search, disponible: disponible, sort: sort}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form action="{{ path('app_admin_produits_delete', {id: produit.idProduit}) }}" method="post" style="display: inline-block;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer {{ produit.nom }} ?')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> Aucun produit trouvé.
+                <a href="{{ path('app_admin_produits_new') }}" class="alert-link">Ajouter un produit</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function filterByDisponible(value) {
+    const url = new URL(window.location.href);
+    if (value) {
+        url.searchParams.set('disponible', value);
+    } else {
+        url.searchParams.delete('disponible');
+    }
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

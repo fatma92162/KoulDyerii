@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Produits - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .products-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 60px 0;
+        text-align: center;
+        color: white;
+        margin-bottom: 50px;
+    }
+
+    .product-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid #E8D5B7;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(139, 0, 0, 0.15);
+    }
+
+    .product-image {
+        height: 250px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .product-image-placeholder {
+        height: 250px;
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .product-price {
+        font-size: 28px;
+        font-weight: bold;
+        color: #8B0000;
+    }
+
+    .btn-panier {
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 600;
+    }
+
+    .qty-input {
+        border: 2px solid #E8D5B7;
+        border-radius: 50px;
+        text-align: center;
+        font-weight: 600;
+        max-width: 100px;
+        margin: 0 auto;
+    }
+
+    .cart-top-bar {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="products-header">
+    <div class="container">
+        <h1><i class="fas fa-store"></i> Nos Produits</h1>
+        <p class="lead">Découvrez notre sélection de produits artisanaux</p>
+    </div>
+</div>
+
+<div class="container cart-top-bar text-end">
+    <a href="{{ path('app_panier_index') }}" class="btn btn-dark">
+        <i class="fas fa-shopping-basket"></i> Voir Panier
+    </a>
+</div>
+
+<div class="container mb-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        {% for produit in produits %}
+            <div class="col-md-4">
+                <div class="card product-card h-100">
+                    {% if produit.photo %}
+                        <img src="{{ produit.photo }}" class="card-img-top product-image" alt="{{ produit.nom }}">
+                    {% else %}
+                        <div class="product-image-placeholder">
+                            <i class="fas fa-utensils fa-4x"></i>
+                        </div>
+                    {% endif %}
+
+                    <div class="card-body">
+                        <h5 class="card-title">{{ produit.nom }}</h5>
+                        <p class="card-text text-muted">
+                            {{ produit.description|slice(0, 100) }}{% if produit.description|length > 100 %}...{% endif %}
+                        </p>
+                        <div class="product-price">{{ produit.prix|number_format(2, ',', ' ') }} €</div>
+                        <div class="mt-3">
+                            <span class="badge bg-success">✅ Disponible</span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white">
+                        <form method="post" action="{{ path('app_panier_add', {id: produit.idProduit}) }}">
+                            <div class="mb-3 text-center">
+                                <label for="quantite_{{ produit.idProduit }}" class="form-label fw-bold">Quantité</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value="1"
+                                    name="quantite"
+                                    id="quantite_{{ produit.idProduit }}"
+                                    class="form-control qty-input"
+                                >
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-danger btn-panier w-100">
+                                <i class="fas fa-cart-plus"></i> Ajouter au panier
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> Aucun produit disponible pour le moment.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "wbshd2gcag");
+</script>
+{% endblock %}

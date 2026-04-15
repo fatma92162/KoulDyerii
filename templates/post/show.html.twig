@@ -1,0 +1,492 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.title }} | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .post-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 30px;
+    }
+
+    .post-card.pinned {
+        border-left: 5px solid #5bc0de;
+        background: #f8fcff;
+    }
+
+    .pin-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #5bc0de;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid #f0e6d6;
+    }
+
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .author-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-content {
+        padding: 25px;
+        font-size: 15.5px;
+        line-height: 1.7;
+        color: #444;
+    }
+
+    .post-image {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+    }
+
+    .post-actions {
+        padding: 15px 25px;
+        border-top: 1px solid #f0e6d6;
+    }
+
+    .btn-like {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 8px 22px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #999;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-like:hover,
+    .btn-like.reacted {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+        background: #fff0f0;
+    }
+
+    .btn-pin {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 6px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #5bc0de;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-pin:hover {
+        border-color: #5bc0de;
+        color: #5bc0de;
+        background: #f0f8ff;
+    }
+
+    .btn-pin.pinned {
+        border-color: #5bc0de;
+        color: white;
+        background: #5bc0de;
+    }
+
+    .comment-card {
+        background: white;
+        border-radius: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        transition: all 0.2s ease;
+    }
+
+    .comment-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px 10px;
+    }
+
+    .comment-body {
+        padding: 0 20px 15px;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .comment-like {
+        padding: 12px 20px;
+        border-top: 1px solid #f0e6d6;
+    }
+
+    .btn-comment-like {
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: #999;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 50px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-comment-like:hover,
+    .btn-comment-like.reacted {
+        background: #fff0f0;
+        color: #FF6B6B;
+    }
+
+    .comment-actions button {
+        background: none;
+        border: none;
+        font-size: 15px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .btn-edit-comment { color: #f0ad4e; }
+    .btn-edit-comment:hover { color: #ec971f; background: #fff8f0; }
+
+    .btn-delete-comment { color: #d9534f; }
+    .btn-delete-comment:hover { color: #c9302c; background: #fff0f0; }
+
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-color: #fff0f0;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+
+            <a href="{{ path('app_posts_index') }}" class="btn btn-outline-secondary mb-4">
+                <i class="fas fa-arrow-left"></i> Retour au fil d'actualité
+            </a>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+
+            <!-- Carte du Post -->
+            <div class="post-card {% if post.isPinned %}pinned{% endif %}">
+                {% if post.isPinned %}
+                    <div class="pin-badge">
+                        <i class="fas fa-thumbtack"></i> Épinglé
+                    </div>
+                {% endif %}
+
+                <div class="post-header">
+                    <div class="author-info">
+                        <div class="author-avatar">
+                            {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
+                                <img src="{{ post.utilisateur.photo }}" alt="Photo">
+                            {% else %}
+                                <strong>{{ post.utilisateur.nom|first|upper }}</strong>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ post.utilisateur.nom }}</strong>
+                            <small class="text-muted d-block">{{ post.createdAt|date('d/m/Y à H:i') }}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        {% if app.user %}
+                            <button class="btn-pin {% if post.isPinned %}pinned{% endif %}" 
+                                    onclick="togglePin({{ post.id }})"
+                                    id="pin-btn-{{ post.id }}">
+                                <i class="fas fa-thumbtack"></i>
+                                <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
+                            </button>
+                        {% endif %}
+
+                        {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 38px; height: 38px;">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_post_edit', {id: post.id}) }}">
+                                            <i class="fas fa-edit text-warning"></i> Modifier
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer cette publication ?')">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    <h2 class="mb-3">{{ post.title }}</h2>
+                    <p>{{ post.content|nl2br }}</p>
+                </div>
+
+                {% if post.imagePath %}
+                    <img src="{{ post.imagePath }}" class="post-image" alt="Image du post">
+                {% endif %}
+
+                <div class="post-actions">
+                    <button class="btn-like {% if userLikedPost %}reacted{% endif %}"
+                            onclick="togglePostLike({{ post.id }})"
+                            id="post-like-btn-{{ post.id }}">
+                        <span id="post-like-emoji-{{ post.id }}">{% if userLikedPost %}❤️{% else %}👍{% endif %}</span>
+                        <span id="post-like-count-{{ post.id }}">{{ postLikesCount|default(0) }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Commentaires -->
+            <h4 class="mb-3 mt-4">💬 Commentaires ({{ commentaires|length }})</h4>
+
+            {% for commentaire in commentaires %}
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div class="d-flex align-items-center">
+                            <div class="author-avatar" style="width: 38px; height: 38px; font-size: 16px;">
+                                {% if commentaire.utilisateur.photo is defined and commentaire.utilisateur.photo %}
+                                    <img src="{{ commentaire.utilisateur.photo }}" alt="">
+                                {% else %}
+                                    <strong>{{ commentaire.utilisateur.nom|first|upper }}</strong>
+                                {% endif %}
+                            </div>
+                            <div class="ms-3">
+                                <strong>{{ commentaire.utilisateur.nom }}</strong>
+                                <small class="text-muted d-block">{{ commentaire.createdAt|date('d/m/Y à H:i') }}</small>
+                            </div>
+                        </div>
+
+                        {% if app.user and (commentaire.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                            <div class="comment-actions">
+                                <a href="{{ path('app_comment_edit', {id: commentaire.id}) }}" class="btn-edit-comment" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_comment_delete', {id: commentaire.id}) }}" 
+                                      onsubmit="return confirm('Supprimer ce commentaire ?')" style="display: inline;">
+                                    <button type="submit" class="btn-delete-comment" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="comment-body">
+                        <p class="mb-0">{{ commentaire.content|nl2br }}</p>
+                    </div>
+
+                    <div class="comment-like">
+                        <button class="btn-comment-like {% if userLikedComments[commentaire.id] is defined and userLikedComments[commentaire.id] %}reacted{% endif %}"
+                                onclick="toggleCommentLike({{ commentaire.id }})"
+                                id="comment-like-btn-{{ commentaire.id }}">
+                            <i class="fas fa-heart"></i>
+                            <span id="comment-like-count-{{ commentaire.id }}">{{ commentLikesCount[commentaire.id]|default(0) }}</span>
+                        </button>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm">
+                    <i class="fas fa-comment-dots fa-3x mb-3 opacity-50"></i>
+                    <p class="mb-0">Soyez le premier à commenter cette publication !</p>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire pour ajouter un commentaire avec validation -->
+            {% if app.user %}
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="mb-3">Ajouter un commentaire</h5>
+                        <form method="post" action="{{ path('app_post_comment', {id: post.id}) }}" novalidate>
+                            <div class="mb-3">
+                                <textarea name="content" 
+                                          class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
+                                          rows="4" 
+                                          placeholder="Écrivez votre commentaire ici..." 
+                                          required>{{ formData.content|default('') }}</textarea>
+                                {% if errors.content is defined %}
+                                    <div class="invalid-feedback">{{ errors.content }}</div>
+                                {% else %}
+                                    <small class="text-muted">Le commentaire doit contenir entre 2 et 1000 caractères.</small>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info mt-4 text-center">
+                    <i class="fas fa-info-circle"></i> 
+                    <a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a> pour pouvoir commenter.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePostLike(postId) {
+    fetch(`/posts/${postId}/like`, {
+        method: 'POST',
+        headers: { 
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('post-like-count-' + postId);
+            const emojiEl = document.getElementById('post-like-emoji-' + postId);
+            const btn = document.getElementById('post-like-btn-' + postId);
+
+            if (countEl) countEl.textContent = data.count;
+            if (emojiEl && btn) {
+                if (data.liked) {
+                    emojiEl.textContent = '❤️';
+                    btn.classList.add('reacted');
+                } else {
+                    emojiEl.textContent = '👍';
+                    btn.classList.remove('reacted');
+                }
+            }
+        }
+    })
+    .catch(err => console.error('Erreur like post:', err));
+}
+
+function toggleCommentLike(commentId) {
+    fetch(`/posts/comment/${commentId}/like`, {
+        method: 'POST',
+        headers: { 
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('comment-like-count-' + commentId);
+            const btn = document.getElementById('comment-like-btn-' + commentId);
+
+            if (countEl) countEl.textContent = data.count;
+            if (btn && data.liked) {
+                btn.classList.add('reacted');
+            } else if (btn) {
+                btn.classList.remove('reacted');
+            }
+        }
+    })
+    .catch(err => console.error('Erreur like commentaire:', err));
+}
+
+function togglePin(postId) {
+    fetch(`/posts/${postId}/pin`, {
+        method: 'POST',
+        headers: { 
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(err => {
+        console.error('Erreur pin:', err);
+        alert('Erreur de connexion');
+    });
+}
+</script>
+{% endblock %}

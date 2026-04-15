@@ -1,0 +1,248 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Détails de la commande #{{ commande.id }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 20px 25px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 25px;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #E8D5B7;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .info-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #8B0000;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #E8D5B7;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 1px dashed #f0e6d6;
+    }
+    
+    .info-label {
+        width: 150px;
+        font-weight: 600;
+        color: #555;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #333;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .status-en_attente {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .status-acceptee {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-refusee {
+        background: #f44336;
+        color: white;
+    }
+    
+    .status-annulee {
+        background: #9E9E9E;
+        color: white;
+    }
+    
+    .product-image {
+        max-width: 200px;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .btn-action {
+        padding: 10px 25px;
+        border-radius: 50px;
+        margin-right: 10px;
+    }
+    
+    .btn-accepter {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        border: none;
+        color: white;
+    }
+    
+    .btn-refuser {
+        background: linear-gradient(135deg, #f44336, #da190b);
+        border: none;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>🛒 Détails de la commande #{{ commande.id }}</h3>
+        <a href="{{ path('app_admin_commandes_index', {status: status, search: search, sort: sort}) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="detail-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1">Commande #{{ commande.id }}</h4>
+                <p class="mb-0">Date: {{ commande.createdAt|date('d/m/Y H:i') }}</p>
+            </div>
+            <div>
+                <span class="status-badge status-{{ commande.status }}">
+                    {% if commande.status == 'en_attente' %}
+                        ⏳ En attente
+                    {% elseif commande.status == 'acceptee' %}
+                        ✅ Acceptée
+                    {% elseif commande.status == 'refusee' %}
+                        ❌ Refusée
+                    {% elseif commande.status == 'annulee' %}
+                        🚫 Annulée
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Informations client -->
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-user"></i> Informations client
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Nom complet :</div>
+                    <div class="info-value">{{ commande.customerName }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Téléphone :</div>
+                    <div class="info-value">{{ commande.phone }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Adresse de livraison :</div>
+                    <div class="info-value">{{ commande.location }}</div>
+                </div>
+            </div>
+
+            <!-- Informations produit -->
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-box"></i> Informations produit
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Nom du produit :</div>
+                    <div class="info-value">{{ produit.nom|default('Produit #' ~ commande.productId) }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Prix unitaire :</div>
+                    <div class="info-value">{{ produit.prix|default(0)|number_format(2, ',', ' ') }} €</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Quantité :</div>
+                    <div class="info-value">1</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Total :</div>
+                    <div class="info-value"><strong>{{ produit.prix|default(0)|number_format(2, ',', ' ') }} €</strong></div>
+                </div>
+                {% if produit.description %}
+                <div class="info-row">
+                    <div class="info-label">Description :</div>
+                    <div class="info-value">{{ produit.description }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <!-- Image du produit -->
+            {% if produit.photo %}
+            <div class="info-card text-center">
+                <div class="info-title">
+                    <i class="fas fa-image"></i> Photo du produit
+                </div>
+                <img src="{{ produit.photo }}" class="product-image" alt="{{ produit.nom }}">
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-cog"></i> Actions
+                </div>
+                <div class="text-center">
+                    {% if commande.status == 'en_attente' %}
+                        <form action="{{ path('app_admin_commandes_accepter', {id: commande.id}) }}" method="post" style="display: inline-block;">
+                            <input type="hidden" name="status" value="{{ status }}">
+                            <input type="hidden" name="search" value="{{ search }}">
+                            <input type="hidden" name="sort" value="{{ sort }}">
+                            <button type="submit" class="btn btn-action btn-accepter" onclick="return confirm('Accepter cette commande ?')">
+                                <i class="fas fa-check"></i> Accepter la commande
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-action btn-refuser" data-bs-toggle="modal" data-bs-target="#refuseModal">
+                            <i class="fas fa-times"></i> Refuser la commande
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Refuser -->
+<div class="modal fade" id="refuseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ path('app_admin_commandes_refuser', {id: commande.id}) }}" method="post">
+                <input type="hidden" name="status" value="{{ status }}">
+                <input type="hidden" name="search" value="{{ search }}">
+                <input type="hidden" name="sort" value="{{ sort }}">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Refuser la commande #{{ commande.id }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="motif" class="form-label">Motif du refus (optionnel)</label>
+                    <textarea name="motif" id="motif" class="form-control" rows="3" placeholder="Expliquez la raison du refus..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Confirmer le refus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

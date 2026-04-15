@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formations - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 60px 0;
+        text-align: center;
+        color: white;
+        margin-bottom: 50px;
+    }
+    
+    .formation-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+    
+    .formation-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(139, 0, 0, 0.2);
+    }
+    
+    .formation-header {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        padding: 20px;
+    }
+    
+    .formation-price {
+        font-size: 28px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+    
+    .btn-inscrire {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .btn-inscrire:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .status-en_cours {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .status-termine {
+        background: #4CAF50;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-graduation-cap"></i> Nos Formations</h1>
+        <p class="lead">Développez vos compétences culinaires avec nos experts</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    <div class="row">
+        {% for formation in formations %}
+        <div class="col-md-4">
+            <div class="formation-card">
+                <div class="formation-header">
+                    <h4 class="mb-2">{{ formation.titre }}</h4>
+                    <span class="status-badge status-{{ formation.statut }}">
+                        {% if formation.statut == 'en_cours' %}
+                            🟢 En cours
+                        {% elseif formation.statut == 'termine' %}
+                            ✅ Terminé
+                        {% else %}
+                            ⚪ {{ formation.statut }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="p-4">
+                    <p class="text-muted">{{ formation.description|slice(0, 120) }}...</p>
+                    <div class="formation-price text-center mb-3">
+                        {{ formation.prix|number_format(2, ',', ' ') }} €
+                    </div>
+                    <a href="{{ path('app_formations_show', {id: formation.idFormation}) }}" class="btn-inscrire">
+                        <i class="fas fa-info-circle"></i> Voir les détails
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i> Aucune formation disponible pour le moment.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

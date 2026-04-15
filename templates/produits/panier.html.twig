@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Panier - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .panier-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 50px 0;
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+    }
+
+    .panier-card {
+        border: 1px solid #E8D5B7;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+
+    .panier-total {
+        font-size: 28px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+
+    .btn-theme {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 18px;
+        font-weight: 700;
+        transition: opacity 0.3s ease;
+    }
+
+    .btn-theme:hover {
+        color: white;
+        opacity: 0.95;
+    }
+
+    .product-thumb {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .qty-input {
+        max-width: 90px;
+        text-align: center;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="panier-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-basket"></i> Mon Panier</h1>
+        <p class="lead">Retrouvez les produits ajoutés</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% if panier is empty %}
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+            <h3>Votre panier est vide</h3>
+            <p class="mb-4">Découvrez nos produits !</p>
+            <a href="{{ path('app_produits_index') }}" class="btn btn-theme">
+                <i class="fas fa-arrow-left"></i> Retour aux produits
+            </a>
+        </div>
+    {% else %}
+        {% for item in panier %}
+            <div class="card panier-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            {% if item.produit.photo %}
+                                <img src="{{ item.produit.photo }}" alt="{{ item.produit.nom }}" class="product-thumb">
+                            {% else %}
+                                <div class="bg-light rounded p-4 d-inline-block">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-3">
+                            <h5>{{ item.produit.nom }}</h5>
+                            <p class="text-muted mb-0">
+                                {{ item.produit.description|slice(0, 80) }}{% if item.produit.description|length > 80 %}...{% endif %}
+                            </p>
+                            <small class="text-muted">
+                                Prix unitaire : {{ item.produit.prix|number_format(2, ',', ' ') }} €
+                            </small>
+                        </div>
+
+                        <div class="col-md-2 text-center">
+                            <form method="post" action="{{ path('app_panier_update', {id: item.produit.idProduit}) }}">
+                                <label class="fw-bold mb-2 d-block">Quantité</label>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <input type="number" min="1" name="quantite" value="{{ item.quantite }}" class="form-control qty-input">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-md-2 text-center">
+                            <strong class="fs-5">{{ item.sousTotal|number_format(2, ',', ' ') }} €</strong>
+                        </div>
+
+                        <div class="col-md-3 text-center">
+                            <form method="post" action="{{ path('app_panier_remove', {id: item.produit.idProduit}) }}" onsubmit="return confirm('Voulez-vous vraiment retirer ce produit du panier ?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="card panier-card mt-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="panier-total">
+                            Total : {{ total|number_format(2, ',', ' ') }} €
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                            <form method="post" action="{{ path('app_panier_clear') }}" onsubmit="return confirm('Voulez-vous vraiment vider votre panier ?');">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash-alt"></i> Vider le panier
+                                </button>
+                            </form>
+
+                            <a href="{{ path('app_produits_index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-plus"></i> Continuer mes achats
+                            </a>
+
+                            <button type="button" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#commandePanierModal">
+                                <i class="fas fa-shopping-cart"></i> Commander tout le panier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="commandePanierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-shopping-cart"></i> Commander tout le panier
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post" action="{{ path('app_panier_commander') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" class="form-control" name="customer_name" value="{{ app.user ? app.user.nom : '' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" class="form-control" name="phone" pattern="[0-9+\-\s]+" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adresse de livraison</label>
+                        <textarea class="form-control" name="location" rows="3" required></textarea>
+                    </div>
+
+                    <div class="alert alert-light">
+                        <strong>Total panier :</strong> {{ total|number_format(2, ',', ' ') }} €
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        {% if panier|length == 1 %}
+                            1 produit sera commandé
+                        {% else %}
+                            {{ panier|length }} produits seront commandés
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-theme">
+                        <i class="fas fa-check-circle"></i> Confirmer la commande complète
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

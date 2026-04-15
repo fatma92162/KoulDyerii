@@ -1,0 +1,1310 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des commandes{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.reco-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.reco-kill {
+    background: #ffe0e0;
+    color: #b42318;
+}
+
+.reco-test {
+    background: #fff2cc;
+    color: #946200;
+}
+
+.reco-scale {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.scale-helper-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #8B0000;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.scale-helper-link:hover {
+    color: #6e0000;
+}
+
+.scale-helper-box {
+    margin-top: 18px;
+    background: #fff7f2;
+    border: 1px solid #ead9d2;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.scale-helper-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #8B0000;
+    margin-bottom: 12px;
+}
+
+.scale-helper-result {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.scale-result-good {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.scale-result-warn {
+    background: #fff7cc;
+    color: #8a6d00;
+}
+
+.scale-result-stop {
+    background: #ffe0e0;
+    color: #b42318;
+}
+
+    .orders-shell {
+        color: #2c1a1d;
+    }
+
+    .top-actions-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .top-actions-bar h3 {
+        margin: 0;
+        font-weight: 800;
+        color: #7b1e2b;
+    }
+
+    .top-actions-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .performance-card {
+        background: linear-gradient(135deg, #7b1e2b 0%, #a83232 100%);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .performance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .performance-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #fff5eb;
+    }
+
+    .performance-legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 14px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #f4ddd0;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .legend-dot-confirmed {
+        background: #57d37c;
+    }
+
+    .legend-dot-rejected {
+        background: #ff6c6c;
+    }
+
+    .performance-bar {
+        width: 100%;
+        height: 56px;
+        background: #ead7d2;
+        border-radius: 999px;
+        overflow: hidden;
+        display: flex;
+        margin-bottom: 18px;
+    }
+
+    .performance-bar-confirmed {
+        background: linear-gradient(90deg, #6f9f36 0%, #87b946 100%);
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+        min-width: 0;
+    }
+
+    .performance-bar-rejected {
+        background: #ead7d2;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+        min-width: 0;
+    }
+
+    .bar-pill {
+        background: #fff7f2;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 15px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .bar-pill.confirmed {
+        color: #5e8a24;
+    }
+
+    .bar-pill.rejected {
+        color: #d84c4c;
+    }
+
+    .mini-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .mini-stat {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .mini-stat-label {
+        display: block;
+        font-size: 13px;
+        color: #f2d7ca;
+        margin-bottom: 4px;
+    }
+
+    .mini-stat-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: white;
+    }
+
+    .online-visitors-value {
+        color: #8B0000 !important;
+    }
+
+    .mini-stat-note {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: #888;
+    }
+
+    .device-stats {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        text-align: left;
+    }
+
+    .device-block {
+        margin-top: 10px;
+    }
+
+    .device-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        margin-bottom: 6px;
+        color: #5C4033;
+    }
+
+    .device-top strong {
+        color: #8B0000;
+        font-weight: 800;
+    }
+
+    .device-track {
+        width: 100%;
+        height: 10px;
+        background: rgba(92, 64, 51, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .device-fill {
+        height: 100%;
+        border-radius: 999px;
+        min-width: 0;
+    }
+
+    .device-fill-pc {
+        background: linear-gradient(90deg, #57d37c 0%, #87d68d 100%);
+    }
+
+    .device-fill-mobile {
+        background: linear-gradient(90deg, #ff7b7b 0%, #ff9a9a 100%);
+    }
+
+    .toolbar-card {
+        background: #fff7f0;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 18px;
+    }
+
+    .form-control,
+    .form-select {
+        background: #ffffff;
+        border: 1px solid #e3cfc7;
+        color: #2c1a1d;
+    }
+
+    .toolbar-card .form-control::placeholder {
+        color: #a9a0b3;
+    }
+
+    .toolbar-card .btn-reset {
+        height: 46px;
+        border-radius: 12px;
+        background: #6d7683;
+        color: white;
+        border: none;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .table-card {
+        background: #110015;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .orders-table {
+        width: 100%;
+        margin-bottom: 0;
+        color: #fff;
+    }
+
+    .orders-table thead th {
+        background: #7b1e2b;
+        color: white;
+    }
+
+    .orders-table tbody tr:hover {
+        background: rgba(255,255,255,0.02);
+    }
+
+    .orders-table td {
+        padding: 14px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 160px;
+    }
+
+    .product-thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #24102d;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .product-fallback {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #24102d;
+        color: #ddd;
+        font-size: 14px;
+    }
+
+    .btn-calculator {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 6px 18px rgba(139, 0, 0, 0.15);
+    }
+
+    .btn-calculator:hover {
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(139, 0, 0, 0.22);
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-en_attente {
+        background: #ffe6a7;
+        color: #8a6d00;
+    }
+
+    .status-acceptee {
+        background: #d4f4dd;
+        color: #1c7c3c;
+    }
+
+    .status-refusee {
+        background: #ffd6d6;
+        color: #a11c1c;
+    }
+
+    .status-annulee {
+        background: #eee;
+        color: #666;
+    }
+
+    .actions-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        background: #ffffff;
+        border: 1px solid #e3cfc7;
+        color: #7b1e2b;
+        border-radius: 10px;
+        padding: 8px 11px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-btn:hover {
+        background: #7b1e2b;
+        color: white;
+    }
+
+    .inline-form {
+        display: inline-block;
+        margin: 0;
+    }
+
+    .flash-dark {
+        border-radius: 14px;
+        border: none;
+    }
+
+    .advanced-stat-value {
+        font-size: 28px;
+        font-weight: 900;
+        color: #8B0000;
+    }
+
+    .advanced-stat-label {
+        font-size: 13px;
+        color: #6b4a4a;
+        font-weight: 700;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .advanced-stat-card {
+        background: #fff7f2;
+        border: 1px solid #ead9d2;
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        height: 100%;
+    }
+
+    .advanced-modal-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        color: white;
+    }
+
+    .advanced-modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+{% set pcPercentage = deviceStats.pc_percentage|default(0) %}
+{% set mobilePercentage = deviceStats.mobile_percentage|default(0) %}
+
+<div class="top-actions-bar">
+    <h3>🛒 Gestion des commandes</h3>
+
+    <div class="top-actions-buttons">
+        <a href="{{ path('app_admin_commandes_calculator') }}" class="btn btn-calculator">
+            <i class="fas fa-calculator"></i> Calculator
+        </a>
+
+        <button type="button" class="btn btn-calculator" data-bs-toggle="modal" data-bs-target="#advancedStatsModal">
+            <i class="fas fa-chart-line"></i> Stat avancée
+        </button>
+
+        <a href="{{ path('app_admin_commandes_export_lookalike') }}" class="btn btn-calculator">
+            <i class="fas fa-file-excel"></i> Create Lookalike
+        </a>
+    </div>
+</div>
+
+<div class="orders-shell">
+    <div class="performance-card">
+        <div class="performance-header">
+            <div class="performance-title">📊 Performance des commandes</div>
+
+            <div class="performance-legend">
+                <span class="legend-item">
+                    <span class="legend-dot legend-dot-confirmed"></span>
+                    Confirmées <strong>{{ stats.pourcentage_acceptee }}%</strong>
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot legend-dot-rejected"></span>
+                    Refusées <strong>{{ stats.pourcentage_refusee }}%</strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="performance-bar">
+            <div class="performance-bar-confirmed" style="width: {{ stats.pourcentage_acceptee }}%;">
+                {% if stats.pourcentage_acceptee > 0 %}
+                    <span class="bar-pill confirmed">✅ {{ stats.pourcentage_acceptee }}%</span>
+                {% endif %}
+            </div>
+            <div class="performance-bar-rejected" style="width: {{ stats.pourcentage_refusee }}%;">
+                {% if stats.pourcentage_refusee > 0 %}
+                    <span class="bar-pill rejected">❌ {{ stats.pourcentage_refusee }}%</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mini-stats">
+            <div class="mini-stat">
+                <span class="mini-stat-label">Total</span>
+                <span class="mini-stat-value">{{ stats.total }}</span>
+            </div>
+
+            <div class="mini-stat">
+                <span class="mini-stat-label">En attente</span>
+                <span class="mini-stat-value">{{ stats.en_attente }}</span>
+            </div>
+
+            <div class="mini-stat">
+                <span class="mini-stat-label">Acceptées</span>
+                <span class="mini-stat-value">{{ stats.acceptee }}</span>
+            </div>
+
+            <div class="mini-stat">
+                <span class="mini-stat-label">Refusées</span>
+                <span class="mini-stat-value">{{ stats.refusee }}</span>
+            </div>
+
+            <div class="mini-stat">
+                <span class="mini-stat-label">Annulées</span>
+                <span class="mini-stat-value">{{ stats.annulee }}</span>
+            </div>
+
+            <div class="mini-stat">
+                <span class="mini-stat-label">Visiteurs en ligne</span>
+                <span class="mini-stat-value online-visitors-value" id="online-visitors-count">{{ onlineVisitors }}</span>
+                <small class="mini-stat-note">Actifs durant les 5 dernières minutes</small>
+
+                <div class="device-stats">
+                    <div class="device-block">
+                        <div class="device-top">
+                            <span>💻 PC</span>
+                            <strong>{{ pcPercentage }}%</strong>
+                        </div>
+                        <div class="device-track">
+                            <div class="device-fill device-fill-pc" style="width: {{ pcPercentage }}%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="device-block">
+                        <div class="device-top">
+                            <span>📱 Mobile</span>
+                            <strong>{{ mobilePercentage }}%</strong>
+                        </div>
+                        <div class="device-track">
+                            <div class="device-fill device-fill-mobile" style="width: {{ mobilePercentage }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar-card">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Search client, téléphone, produit..."
+                        value="{{ search }}"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tous les statuts</option>
+                        <option value="en_attente" {% if status == 'en_attente' %}selected{% endif %}>Pending</option>
+                        <option value="acceptee" {% if status == 'acceptee' %}selected{% endif %}>Accepted</option>
+                        <option value="refusee" {% if status == 'refusee' %}selected{% endif %}>Rejected</option>
+                        <option value="annulee" {% if status == 'annulee' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Plus récentes</option>
+                        <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Plus anciennes</option>
+                        <option value="client_asc" {% if sort == 'client_asc' %}selected{% endif %}>Client A→Z</option>
+                        <option value="client_desc" {% if sort == 'client_desc' %}selected{% endif %}>Client Z→A</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <a href="{{ path('app_admin_commandes_index') }}" class="btn-reset w-100">
+                        <i class="fas fa-undo"></i> Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success flash-dark">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="alert alert-info flash-dark">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger flash-dark">{{ message }}</div>
+    {% endfor %}
+
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table orders-table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produits</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Delivery</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th style="min-width: 220px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td><strong>{{ commande.id }}</strong></td>
+
+                            <td>
+                                <div class="product-cell">
+                                    {% if commande.produit and commande.produit.photo is defined and commande.produit.photo %}
+                                        <img
+                                            src="/uploads/produits/{{ commande.produit.photo }}"
+                                            alt="{{ commande.produit.nom }}"
+                                            class="product-thumb"
+                                        >
+                                    {% else %}
+                                        <span class="product-fallback">📦</span>
+                                    {% endif %}
+                                    <div>
+                                        <div>{{ commande.produit.nom|default('Produit') }}</div>
+                                        <small class="text-secondary">x1</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>{{ commande.customerName }}</td>
+                            <td>{{ commande.createdAt|date('d M Y, H:i') }}</td>
+                            <td>{{ commande.location }}</td>
+
+                            <td>
+                                <span class="status-pill status-{{ commande.status }}">
+                                    {% if commande.status == 'en_attente' %}
+                                        Pending
+                                    {% elseif commande.status == 'acceptee' %}
+                                        Accepted
+                                    {% elseif commande.status == 'refusee' %}
+                                        Rejected
+                                    {% elseif commande.status == 'annulee' %}
+                                        Cancelled
+                                    {% endif %}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if commande.produit %}
+                                    {{ commande.produit.prix|number_format(2, ',', ' ') }} TND
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="actions-cell">
+                                    {% if commande.status == 'en_attente' %}
+                                        <form action="{{ path('app_admin_commandes_accepter', {id: commande.id}) }}" method="post" class="inline-form">
+                                            <input type="hidden" name="status" value="{{ status }}">
+                                            <input type="hidden" name="search" value="{{ search }}">
+                                            <input type="hidden" name="sort" value="{{ sort }}">
+                                            <button type="submit" class="icon-btn" title="Accepter">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ path('app_admin_commandes_refuser', {id: commande.id}) }}" method="post" class="inline-form">
+                                            <input type="hidden" name="status" value="{{ status }}">
+                                            <input type="hidden" name="search" value="{{ search }}">
+                                            <input type="hidden" name="sort" value="{{ sort }}">
+                                            <button type="submit" class="icon-btn" title="Refuser">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    <a
+                                        href="{{ path('app_admin_commandes_edit', {id: commande.id, status: status, search: search, sort: sort}) }}"
+                                        class="icon-btn"
+                                        title="Modifier"
+                                    >
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+
+                                    <form action="{{ path('app_admin_commandes_delete', {id: commande.id}) }}" method="post" class="inline-form" onsubmit="return confirm('Supprimer cette commande ?');">
+                                        <input type="hidden" name="status" value="{{ status }}">
+                                        <input type="hidden" name="search" value="{{ search }}">
+                                        <input type="hidden" name="sort" value="{{ sort }}">
+                                        <button type="submit" class="icon-btn" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">Aucune commande trouvée.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="advancedStatsModal" tabindex="-1" aria-labelledby="advancedStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header advanced-modal-header">
+                <h5 class="modal-title" id="advancedStatsModalLabel">
+                    <i class="fas fa-chart-line"></i> Stat avancée
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Référence campagne</label>
+                        <input type="text" id="advanced-campaign-ref" class="form-control" placeholder="Ex: Meta CBO 12 May">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Période</label>
+                        <select id="advanced-period" class="form-select">
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Dernière semaine</option>
+                            <option value="month">Dernier mois</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Montant dépensé</label>
+                        <input type="number" step="0.01" id="advanced-spent" class="form-control" value="0">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Dépenses pub</label>
+                        <input type="number" step="0.01" id="advanced-ads" class="form-control" value="0">
+                    </div>
+                </div>
+
+                <div class="text-center mb-4 d-flex justify-content-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-calculator" id="calculateAdvancedStatsBtn">
+                        <i class="fas fa-bolt"></i> Calculer
+                    </button>
+
+                    <button type="button" class="btn btn-calculator" id="saveCampaignComparisonBtn">
+                        <i class="fas fa-save"></i> Sauvegarder campagne
+                    </button>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="advanced-stat-card">
+                            <span class="advanced-stat-label">Revenue</span>
+                            <div class="advanced-stat-value" id="advanced-revenue">0.00</div>
+                            <small>TND</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="advanced-stat-card">
+                            <span class="advanced-stat-label">ROAS</span>
+                            <div class="advanced-stat-value" id="advanced-roas">0.00</div>
+                            <small>x</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="advanced-stat-card">
+                            <span class="advanced-stat-label">ROI</span>
+                            <div class="advanced-stat-value" id="advanced-roi">0.00</div>
+                            <small>%</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="advanced-stat-card">
+                            <span class="advanced-stat-label">Cmd acceptées</span>
+                            <div class="advanced-stat-value" id="advanced-count">0</div>
+                            <small>unités</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="advanced-stat-card mb-4" style="text-align:left;">
+                    <span class="advanced-stat-label">Recommandation</span>
+                    <div id="campaignRecommendationBox" style="font-weight:700; color:#5c4033;">
+                        Aucune recommandation pour le moment.
+                    </div>
+
+                    <div id="scaleHelperLinkContainer" style="display:none;">
+                        <span class="scale-helper-link" id="openScaleHelper">
+                            Click here to help scale this campaign
+                        </span>
+                    </div>
+                </div>
+
+                <div id="scaleHelperBox" class="scale-helper-box" style="display:none;">
+                    <div class="scale-helper-title">Scaling helper</div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Total budget</label>
+                            <input type="number" step="0.01" id="scale-total-budget" class="form-control" placeholder="Ex: 1000">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Daily ad spend</label>
+                            <input type="number" step="0.01" id="scale-daily-spend" class="form-control" placeholder="Ex: 50">
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-calculator" id="runScaleHelperBtn">
+                            <i class="fas fa-rocket"></i> Check scaling
+                        </button>
+                    </div>
+
+                    <div id="scaleHelperResult" class="scale-helper-result scale-result-warn" style="display:none;"></div>
+                </div>
+
+                <div class="advanced-stat-card" style="text-align:left;">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <span class="advanced-stat-label mb-0">Comparaison campagnes</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="clearCampaignComparisonsBtn">
+                            <i class="fas fa-trash"></i> Effacer tout
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0" style="background:white;">
+                            <thead>
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Période</th>
+                                    <th>Revenue</th>
+                                    <th>Spent</th>
+                                    <th>Ads</th>
+                                    <th>ROAS</th>
+                                    <th>ROI</th>
+                                    <th>Reco</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaignComparisonTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Aucune campagne sauvegardée.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getAdvancedRecommendation(roas, roi) {
+    if (roas < 1.5 || roi < 0) {
+        return {
+            label: 'Kill',
+            className: 'reco-kill',
+            text: 'Cette campagne est faible. Coupe-la ou refais complètement l’angle, la créa ou le ciblage.'
+        };
+    }
+
+    if ((roas >= 1.5 && roas < 2.5) || (roi >= 0 && roi < 30)) {
+        return {
+            label: 'Leave / Test',
+            className: 'reco-test',
+            text: 'Campagne correcte mais pas encore forte. Laisse tourner, teste nouvelles créas, hooks et audiences avant de scaler.'
+        };
+    }
+
+    return {
+        label: 'Scale',
+        className: 'reco-scale',
+        text: 'Bonne campagne. Tu peux scaler progressivement avec prudence: +10% à +20% budget, ou dupliquer sur nouveaux ensembles.'
+    };
+}
+
+function hideScaleHelper() {
+    const linkContainer = document.getElementById('scaleHelperLinkContainer');
+    const helperBox = document.getElementById('scaleHelperBox');
+    const resultBox = document.getElementById('scaleHelperResult');
+
+    if (linkContainer) linkContainer.style.display = 'none';
+    if (helperBox) helperBox.style.display = 'none';
+    if (resultBox) {
+        resultBox.style.display = 'none';
+        resultBox.innerHTML = '';
+        resultBox.className = 'scale-helper-result';
+    }
+}
+
+function showScaleHelperLink() {
+    const linkContainer = document.getElementById('scaleHelperLinkContainer');
+    if (linkContainer) {
+        linkContainer.style.display = 'block';
+    }
+}
+
+function evaluateScaling(totalBudget, dailySpend, roas, roi) {
+    const result = {
+        className: 'scale-result-warn',
+        title: '',
+        text: ''
+    };
+
+    if (totalBudget <= 0 || dailySpend <= 0) {
+        result.className = 'scale-result-stop';
+        result.title = 'Invalid values';
+        result.text = 'Add valid total budget and daily ad spend first.';
+        return result;
+    }
+
+    const budgetDaysLeft = totalBudget / dailySpend;
+    const spendRatio = (dailySpend / totalBudget) * 100;
+
+    let suggestedScalePercent = 0;
+
+    if (roas >= 4 && roi >= 40) {
+        suggestedScalePercent = 25;
+    } else if (roas >= 3 && roi >= 30) {
+        suggestedScalePercent = 20;
+    } else if (roas >= 2.5 && roi >= 20) {
+        suggestedScalePercent = 10;
+    } else {
+        suggestedScalePercent = 0;
+    }
+
+    const newDailySpend = dailySpend + (dailySpend * suggestedScalePercent / 100);
+    const newBudgetDaysLeft = newDailySpend > 0 ? totalBudget / newDailySpend : 0;
+
+    if (roas < 2 || roi < 10) {
+        result.className = 'scale-result-stop';
+        result.title = 'Stop scaling';
+        result.text = `
+            Current performance is not strong enough to continue scaling.<br>
+            ROAS/ROI are too weak for safe scaling.<br>
+            Recommendation: stop scaling now and improve creatives, offer, funnel, or targeting first.
+        `;
+        return result;
+    }
+
+    if (budgetDaysLeft < 3 || spendRatio >= 35) {
+        result.className = 'scale-result-stop';
+        result.title = 'Stop scaling';
+        result.text = `
+            Your budget is too tight compared to your current daily spend.<br>
+            Budget lasts only about <strong>${budgetDaysLeft.toFixed(1)} days</strong>.<br>
+            Recommendation: stop scaling now or add more total budget first.
+        `;
+        return result;
+    }
+
+    if (budgetDaysLeft >= 3 && budgetDaysLeft < 7) {
+        result.className = 'scale-result-warn';
+        result.title = 'Wait and monitor';
+        result.text = `
+            Campaign can run, but budget is limited.<br>
+            Budget lasts about <strong>${budgetDaysLeft.toFixed(1)} days</strong>.<br>
+            Best move: do not scale hard now. Watch results for 1–2 days before scaling again.
+        `;
+        return result;
+    }
+
+    if (suggestedScalePercent <= 0) {
+        result.className = 'scale-result-warn';
+        result.title = 'Wait before scaling again';
+        result.text = `
+            Campaign is decent, but not strong enough for another aggressive scale.<br>
+            Keep daily spend at <strong>${dailySpend.toFixed(2)} TND</strong> and monitor performance.
+        `;
+        return result;
+    }
+
+    result.className = 'scale-result-good';
+    result.title = 'Scale again';
+    result.text = `
+        Campaign looks strong enough to continue scaling.<br>
+        Suggested increase: <strong>+${suggestedScalePercent}%</strong><br>
+        Current daily spend: <strong>${dailySpend.toFixed(2)} TND</strong><br>
+        New suggested daily spend: <strong>${newDailySpend.toFixed(2)} TND</strong><br>
+        Estimated budget duration after scaling: <strong>${newBudgetDaysLeft.toFixed(1)} days</strong><br>
+        Recommendation: scale again carefully and monitor CPA, ROAS, and profit after the increase.
+    `;
+
+    return result;
+}
+
+function runScaleHelper() {
+    const totalBudget = parseFloat(document.getElementById('scale-total-budget')?.value) || 0;
+    const dailySpend = parseFloat(document.getElementById('scale-daily-spend')?.value) || 0;
+    const roas = parseFloat(document.getElementById('advanced-roas')?.textContent) || 0;
+    const roi = parseFloat(document.getElementById('advanced-roi')?.textContent) || 0;
+
+    const result = evaluateScaling(totalBudget, dailySpend, roas, roi);
+    const resultBox = document.getElementById('scaleHelperResult');
+
+    if (!resultBox) return;
+
+    resultBox.className = 'scale-helper-result ' + result.className;
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `
+        <strong>${result.title}</strong><br>
+        ${result.text}
+    `;
+}
+
+async function loadAdvancedStats() {
+    const periodEl = document.getElementById('advanced-period');
+    const spentEl = document.getElementById('advanced-spent');
+    const adsEl = document.getElementById('advanced-ads');
+
+    if (!periodEl || !spentEl || !adsEl) {
+        return;
+    }
+
+    const period = periodEl.value;
+    const spent = parseFloat(spentEl.value) || 0;
+    const ads = parseFloat(adsEl.value) || 0;
+
+    try {
+        const response = await fetch('{{ path('app_admin_commandes_advanced_stats') }}?period=' + encodeURIComponent(period));
+        if (!response.ok) {
+            console.error('Advanced stats route error:', response.status);
+            return;
+        }
+
+        const data = await response.json();
+
+        const revenue = parseFloat(data.revenue || 0);
+        const totalCost = spent + ads;
+        const roas = ads > 0 ? (revenue / ads) : 0;
+        const roi = totalCost > 0 ? (((revenue - totalCost) / totalCost) * 100) : 0;
+
+        document.getElementById('advanced-revenue').textContent = revenue.toFixed(2);
+        document.getElementById('advanced-roas').textContent = roas.toFixed(2);
+        document.getElementById('advanced-roi').textContent = roi.toFixed(2);
+        document.getElementById('advanced-count').textContent = data.acceptedCount ?? 0;
+
+        const recommendation = getAdvancedRecommendation(roas, roi);
+        document.getElementById('campaignRecommendationBox').innerHTML = `
+            <span class="reco-badge ${recommendation.className}">${recommendation.label}</span>
+            <div style="margin-top:10px;">${recommendation.text}</div>
+        `;
+
+        hideScaleHelper();
+
+        if (recommendation.label === 'Scale') {
+            showScaleHelperLink();
+        }
+    } catch (error) {
+        console.error('Erreur stats avancées:', error);
+    }
+}
+
+function getSavedCampaignComparisons() {
+    try {
+        return JSON.parse(localStorage.getItem('campaignComparisons') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveCampaignComparisons(data) {
+    localStorage.setItem('campaignComparisons', JSON.stringify(data));
+}
+
+function renderCampaignComparisons() {
+    const tbody = document.getElementById('campaignComparisonTableBody');
+    if (!tbody) return;
+
+    const campaigns = getSavedCampaignComparisons();
+
+    if (!campaigns.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center text-muted">Aucune campagne sauvegardée.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = campaigns.map((campaign, index) => `
+        <tr>
+            <td>${campaign.reference}</td>
+            <td>${campaign.periodLabel}</td>
+            <td>${campaign.revenue.toFixed(2)} TND</td>
+            <td>${campaign.spent.toFixed(2)} TND</td>
+            <td>${campaign.ads.toFixed(2)} TND</td>
+            <td>${campaign.roas.toFixed(2)}</td>
+            <td>${campaign.roi.toFixed(2)}%</td>
+            <td><span class="reco-badge ${campaign.recommendation.className}">${campaign.recommendation.label}</span></td>
+        </tr>
+    `).join('');
+}
+
+function saveCurrentCampaignComparison() {
+    const referenceEl = document.getElementById('advanced-campaign-ref');
+    const periodEl = document.getElementById('advanced-period');
+    const spentEl = document.getElementById('advanced-spent');
+    const adsEl = document.getElementById('advanced-ads');
+    const revenueEl = document.getElementById('advanced-revenue');
+    const roasEl = document.getElementById('advanced-roas');
+    const roiEl = document.getElementById('advanced-roi');
+
+    if (!referenceEl || !periodEl || !spentEl || !adsEl || !revenueEl || !roasEl || !roiEl) {
+        return;
+    }
+
+    const reference = referenceEl.value.trim();
+    if (!reference) {
+        alert('Ajoute une référence campagne avant de sauvegarder.');
+        return;
+    }
+
+    const period = periodEl.value;
+    const periodMap = {
+        today: "Aujourd'hui",
+        week: "Dernière semaine",
+        month: "Dernier mois"
+    };
+
+    const revenue = parseFloat(revenueEl.textContent) || 0;
+    const spent = parseFloat(spentEl.value) || 0;
+    const ads = parseFloat(adsEl.value) || 0;
+    const roas = parseFloat(roasEl.textContent) || 0;
+    const roi = parseFloat(roiEl.textContent) || 0;
+
+    const recommendation = getAdvancedRecommendation(roas, roi);
+
+    const campaigns = getSavedCampaignComparisons();
+
+    campaigns.unshift({
+        reference,
+        period,
+        periodLabel: periodMap[period] || period,
+        revenue,
+        spent,
+        ads,
+        roas,
+        roi,
+        recommendation
+    });
+
+    saveCampaignComparisons(campaigns);
+    renderCampaignComparisons();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const counter = document.getElementById('online-visitors-count');
+    const advancedModalEl = document.getElementById('advancedStatsModal');
+    const calculateBtn = document.getElementById('calculateAdvancedStatsBtn');
+    const periodEl = document.getElementById('advanced-period');
+    const spentEl = document.getElementById('advanced-spent');
+    const adsEl = document.getElementById('advanced-ads');
+    const saveBtn = document.getElementById('saveCampaignComparisonBtn');
+    const clearBtn = document.getElementById('clearCampaignComparisonsBtn');
+    const openScaleHelperBtn = document.getElementById('openScaleHelper');
+    const runScaleHelperBtn = document.getElementById('runScaleHelperBtn');
+
+    async function refreshOnlineVisitors() {
+        if (!counter) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_admin_visitors_count') }}');
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            if (typeof data.onlineVisitors !== 'undefined') {
+                counter.textContent = data.onlineVisitors;
+            }
+        } catch (error) {
+            console.error('Erreur compteur visiteurs:', error);
+        }
+    }
+
+    refreshOnlineVisitors();
+    setInterval(refreshOnlineVisitors, 15000);
+
+    renderCampaignComparisons();
+
+    if (advancedModalEl) {
+        advancedModalEl.addEventListener('shown.bs.modal', function () {
+            loadAdvancedStats();
+            renderCampaignComparisons();
+        });
+    }
+
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', function () {
+            loadAdvancedStats();
+        });
+    }
+
+    if (periodEl) {
+        periodEl.addEventListener('change', function () {
+            loadAdvancedStats();
+        });
+    }
+
+    if (spentEl) {
+        spentEl.addEventListener('input', function () {
+            loadAdvancedStats();
+        });
+    }
+
+    if (adsEl) {
+        adsEl.addEventListener('input', function () {
+            loadAdvancedStats();
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+            saveCurrentCampaignComparison();
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            localStorage.removeItem('campaignComparisons');
+            renderCampaignComparisons();
+        });
+    }
+
+    if (openScaleHelperBtn) {
+        openScaleHelperBtn.addEventListener('click', function () {
+            const helperBox = document.getElementById('scaleHelperBox');
+            if (helperBox) {
+                helperBox.style.display = helperBox.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    }
+
+    if (runScaleHelperBtn) {
+        runScaleHelperBtn.addEventListener('click', function () {
+            runScaleHelper();
+        });
+    }
+});
+</script>
+{% endblock %}

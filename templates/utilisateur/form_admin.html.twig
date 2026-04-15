@@ -1,0 +1,209 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}{{ titre }}{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <h3>{{ titre }}</h3>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post" enctype="multipart/form-data" id="userForm" novalidate
+          action="{{ utilisateur ? path('app_utilisateur_editer', {id: utilisateur.idUtilisateur}) : path('app_utilisateur_create') }}">
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Nom <span style="color:red">*</span></label>
+                <input type="text" name="nom" id="nom" class="form-control"
+                       value="{{ utilisateur ? utilisateur.nom : '' }}">
+                <div class="invalid-feedback" id="err-nom"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Email <span style="color:red">*</span></label>
+                <input type="text" name="email" id="email" class="form-control"
+                       value="{{ utilisateur ? utilisateur.email : '' }}">
+                <div class="invalid-feedback" id="err-email"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Mot de passe {{ utilisateur ? '(laisser vide pour ne pas changer)' : '*' }}</label>
+                <input type="password" name="motDePasse" id="motDePasse" class="form-control" placeholder="••••••••">
+                <div class="invalid-feedback" id="err-motDePasse"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Confirmer le mot de passe</label>
+                <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="••••••••">
+                <div class="invalid-feedback" id="err-confirm"></div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Région <span style="color:red">*</span></label>
+            <select name="region" id="region" class="form-control">
+                <option value="">Sélectionnez</option>
+                {% set regions = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'] %}
+                {% for r in regions %}
+                    <option value="{{ r }}" {{ utilisateur and utilisateur.region == r ? 'selected' : '' }}>{{ r }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback" id="err-region"></div>
+        </div>
+
+        <div class="mb-3">
+            <label>Date de naissance <span style="color:red">*</span></label>
+            <input type="date" name="dateNaissance" id="dateNaissance" class="form-control"
+                   value="{{ utilisateur and utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}">
+            <div class="invalid-feedback" id="err-date"></div>
+        </div>
+
+        <div class="mb-3">
+            <label>Photo</label>
+            <input type="file" name="photo" id="photo" class="form-control" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+            <div class="invalid-feedback" id="err-photo"></div>
+            <small class="text-muted">Formats acceptés : JPG, PNG, GIF, WEBP (Max 2 Mo)</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ path('app_utilisateur_liste') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+
+<script>
+const isEdit = {{ utilisateur ? 'true' : 'false' }};
+
+function showError(fieldId, errId, message) {
+    const field = document.getElementById(fieldId);
+    const err   = document.getElementById(errId);
+    if (field) field.classList.add('is-invalid');
+    if (err)   err.textContent = message;
+}
+
+function clearError(fieldId, errId) {
+    const field = document.getElementById(fieldId);
+    const err   = document.getElementById(errId);
+    if (field) field.classList.remove('is-invalid');
+    if (err)   err.textContent = '';
+}
+
+function clearAllErrors() {
+    ['nom','email','motDePasse','confirm_password','region','dateNaissance','photo'].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.classList.remove('is-invalid');
+    });
+    document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+}
+
+function validateForm(e) {
+    e.preventDefault();
+    clearAllErrors();
+
+    let valid = true;
+
+    // Nom
+    const nom = document.getElementById('nom').value.trim();
+    if (!nom) {
+        showError('nom', 'err-nom', 'Le nom est obligatoire.');
+        valid = false;
+    } else if (nom.length < 2) {
+        showError('nom', 'err-nom', 'Le nom doit contenir au moins 2 caractères.');
+        valid = false;
+    } else if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(nom)) {
+        showError('nom', 'err-nom', 'Le nom ne doit contenir que des lettres.');
+        valid = false;
+    }
+
+    // Email
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+        showError('email', 'err-email', 'L\'email est obligatoire.');
+        valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('email', 'err-email', 'L\'email n\'est pas valide (ex: nom@domaine.com).');
+        valid = false;
+    }
+
+    // Mot de passe
+    const mdp     = document.getElementById('motDePasse').value;
+    const confirm = document.getElementById('confirm_password').value;
+
+    if (!isEdit && !mdp) {
+        showError('motDePasse', 'err-motDePasse', 'Le mot de passe est obligatoire.');
+        valid = false;
+    } else if (mdp && mdp.length < 6) {
+        showError('motDePasse', 'err-motDePasse', 'Le mot de passe doit contenir au moins 6 caractères.');
+        valid = false;
+    } else if (mdp && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(mdp)) {
+        showError('motDePasse', 'err-motDePasse', 'Le mot de passe doit contenir une majuscule, une minuscule et un chiffre.');
+        valid = false;
+    }
+
+    if (mdp && mdp !== confirm) {
+        showError('confirm_password', 'err-confirm', 'Les mots de passe ne correspondent pas.');
+        valid = false;
+    }
+
+    // Région
+    const region = document.getElementById('region').value;
+    if (!region) {
+        showError('region', 'err-region', 'Veuillez sélectionner une région.');
+        valid = false;
+    }
+
+    // Date de naissance
+    const date = document.getElementById('dateNaissance').value;
+    if (!date) {
+        showError('dateNaissance', 'err-date', 'La date de naissance est obligatoire.');
+        valid = false;
+    } else {
+        const today    = new Date();
+        const birthday = new Date(date);
+        let age = today.getFullYear() - birthday.getFullYear();
+        const m = today.getMonth() - birthday.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthday.getDate())) age--;
+        if (age < 13) {
+            showError('dateNaissance', 'err-date', 'L\'utilisateur doit avoir au moins 13 ans.');
+            valid = false;
+        } else if (age > 100) {
+            showError('dateNaissance', 'err-date', 'La date de naissance n\'est pas valide.');
+            valid = false;
+        }
+    }
+
+    // Photo
+    const photo = document.getElementById('photo');
+    if (photo.files.length > 0) {
+        const file    = photo.files[0];
+        const maxSize = 2 * 1024 * 1024;
+        const allowed = ['image/jpeg','image/png','image/jpg','image/gif','image/webp'];
+        if (!allowed.includes(file.type)) {
+            showError('photo', 'err-photo', 'Format non accepté. Utilisez JPG, PNG, GIF ou WEBP.');
+            valid = false;
+        } else if (file.size > maxSize) {
+            showError('photo', 'err-photo', 'La photo ne doit pas dépasser 2 Mo.');
+            valid = false;
+        }
+    }
+
+    if (valid) {
+        document.getElementById('userForm').submit();
+    }
+}
+
+document.getElementById('userForm').addEventListener('submit', validateForm);
+
+document.getElementById('nom').addEventListener('input', () => clearError('nom', 'err-nom'));
+document.getElementById('email').addEventListener('input', () => clearError('email', 'err-email'));
+document.getElementById('motDePasse').addEventListener('input', () => clearError('motDePasse', 'err-motDePasse'));
+document.getElementById('confirm_password').addEventListener('input', () => clearError('confirm_password', 'err-confirm'));
+document.getElementById('region').addEventListener('change', () => clearError('region', 'err-region'));
+document.getElementById('dateNaissance').addEventListener('change', () => clearError('dateNaissance', 'err-date'));
+document.getElementById('photo').addEventListener('change', () => clearError('photo', 'err-photo'));
+</script>
+{% endblock %}

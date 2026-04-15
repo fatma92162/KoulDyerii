@@ -1,0 +1,856 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }} | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .form-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 40px;
+        padding: 40px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.7s ease-out;
+        max-width: 700px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0e6d6;
+    }
+
+    .form-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 5px;
+    }
+
+    .form-header p {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group label .required {
+        color: #FF6B6B;
+        margin-left: 3px;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        pointer-events: none;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        font-size: 14px;
+        background: #fefcf8;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+    }
+
+    /* ✅ États de validation */
+    .form-control.is-valid,
+    .form-select.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #FF6B6B;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FF6B6B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12);
+    }
+
+    /* ✅ Messages sous les champs */
+    .field-message {
+        font-size: 12px;
+        margin-top: 6px;
+        padding-left: 4px;
+        min-height: 18px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+    .field-message.error {
+        color: #FF6B6B;
+    }
+
+    .field-message.success {
+        color: #28a745;
+    }
+
+    .field-message.hidden {
+        visibility: hidden;
+    }
+
+    /* ✅ Barre de force du mot de passe */
+    .password-strength {
+        margin-top: 8px;
+    }
+
+    .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        background: #f0e6d6;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+
+    .strength-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease, background 0.3s ease;
+        width: 0%;
+    }
+
+    .strength-text {
+        font-size: 11px;
+        color: #999;
+    }
+
+    /* ✅ Bouton afficher/masquer mot de passe */
+    .toggle-pw {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #aaa;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .toggle-pw:hover {
+        color: #FF6B6B;
+    }
+
+    /* ✅ Compteur de caractères */
+    .char-counter {
+        font-size: 11px;
+        color: #bbb;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    .char-counter.warn {
+        color: #FF6B6B;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-cancel {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: #666;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .btn-cancel:hover {
+        background: #f0e6d6;
+        color: #333;
+    }
+
+    .row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .col {
+        flex: 1;
+    }
+
+    .alert {
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        animation: shake 0.5s ease;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-danger {
+        background: #fff0f0;
+        color: #FF6B6B;
+        border: 1px solid #ffd4d4;
+    }
+
+    /* ✅ Aperçu photo */
+    .photo-preview {
+        margin-top: 10px;
+        display: none;
+    }
+
+    .photo-preview img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #FF6B6B;
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .photo-preview p {
+        font-size: 11px;
+        color: #999;
+        margin-top: 5px;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    @media (max-width: 600px) {
+        .row { flex-direction: column; gap: 0; }
+        .form-card { padding: 30px 25px; }
+        .form-header h2 { font-size: 24px; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>{{ titre }}</h2>
+            <p>Veuillez remplir les informations ci-dessous</p>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">✅ {{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">❌ {{ message }}</div>
+        {% endfor %}
+
+        {% if utilisateur %}
+            <form id="profileForm" method="post" action="/utilisateur/{{ utilisateur.idUtilisateur }}/update" enctype="multipart/form-data" novalidate>
+        {% else %}
+            <form id="profileForm" method="post" action="/utilisateur/create" enctype="multipart/form-data" novalidate>
+        {% endif %}
+
+            {# ── NOM ── #}
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="nom">👤 NOM <span class="required">*</span></label>
+                        <div class="input-group">
+                            <span class="icon">👤</span>
+                            <input type="text"
+                                   id="nom"
+                                   name="nom"
+                                   class="form-control"
+                                   value="{{ utilisateur ? utilisateur.nom : '' }}"
+                                   placeholder="Votre nom complet"
+                                   maxlength="80"
+                                   autocomplete="name">
+                        </div>
+                        <div id="nom-msg" class="field-message hidden"></div>
+                        <div class="char-counter" id="nom-counter">0 / 80</div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── EMAIL ── #}
+            <div class="form-group">
+                <label for="email">📧 EMAIL <span class="required">*</span></label>
+                <div class="input-group">
+                    <span class="icon">✉️</span>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           class="form-control"
+                           value="{{ utilisateur ? utilisateur.email : '' }}"
+                           placeholder="exemple@email.com"
+                           autocomplete="email">
+                </div>
+                <div id="email-msg" class="field-message hidden"></div>
+            </div>
+
+            {# ── MOT DE PASSE ── #}
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="motDePasse">
+                            🔒 MOT DE PASSE
+                            {% if utilisateur %}
+                                <small style="font-weight:400;text-transform:none;color:#999">(laisser vide pour ne pas changer)</small>
+                            {% else %}
+                                <span class="required">*</span>
+                            {% endif %}
+                        </label>
+                        <div class="input-group">
+                            <span class="icon">🔐</span>
+                            <input type="password"
+                                   id="motDePasse"
+                                   name="motDePasse"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   style="padding-right: 45px;"
+                                   autocomplete="new-password">
+                            <button type="button" class="toggle-pw" onclick="togglePassword('motDePasse', this)" title="Afficher / Masquer">👁️</button>
+                        </div>
+                        <div class="password-strength" id="pw-strength" style="display:none">
+                            <div class="strength-bar"><div class="strength-fill" id="pw-fill"></div></div>
+                            <span class="strength-text" id="pw-text"></span>
+                        </div>
+                        <div id="mdp-msg" class="field-message hidden"></div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="form-group">
+                        <label for="confirm_password">🔒 CONFIRMER</label>
+                        <div class="input-group">
+                            <span class="icon">🔐</span>
+                            <input type="password"
+                                   id="confirm_password"
+                                   name="confirm_password"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   style="padding-right: 45px;"
+                                   autocomplete="new-password">
+                            <button type="button" class="toggle-pw" onclick="togglePassword('confirm_password', this)" title="Afficher / Masquer">👁️</button>
+                        </div>
+                        <div id="confirm-msg" class="field-message hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── GOUVERNORAT ── #}
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="region">📍 GOUVERNORAT</label>
+                        <div class="input-group">
+                            <span class="icon">📍</span>
+                            <select id="region" name="region" class="form-select">
+                                <option value="">Sélectionnez votre gouvernorat</option>
+                                {% set gouvernorats = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'] %}
+                                {% for gov in gouvernorats %}
+                                    <option value="{{ gov }}" {% if utilisateur and utilisateur.region == gov %}selected{% endif %}>
+                                        {{ gov }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div id="region-msg" class="field-message hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── DATE DE NAISSANCE ── #}
+            <div class="form-group">
+                <label for="dateNaissance">🎂 DATE DE NAISSANCE</label>
+                <div class="input-group">
+                    <span class="icon">🎂</span>
+                    <input type="date"
+                           id="dateNaissance"
+                           name="dateNaissance"
+                           class="form-control"
+                           value="{{ utilisateur and utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}"
+                           max="{{ 'now'|date('Y-m-d') }}">
+                </div>
+                <div id="date-msg" class="field-message hidden"></div>
+            </div>
+
+            {# ── PHOTO DE PROFIL ── #}
+            <div class="form-group">
+                <label for="photo">🖼️ PHOTO DE PROFIL</label>
+                <div class="input-group">
+                    <span class="icon">🖼️</span>
+                    <input type="file"
+                           id="photo"
+                           name="photo"
+                           class="form-control"
+                           accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                </div>
+                <div id="photo-msg" class="field-message hidden"></div>
+                <div class="photo-preview" id="photo-preview">
+                    <img id="photo-thumb" src="#" alt="Aperçu">
+                    <p id="photo-info"></p>
+                </div>
+                <small style="color:#aaa;font-size:12px;margin-top:4px;display:block">
+                    Formats acceptés : JPG, PNG, GIF, WEBP — Max 2 Mo
+                </small>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                ✨ ENREGISTRER ✨
+            </button>
+
+            <a href="{{ path('app_home') }}" class="btn-cancel">
+                ⬅️ ANNULER
+            </a>
+
+        </form>
+    </div>
+</div>
+
+<script>
+/* =========================================================
+   UTILITAIRES
+   ========================================================= */
+const isEdit = {{ utilisateur ? 'true' : 'false' }};
+
+function showMsg(id, type, text) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'field-message ' + type;
+    el.innerHTML = (type === 'error' ? '⚠️ ' : '✅ ') + text;
+}
+
+function clearMsg(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'field-message hidden';
+    el.innerHTML = '';
+}
+
+function setValid(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.classList.remove('is-invalid');
+    el.classList.add('is-valid');
+}
+
+function setInvalid(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.classList.remove('is-valid');
+    el.classList.add('is-invalid');
+}
+
+function resetState(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    el.classList.remove('is-valid', 'is-invalid');
+}
+
+/* =========================================================
+   AFFICHER / MASQUER MOT DE PASSE
+   ========================================================= */
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+    }
+}
+
+/* =========================================================
+   VALIDATION NOM
+   ========================================================= */
+const nomInput = document.getElementById('nom');
+const nomCounter = document.getElementById('nom-counter');
+
+function validateNom() {
+    const val = nomInput.value.trim();
+    const len = nomInput.value.length;
+    nomCounter.textContent = len + ' / 80';
+    nomCounter.classList.toggle('warn', len > 70);
+
+    if (val.length === 0) {
+        setInvalid('nom');
+        showMsg('nom-msg', 'error', 'Le nom est obligatoire.');
+        return false;
+    }
+    if (val.length < 2) {
+        setInvalid('nom');
+        showMsg('nom-msg', 'error', 'Le nom doit contenir au moins 2 caractères.');
+        return false;
+    }
+    if (!/^[a-zA-ZÀ-ÿ\s'\-]+$/.test(val)) {
+        setInvalid('nom');
+        showMsg('nom-msg', 'error', 'Le nom ne doit contenir que des lettres, espaces ou tirets.');
+        return false;
+    }
+    setValid('nom');
+    showMsg('nom-msg', 'success', 'Nom valide.');
+    return true;
+}
+
+nomInput.addEventListener('input', () => {
+    nomCounter.textContent = nomInput.value.length + ' / 80';
+    if (nomInput.value.length > 0) validateNom();
+    else { resetState('nom'); clearMsg('nom-msg'); }
+});
+nomInput.addEventListener('blur', validateNom);
+
+/* =========================================================
+   VALIDATION EMAIL
+   ========================================================= */
+const emailInput = document.getElementById('email');
+
+function validateEmail() {
+    const val = emailInput.value.trim();
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    if (val.length === 0) {
+        setInvalid('email');
+        showMsg('email-msg', 'error', 'L\'adresse email est obligatoire.');
+        return false;
+    }
+    if (!regex.test(val)) {
+        setInvalid('email');
+        showMsg('email-msg', 'error', 'Format invalide. Exemple : utilisateur@domaine.tn');
+        return false;
+    }
+    setValid('email');
+    showMsg('email-msg', 'success', 'Adresse email valide.');
+    return true;
+}
+
+emailInput.addEventListener('input', () => {
+    if (emailInput.value.length > 0) validateEmail();
+    else { resetState('email'); clearMsg('email-msg'); }
+});
+emailInput.addEventListener('blur', validateEmail);
+
+/* =========================================================
+   VALIDATION MOT DE PASSE + FORCE
+   ========================================================= */
+const mdpInput    = document.getElementById('motDePasse');
+const pwStrength  = document.getElementById('pw-strength');
+const pwFill      = document.getElementById('pw-fill');
+const pwText      = document.getElementById('pw-text');
+
+function getPasswordStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score;
+}
+
+function validatePassword() {
+    const val = mdpInput.value;
+
+    // En mode édition, champ optionnel
+    if (isEdit && val.length === 0) {
+        resetState('motDePasse');
+        clearMsg('mdp-msg');
+        pwStrength.style.display = 'none';
+        return true;
+    }
+
+    if (val.length === 0) {
+        setInvalid('motDePasse');
+        showMsg('mdp-msg', 'error', 'Le mot de passe est obligatoire.');
+        pwStrength.style.display = 'none';
+        return false;
+    }
+
+    // Afficher la barre de force
+    pwStrength.style.display = 'block';
+    const score = getPasswordStrength(val);
+    const levels = [
+        { pct: '20%', color: '#FF6B6B', label: 'Très faible' },
+        { pct: '40%', color: '#FF8E53', label: 'Faible' },
+        { pct: '60%', color: '#FFD700', label: 'Moyen' },
+        { pct: '80%', color: '#90EE90', label: 'Fort' },
+        { pct: '100%', color: '#28a745', label: 'Très fort' },
+    ];
+    const lvl = levels[Math.min(score - 1, 4)] || levels[0];
+    pwFill.style.width    = lvl.pct;
+    pwFill.style.background = lvl.color;
+    pwText.textContent    = lvl.label;
+    pwText.style.color    = lvl.color;
+
+    if (val.length < 8) {
+        setInvalid('motDePasse');
+        showMsg('mdp-msg', 'error', 'Le mot de passe doit contenir au moins 8 caractères.');
+        return false;
+    }
+
+    setValid('motDePasse');
+    showMsg('mdp-msg', 'success', 'Mot de passe accepté.');
+    // Re-valider la confirmation si déjà remplie
+    if (confirmInput.value.length > 0) validateConfirm();
+    return true;
+}
+
+mdpInput.addEventListener('input', validatePassword);
+mdpInput.addEventListener('blur', validatePassword);
+
+/* =========================================================
+   VALIDATION CONFIRMATION MOT DE PASSE
+   ========================================================= */
+const confirmInput = document.getElementById('confirm_password');
+
+function validateConfirm() {
+    const pw      = mdpInput.value;
+    const confirm = confirmInput.value;
+
+    if (isEdit && pw.length === 0 && confirm.length === 0) {
+        resetState('confirm_password');
+        clearMsg('confirm-msg');
+        return true;
+    }
+
+    if (confirm.length === 0) {
+        if (pw.length > 0) {
+            setInvalid('confirm_password');
+            showMsg('confirm-msg', 'error', 'Veuillez confirmer votre mot de passe.');
+            return false;
+        }
+        resetState('confirm_password');
+        clearMsg('confirm-msg');
+        return true;
+    }
+
+    if (pw !== confirm) {
+        setInvalid('confirm_password');
+        showMsg('confirm-msg', 'error', 'Les mots de passe ne correspondent pas.');
+        return false;
+    }
+
+    setValid('confirm_password');
+    showMsg('confirm-msg', 'success', 'Les mots de passe correspondent.');
+    return true;
+}
+
+confirmInput.addEventListener('input', validateConfirm);
+confirmInput.addEventListener('blur', validateConfirm);
+
+/* =========================================================
+   VALIDATION DATE DE NAISSANCE
+   ========================================================= */
+const dateInput = document.getElementById('dateNaissance');
+
+function validateDate() {
+    const val = dateInput.value;
+
+    if (val === '') {
+        resetState('dateNaissance');
+        clearMsg('date-msg');
+        return true; // optionnel
+    }
+
+    const birth    = new Date(val);
+    const today    = new Date();
+    const minDate  = new Date('1900-01-01');
+
+    if (birth > today) {
+        setInvalid('dateNaissance');
+        showMsg('date-msg', 'error', 'La date de naissance ne peut pas être dans le futur.');
+        return false;
+    }
+    if (birth < minDate) {
+        setInvalid('dateNaissance');
+        showMsg('date-msg', 'error', 'Date invalide (avant 1900).');
+        return false;
+    }
+
+    // Calcul de l'âge
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+
+    if (age < 13) {
+        setInvalid('dateNaissance');
+        showMsg('date-msg', 'error', 'Vous devez avoir au moins 13 ans pour vous inscrire.');
+        return false;
+    }
+
+    setValid('dateNaissance');
+    showMsg('date-msg', 'success', 'Âge : ' + age + ' ans.');
+    return true;
+}
+
+dateInput.addEventListener('change', validateDate);
+dateInput.addEventListener('blur', validateDate);
+
+/* =========================================================
+   VALIDATION PHOTO
+   ========================================================= */
+const photoInput   = document.getElementById('photo');
+const photoPreview = document.getElementById('photo-preview');
+const photoThumb   = document.getElementById('photo-thumb');
+const photoInfo    = document.getElementById('photo-info');
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_SIZE_MB   = 2;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+function validatePhoto() {
+    const file = photoInput.files[0];
+
+    if (!file) {
+        resetState('photo');
+        clearMsg('photo-msg');
+        photoPreview.style.display = 'none';
+        return true; // optionnel
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        setInvalid('photo');
+        showMsg('photo-msg', 'error', 'Format non accepté. Utilisez JPG, PNG, GIF ou WEBP.');
+        photoPreview.style.display = 'none';
+        return false;
+    }
+
+    if (file.size > MAX_SIZE_BYTES) {
+        setInvalid('photo');
+        const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+        showMsg('photo-msg', 'error', 'Fichier trop lourd (' + sizeMb + ' Mo). Maximum : 2 Mo.');
+        photoPreview.style.display = 'none';
+        return false;
+    }
+
+    // Aperçu
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        photoThumb.src = e.target.result;
+        photoInfo.textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
+        photoPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    setValid('photo');
+    showMsg('photo-msg', 'success', 'Photo valide.');
+    return true;
+}
+
+photoInput.addEventListener('change', validatePhoto);
+
+/* =========================================================
+   SOUMISSION DU FORMULAIRE
+   ========================================================= */
+document.getElementById('profileForm').addEventListener('submit', function (e) {
+    const nomOk     = validateNom();
+    const emailOk   = validateEmail();
+    const mdpOk     = validatePassword();
+    const confirmOk = validateConfirm();
+    const dateOk    = validateDate();
+    const photoOk   = validatePhoto();
+
+    if (!nomOk || !emailOk || !mdpOk || !confirmOk || !dateOk || !photoOk) {
+        e.preventDefault();
+
+        // Scroll vers la première erreur
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+});
+</script>
+{% endblock %}

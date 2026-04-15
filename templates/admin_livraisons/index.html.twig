@@ -1,0 +1,218 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des livraisons{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .section-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid var(--beige-fonce);
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--bordeaux);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--beige-fonce);
+    }
+    
+    .btn-livreur {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+    }
+    
+    .btn-livreur:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+    }
+    
+    .commande-card {
+        background: var(--beige-clair);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid var(--beige-fonce);
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-en_cours { background: #FF9800; color: white; }
+    .status-livree { background: #4CAF50; color: white; }
+    .status-en_attente { background: #2196F3; color: white; }
+    
+    .livreur-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid var(--beige-fonce);
+        transition: all 0.3s ease;
+    }
+    
+    .livreur-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .livreur-dispo {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
+    .disponible { background: #4CAF50; }
+    .indisponible { background: #f44336; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>🚚 Gestion des livraisons</h3>
+        <a href="{{ path('app_admin_livreur_new') }}" class="btn btn-livreur">
+            <i class="fas fa-user-plus"></i> Ajouter un livreur
+        </a>
+    </div>
+
+    <!-- Section Livreurs disponibles -->
+    <div class="section-card">
+        <h4 class="section-title">👨‍💼 Livreurs disponibles</h4>
+        <div class="row">
+            {% for livreur in livreurs %}
+            <div class="col-md-3">
+                <div class="livreur-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ livreur.prenom }} {{ livreur.nom }}</strong>
+                        <span class="livreur-dispo disponible"></span>
+                    </div>
+                    <p class="small mb-1"><i class="fas fa-phone"></i> {{ livreur.telephone }}</p>
+                    <span class="badge bg-success">Disponible</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">Aucun livreur disponible.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section Commandes à livrer -->
+    <div class="section-card">
+        <h4 class="section-title">📦 Commandes à livrer</h4>
+        <div class="row">
+            {% for commande in commandes %}
+            <div class="col-md-6">
+                <div class="commande-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Commande #{{ commande.id }}</strong>
+                        <span class="status-badge status-en_attente">En attente</span>
+                    </div>
+                    <p><strong>👤 Client:</strong> {{ commande.customerName }}</p>
+                    <p><strong>📍 Adresse:</strong> {{ commande.location }}</p>
+                    <p><strong>📞 Téléphone:</strong> {{ commande.phone }}</p>
+                    <p><strong>📅 Date:</strong> {{ commande.createdAt|date('d/m/Y H:i') }}</p>
+                    
+                    <form method="post" action="{{ path('app_admin_livraison_affecter', {id: commande.id}) }}" class="mt-3">
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <select name="livreur_id" class="form-select" required>
+                                    <option value="">Choisir un livreur</option>
+                                    {% for livreur in livreurs %}
+                                    <option value="{{ livreur.idLivreur }}">{{ livreur.prenom }} {{ livreur.nom }} - {{ livreur.telephone }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-truck"></i> Affecter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">Aucune commande à livrer.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section Livraisons en cours -->
+    <div class="section-card">
+        <h4 class="section-title">🚚 Livraisons en cours</h4>
+        <div class="row">
+            {% for livraison in livraisons %}
+            {% if livraison.statutLivraison == 'en_cours' %}
+            <div class="col-md-6">
+                <div class="commande-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Livraison #{{ livraison.idLivraison }}</strong>
+                        <span class="status-badge status-en_cours">En cours</span>
+                    </div>
+                    <p><strong>📍 Adresse:</strong> {{ livraison.adresse }}</p>
+                    <p><strong>👤 Livreur ID:</strong> #{{ livraison.idLivreur }}</p>
+                    <p><strong>📦 Commande ID:</strong> #{{ livraison.idCommande }}</p>
+                    
+                    <form method="post" action="{{ path('app_admin_livraison_terminer', {id: livraison.idLivraison}) }}" class="mt-3">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-check-circle"></i> Marquer comme livrée
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section Historique des livraisons -->
+    <div class="section-card">
+        <h4 class="section-title">📋 Historique des livraisons</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID Livraison</th>
+                        <th>Commande #</th>
+                        <th>Adresse</th>
+                        <th>Livreur ID</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livraison in livraisons %}
+                    {% if livraison.statutLivraison == 'livree' %}
+                    <tr>
+                        <td>{{ livraison.idLivraison }}</td>
+                        <td>{{ livraison.idCommande }}</td>
+                        <td>{{ livraison.adresse|slice(0, 50) }}...</td>
+                        <td>{{ livraison.idLivreur }}</td>
+                        <td><span class="status-badge status-livree">Livrée</span></td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
