@@ -1,0 +1,303 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des formations{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.1);
+    }
+    
+    .stat-card.active {
+        border-color: #8B0000;
+        background: #FFF8F0;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .filter-bar {
+        background: #FFF8F0;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #E8D5B7;
+    }
+    
+    .btn-reset {
+        background: #E8D5B7;
+        border: none;
+        color: #8B4513;
+        border-radius: 50px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reset:hover {
+        background: #D4A574;
+        color: white;
+    }
+    
+    .formation-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .formation-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .formation-header {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        padding: 15px 20px;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .status-en_cours {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .status-termine {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-annule {
+        background: #9E9E9E;
+        color: white;
+    }
+    
+    .formation-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #8B0000;
+    }
+    
+    .btn-action-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-inscrits {
+        background: #17a2b8;
+        color: white;
+        border: none;
+    }
+    
+    .btn-inscrits:hover {
+        background: #138496;
+        transform: translateY(-2px);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 15px;
+    }
+    
+    .empty-state i {
+        font-size: 64px;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📚 Gestion des formations</h3>
+        <a href="{{ path('app_admin_formations_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter une formation
+        </a>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card {% if statutFiltre == '' %}active{% endif %}" onclick="filterByStatut('')">
+            <div class="stat-number">{{ stats.total|default(0) }}</div>
+            <div class="stat-label">Total formations</div>
+        </div>
+        <div class="stat-card {% if statutFiltre == 'en_cours' %}active{% endif %}" onclick="filterByStatut('en_cours')">
+            <div class="stat-number">{{ stats.en_cours|default(0) }}</div>
+            <div class="stat-label">🟢 En cours</div>
+        </div>
+        <div class="stat-card {% if statutFiltre == 'termine' %}active{% endif %}" onclick="filterByStatut('termine')">
+            <div class="stat-number">{{ stats.termine|default(0) }}</div>
+            <div class="stat-label">✅ Terminées</div>
+        </div>
+        <div class="stat-card {% if statutFiltre == 'annule' %}active{% endif %}" onclick="filterByStatut('annule')">
+            <div class="stat-number">{{ stats.annule|default(0) }}</div>
+            <div class="stat-label">❌ Annulées</div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="filter-bar">
+        <form method="get" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="🔍 Rechercher par titre ou description..." 
+                           value="{{ search|default('') }}">
+                    <input type="hidden" name="statut" value="{{ statutFiltre|default('') }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="statut_filter" class="form-select" onchange="changeStatut(this.value)">
+                        <option value="">📊 Tous les statuts</option>
+                        <option value="en_cours" {% if statutFiltre == 'en_cours' %}selected{% endif %}>🟢 En cours</option>
+                        <option value="termine" {% if statutFiltre == 'termine' %}selected{% endif %}>✅ Terminées</option>
+                        <option value="annule" {% if statutFiltre == 'annule' %}selected{% endif %}>❌ Annulées</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>📅 Plus récentes</option>
+                        <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>📅 Plus anciennes</option>
+                        <option value="titre_asc" {% if sort == 'titre_asc' %}selected{% endif %}>🔤 Titre A→Z</option>
+                        <option value="titre_desc" {% if sort == 'titre_desc' %}selected{% endif %}>🔤 Titre Z→A</option>
+                        <option value="prix_asc" {% if sort == 'prix_asc' %}selected{% endif %}>💰 Prix croissant</option>
+                        <option value="prix_desc" {% if sort == 'prix_desc' %}selected{% endif %}>💰 Prix décroissant</option>
+                        <option value="statut_asc" {% if sort == 'statut_asc' %}selected{% endif %}>📊 Statut A→Z</option>
+                        <option value="statut_desc" {% if sort == 'statut_desc' %}selected{% endif %}>📊 Statut Z→A</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ path('app_admin_formations_index') }}" class="btn btn-reset">
+                        <i class="fas fa-undo"></i> Réinitialiser les filtres
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% if formations|length > 0 %}
+        <div class="row">
+            {% for formation in formations %}
+            <div class="col-md-4">
+                <div class="formation-card">
+                    <div class="formation-header">
+                        <h5 class="mb-2">{{ formation.titre }}</h5>
+                        <span class="status-badge status-{{ formation.statut }}">
+                            {% if formation.statut == 'en_cours' %}
+                                🟢 En cours
+                            {% elseif formation.statut == 'termine' %}
+                                ✅ Terminé
+                            {% else %}
+                                ❌ Annulé
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-muted small">{{ formation.description|slice(0, 100) }}...</p>
+                        <div class="formation-price">{{ formation.prix|number_format(2, ',', ' ') }} €</div>
+                        <div class="mt-3 text-muted small">
+                            <i class="fas fa-user"></i> Créé par: Admin #{{ formation.idVendeuse }}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white p-3">
+                        <div class="btn-action-group">
+                            <a href="{{ path('app_admin_formations_edit', {id: formation.idFormation}) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <a href="{{ path('app_admin_formations_inscriptions', {id: formation.idFormation}) }}" class="btn btn-sm btn-inscrits">
+                                <i class="fas fa-users"></i> Inscrits
+                            </a>
+                            <form action="{{ path('app_admin_formations_delete', {id: formation.idFormation}) }}" method="post" style="display: inline-block;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette formation ?')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-graduation-cap"></i>
+            <h4>Aucune formation trouvée</h4>
+            <p class="text-muted">Aucune formation ne correspond à vos critères.</p>
+            <a href="{{ path('app_admin_formations_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter une formation
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function filterByStatut(statut) {
+    const url = new URL(window.location.href);
+    if (statut) {
+        url.searchParams.set('statut', statut);
+    } else {
+        url.searchParams.delete('statut');
+    }
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
+function changeStatut(statut) {
+    const url = new URL(window.location.href);
+    if (statut) {
+        url.searchParams.set('statut', statut);
+    } else {
+        url.searchParams.delete('statut');
+    }
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

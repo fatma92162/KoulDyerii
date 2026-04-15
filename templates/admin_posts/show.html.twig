@@ -1,0 +1,301 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Détail de la publication{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .comment-card {
+        transition: all 0.2s ease;
+    }
+    .comment-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .btn-edit-comment {
+        background: none;
+        border: none;
+        color: #f0ad4e;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.2s ease;
+    }
+    .btn-edit-comment:hover {
+        background: #fff8f0;
+        color: #ec971f;
+    }
+    .btn-delete-comment {
+        background: none;
+        border: none;
+        color: #d9534f;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.2s ease;
+    }
+    .btn-delete-comment:hover {
+        background: #fff0f0;
+        color: #c9302c;
+    }
+    .comment-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-color: #fff0f0;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* ✅ Styles pour les boutons like */
+    .btn-like, .btn-comment-like {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 5px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #999;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .btn-like:hover, .btn-comment-like:hover {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+        background: #fff0f0;
+    }
+    .btn-like.reacted, .btn-comment-like.reacted {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+        background: #fff0f0;
+    }
+    .post-like {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #f0e6d6;
+    }
+    .comment-like {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f0e6d6;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📄 {{ post.title }}</h3>
+        <a href="{{ path('app_admin_posts_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- Affichage du post -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    {% if post.utilisateur %}
+                        {{ post.utilisateur.nom|first|upper }}
+                    {% else %}
+                        ?
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>{% if post.utilisateur %}{{ post.utilisateur.nom }}{% else %}Utilisateur inconnu{% endif %}</strong><br>
+                    <small class="text-muted">{{ post.createdAt|date('d/m/Y à H:i') }}</small>
+                </div>
+                
+                <!-- Bouton pour ajouter un commentaire -->
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#addCommentForm">
+                        <i class="fas fa-plus"></i> Ajouter un commentaire
+                    </button>
+                </div>
+            </div>
+            
+            <p>{{ post.content|nl2br }}</p>
+            
+            {% if post.imagePath %}
+                <img src="{{ post.imagePath }}" class="img-fluid rounded mt-2" style="max-height: 400px;">
+            {% endif %}
+            
+            <!-- ✅ Bouton Like pour le post -->
+            <div class="post-like">
+                <button class="btn-like {% if userLikedPost %}reacted{% endif %}" 
+                        onclick="togglePostLike({{ post.id }})"
+                        id="post-like-btn-{{ post.id }}">
+                    <i class="fas fa-heart"></i>
+                    <span id="post-like-count-{{ post.id }}">{{ postLikesCount|default(0) }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire pour ajouter un commentaire avec validation -->
+    <div class="collapse mb-4 {% if errors.content is defined %}show{% endif %}" id="addCommentForm">
+        <div class="card">
+            <div class="card-body">
+                <h5>Ajouter un commentaire</h5>
+                
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+                
+                <form method="post" action="{{ path('app_admin_post_comment', {id: post.id}) }}" novalidate>
+                    <div class="mb-3">
+                        <textarea name="content" 
+                                  class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
+                                  rows="3" 
+                                  placeholder="Votre commentaire...">{{ formData.content|default('') }}</textarea>
+                        {% if errors.content is defined %}
+                            <div class="invalid-feedback">{{ errors.content }}</div>
+                        {% else %}
+                            <small class="text-muted">Le commentaire doit contenir entre 2 et 1000 caractères.</small>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">💬 Commentaires ({{ commentaires|length }})</h4>
+
+    {% for commentaire in commentaires %}
+        <div class="card mb-2 comment-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-size: 14px;">
+                                {{ commentaire.utilisateur.nom|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ commentaire.utilisateur.nom }}</strong>
+                                <small class="text-muted ms-2">{{ commentaire.createdAt|date('d/m/Y H:i') }}</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">{{ commentaire.content|nl2br }}</p>
+                        
+                        <!-- ✅ Bouton Like pour le commentaire -->
+                        <div class="comment-like">
+                            <button class="btn-comment-like {% if userLikedComments[commentaire.id] is defined and userLikedComments[commentaire.id] %}reacted{% endif %}" 
+                                    onclick="toggleCommentLike({{ commentaire.id }})"
+                                    id="comment-like-btn-{{ commentaire.id }}">
+                                <i class="fas fa-heart"></i>
+                                <span id="comment-like-count-{{ commentaire.id }}">{{ commentLikesCount[commentaire.id]|default(0) }}</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions : Modifier/Supprimer UNIQUEMENT pour ses propres commentaires -->
+                    {% if app.user and commentaire.utilisateur and commentaire.utilisateur.idUtilisateur == app.user.idUtilisateur %}
+                        <div class="comment-actions ms-2">
+                            <a href="{{ path('app_admin_comment_edit', {id: commentaire.id}) }}" class="btn-edit-comment" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_admin_comment_delete', {id: commentaire.id}) }}" 
+                                  onsubmit="return confirm('Supprimer ce commentaire ?')" style="display: inline;">
+                                <button type="submit" class="btn-delete-comment" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="fas fa-comment-dots fa-2x mb-2"></i>
+            <p>Aucun commentaire pour cette publication.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+// ✅ Fonction pour liker/unliker un post
+function togglePostLike(postId) {
+    fetch(`/admin/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('post-like-count-' + postId);
+            const btn = document.getElementById('post-like-btn-' + postId);
+            
+            if (countEl) countEl.textContent = data.count;
+            if (btn) {
+                if (data.liked) {
+                    btn.classList.add('reacted');
+                } else {
+                    btn.classList.remove('reacted');
+                }
+            }
+        }
+    })
+    .catch(err => console.error('Erreur like post:', err));
+}
+
+// ✅ Fonction pour liker/unliker un commentaire
+function toggleCommentLike(commentId) {
+    fetch(`/admin/posts/comment/${commentId}/like`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('comment-like-count-' + commentId);
+            const btn = document.getElementById('comment-like-btn-' + commentId);
+            
+            if (countEl) countEl.textContent = data.count;
+            if (btn) {
+                if (data.liked) {
+                    btn.classList.add('reacted');
+                } else {
+                    btn.classList.remove('reacted');
+                }
+            }
+        }
+    })
+    .catch(err => console.error('Erreur like commentaire:', err));
+}
+</script>
+{% endblock %}

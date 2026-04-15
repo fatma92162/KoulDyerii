@@ -1,0 +1,226 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail livraison #{{ livraison.idLivraison }} - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .detail-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+    
+    .detail-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 20px 30px;
+        color: white;
+    }
+    
+    .detail-body {
+        padding: 30px;
+    }
+    
+    .info-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f0e6d6;
+    }
+    
+    .info-section h5 {
+        color: #8B0000;
+        margin-bottom: 15px;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e0e0e0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -24px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ccc;
+    }
+    
+    .timeline-dot.active {
+        background: #4CAF50;
+    }
+    
+    .timeline-dot.current {
+        background: #FF9800;
+        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.3);
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 5px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .info-item {
+        background: #fefcf8;
+        padding: 12px 15px;
+        border-radius: 10px;
+    }
+    
+    .info-item strong {
+        color: #8B0000;
+    }
+    
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="detail-card">
+        <div class="detail-header">
+            <h3><i class="fas fa-truck"></i> Livraison #{{ livraison.idLivraison }}</h3>
+            <p class="mb-0">Suivi de votre colis en temps réel</p>
+        </div>
+        <div class="detail-body">
+            <!-- Informations de la commande -->
+            <div class="info-section">
+                <h5><i class="fas fa-shopping-cart"></i> Informations commande</h5>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Numéro commande :</strong><br>
+                        #{{ commande.id }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Date commande :</strong><br>
+                        {{ commande.createdAt|date('d/m/Y H:i') }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Montant :</strong><br>
+                        {% if produit %}
+                            {{ produit.prix|number_format(2, ',', ' ') }} €
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div class="info-item">
+                        <strong>Statut commande :</strong><br>
+                        {% if commande.status == 'acceptee' %}
+                            <span class="badge bg-success">Acceptée</span>
+                        {% elseif commande.status == 'refusee' %}
+                            <span class="badge bg-danger">Refusée</span>
+                        {% elseif commande.status == 'annulee' %}
+                            <span class="badge bg-secondary">Annulée</span>
+                        {% else %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations livraison -->
+            <div class="info-section">
+                <h5><i class="fas fa-map-marker-alt"></i> Informations livraison</h5>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Adresse de livraison :</strong><br>
+                        {{ livraison.adresse }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Statut livraison :</strong><br>
+                        <span class="badge bg-{% if livraison.statutLivraison == 'livree' %}success{% elseif livraison.statutLivraison == 'en_cours' %}warning{% else %}secondary{% endif %}">
+                            {% if livraison.statutLivraison == 'en_cours' %}🚚 En cours
+                            {% elseif livraison.statutLivraison == 'livree' %}✅ Livrée
+                            {% elseif livraison.statutLivraison == 'annulee' %}❌ Annulée
+                            {% else %}⏳ En attente
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if livreur %}
+                    <div class="info-item">
+                        <strong>Livreur :</strong><br>
+                        {{ livreur.prenom }} {{ livreur.nom }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Téléphone livreur :</strong><br>
+                        {{ livreur.telephone }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Timeline de livraison -->
+            <div class="info-section">
+                <h5><i class="fas fa-chart-line"></i> Suivi de livraison</h5>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot active"></div>
+                        <div class="timeline-content">
+                            <h6>Commande validée</h6>
+                            <p class="text-muted small mb-0">Votre commande a été acceptée et préparée</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot 
+                            {% if livraison.statutLivraison == 'en_cours' %}current
+                            {% elseif livraison.statutLivraison == 'livree' %}active
+                            {% endif %}">
+                        </div>
+                        <div class="timeline-content">
+                            <h6>En cours de livraison</h6>
+                            <p class="text-muted small mb-0">Votre colis est en route vers votre adresse</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot {% if livraison.statutLivraison == 'livree' %}active{% endif %}"></div>
+                        <div class="timeline-content">
+                            <h6>Livrée</h6>
+                            <p class="text-muted small mb-0">Votre colis a été livré avec succès</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="text-center mt-4">
+                <a href="{{ path('app_client_livraisons') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à mes livraisons
+                </a>
+                {% if livraison.statutLivraison == 'en_cours' %}
+                    <form action="{{ path('app_client_livraison_annuler', {id: livraison.idLivraison}) }}" method="post" style="display: inline-block;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Annuler cette livraison ?')">
+                            <i class="fas fa-times"></i> Annuler la livraison
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

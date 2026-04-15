@@ -1,0 +1,271 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}{{ titre }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #5C4033;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-group .required-star {
+        color: #dc3545;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #E8D5B7;
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #8B0000;
+        box-shadow: 0 0 0 0.2rem rgba(139, 0, 0, 0.15);
+        outline: none;
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+        background-color: #fff0f0;
+    }
+    
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: #28a745;
+        background-color: #f0fff4;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        padding: 20px 25px;
+        color: white;
+    }
+    
+    .form-body {
+        padding: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>{{ titre }}</h3>
+        <a href="{{ path('app_admin_livraisons_liste') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="form-card">
+                <div class="form-header">
+                    <h4 class="mb-0">
+                        {% if livraison %}
+                            <i class="fas fa-edit"></i> Modifier la livraison
+                        {% else %}
+                            <i class="fas fa-plus"></i> Nouvelle livraison
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="form-body">
+                    <form method="post" 
+                          action="{% if livraison %}{{ path('app_admin_livraison_update', {id: livraison.idLivraison}) }}{% else %}{{ path('app_admin_livraison_create') }}{% endif %}"
+                          id="livraisonForm"
+                          novalidate>
+                        
+                        <!-- Commande -->
+                        <div class="form-group">
+                            <label for="id_commande">Commande <span class="required-star">*</span></label>
+                            <select id="id_commande" name="id_commande" class="form-select" {% if livraison %}disabled{% endif %}>
+                                <option value="">-- Sélectionner une commande --</option>
+                                {% for commande in commandes %}
+                                <option value="{{ commande.id }}" 
+                                    {% if formData.id_commande is defined and formData.id_commande == commande.id %}selected
+                                    {% elseif livraison and livraison.idCommande == commande.id %}selected
+                                    {% endif %}>
+                                    Commande #{{ commande.id }} - {{ commande.customerName }} - {{ commande.createdAt|date('d/m/Y') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.id_commande is defined %}
+                                <div class="invalid-feedback d-block">{{ errors.id_commande }}</div>
+                            {% endif %}
+                            {% if livraison %}
+                                <small class="help-text">La commande ne peut pas être modifiée</small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Livreur -->
+                        <div class="form-group">
+                            <label for="id_livreur">Livreur <span class="required-star">*</span></label>
+                            <select id="id_livreur" name="id_livreur" class="form-select" required>
+                                <option value="">-- Sélectionner un livreur --</option>
+                                {% for livreur in livreurs %}
+                                <option value="{{ livreur.idLivreur }}" 
+                                    {% if formData.id_livreur is defined and formData.id_livreur == livreur.idLivreur %}selected
+                                    {% elseif livraison and livraison.idLivreur == livreur.idLivreur %}selected
+                                    {% endif %}>
+                                    {{ livreur.prenom }} {{ livreur.nom }} - {{ livreur.telephone }} 
+                                    {% if livreur.disponibilite %}(Disponible){% else %}(Indisponible){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.id_livreur is defined %}
+                                <div class="invalid-feedback d-block">{{ errors.id_livreur }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Adresse -->
+                        <div class="form-group">
+                            <label for="adresse">Adresse de livraison <span class="required-star">*</span></label>
+                            <textarea id="adresse" 
+                                      name="adresse" 
+                                      class="form-control" 
+                                      rows="3" 
+                                      required
+                                      minlength="5"
+                                      maxlength="500">{% if formData.adresse is defined %}{{ formData.adresse }}{% elseif livraison %}{{ livraison.adresse }}{% endif %}</textarea>
+                            {% if errors.adresse is defined %}
+                                <div class="invalid-feedback d-block">{{ errors.adresse }}</div>
+                            {% else %}
+                                <small class="help-text">Entre 5 et 500 caractères</small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Statut -->
+                        <div class="form-group">
+                            <label for="statut_livraison">Statut <span class="required-star">*</span></label>
+                            <select id="statut_livraison" name="statut_livraison" class="form-select" required>
+                                <option value="en_cours" {% if (formData.statut_livraison is defined and formData.statut_livraison == 'en_cours') or (livraison and livraison.statutLivraison == 'en_cours') %}selected{% endif %}>
+                                    🚚 En cours
+                                </option>
+                                <option value="livree" {% if (formData.statut_livraison is defined and formData.statut_livraison == 'livree') or (livraison and livraison.statutLivraison == 'livree') %}selected{% endif %}>
+                                    ✅ Livrée
+                                </option>
+                                <option value="annulee" {% if (formData.statut_livraison is defined and formData.statut_livraison == 'annulee') or (livraison and livraison.statutLivraison == 'annulee') %}selected{% endif %}>
+                                    ❌ Annulée
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('app_admin_livraisons_liste') }}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('livraisonForm');
+    const commandeSelect = document.getElementById('id_commande');
+    const livreurSelect = document.getElementById('id_livreur');
+    const adresseTextarea = document.getElementById('adresse');
+    
+    // Validation de la commande (si non désactivé)
+    if (commandeSelect && !commandeSelect.disabled) {
+        commandeSelect.addEventListener('change', function() {
+            if (this.value === '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Validation du livreur
+    livreurSelect.addEventListener('change', function() {
+        if (this.value === '') {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Validation de l'adresse
+    adresseTextarea.addEventListener('input', function() {
+        const value = this.value.trim();
+        
+        if (value.length === 0) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (value.length < 5) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (value.length > 500) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Validation au submit
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+        
+        if (commandeSelect && !commandeSelect.disabled && !commandeSelect.value) {
+            commandeSelect.classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!livreurSelect.value) {
+            livreurSelect.classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (!adresseTextarea.value.trim()) {
+            adresseTextarea.classList.add('is-invalid');
+            hasError = true;
+        } else if (adresseTextarea.value.trim().length < 5) {
+            adresseTextarea.classList.add('is-invalid');
+            hasError = true;
+        }
+        
+        if (hasError) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

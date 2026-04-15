@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Liste des utilisateurs</h1>
+    
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    
+    {# Bouton Ajouter - visible uniquement par l'admin #}
+    {% if app.user and app.user.role == 'admin' %}
+        <a href="{{ path('app_utilisateur_nouveau') }}" class="btn btn-primary mb-3">
+            <i class="fas fa-plus"></i> Ajouter un utilisateur
+        </a>
+    {% endif %}
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Région</th>
+                    <th>Date naissance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in utilisateurs %}
+                <tr>
+                    <td>{{ u.idUtilisateur }}</td>
+                    <td>{{ u.nom }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        {% if u.role == 'admin' %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                            <span class="badge bg-success">User</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.region ?: '-' }}</td>
+                    <td>{{ u.dateNaissance ? u.dateNaissance|date('d/m/Y') : '-' }}</td>
+                    <td>
+                        <a href="{{ path('app_utilisateur_editer', {id: u.idUtilisateur}) }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        
+                        {% if app.user and app.user.role == 'admin' and u.idUtilisateur != app.user.idUtilisateur %}
+                            <form action="{{ path('app_utilisateur_delete', {id: u.idUtilisateur}) }}" method="post" style="display:inline-block">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer {{ u.nom }} ?')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+    }
+    .btn-sm {
+        margin: 2px;
+    }
+</style>
+{% endblock %}

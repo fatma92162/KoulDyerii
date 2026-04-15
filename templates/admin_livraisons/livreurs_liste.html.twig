@@ -1,0 +1,220 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des livreurs{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.1);
+    }
+    
+    .stat-card.active {
+        border-color: #8B0000;
+        background: #FFF8F0;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .filter-bar {
+        background: #FFF8F0;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #E8D5B7;
+    }
+    
+    .btn-reset {
+        background: #E8D5B7;
+        border: none;
+        color: #8B4513;
+        border-radius: 50px;
+        padding: 10px 20px;
+    }
+    
+    .btn-reset:hover {
+        background: #D4A574;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>👨‍💼 Gestion des livreurs</h3>
+        <a href="{{ path('app_admin_livreur_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un livreur
+        </a>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card {% if status == '' %}active{% endif %}" onclick="filterByStatus('')">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total livreurs</div>
+        </div>
+        <div class="stat-card {% if status == 'disponible' %}active{% endif %}" onclick="filterByStatus('disponible')">
+            <div class="stat-number">{{ stats.disponibles }}</div>
+            <div class="stat-label">✅ Disponibles</div>
+        </div>
+        <div class="stat-card {% if status == 'indisponible' %}active{% endif %}" onclick="filterByStatus('indisponible')">
+            <div class="stat-number">{{ stats.indisponibles }}</div>
+            <div class="stat-label">❌ Indisponibles</div>
+        </div>
+    </div>
+
+    <!-- Barre de filtres -->
+    <div class="filter-bar">
+        <form method="get" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="🔍 Rechercher par ID, nom, prénom ou téléphone..." 
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">📊 Tous les statuts</option>
+                        <option value="disponible" {% if status == 'disponible' %}selected{% endif %}>✅ Disponibles</option>
+                        <option value="indisponible" {% if status == 'indisponible' %}selected{% endif %}>❌ Indisponibles</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>📅 Plus récents</option>
+                        <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>📅 Plus anciens</option>
+                        <option value="nom_asc" {% if sort == 'nom_asc' %}selected{% endif %}>🔤 Nom A→Z</option>
+                        <option value="nom_desc" {% if sort == 'nom_desc' %}selected{% endif %}>🔤 Nom Z→A</option>
+                        <option value="prenom_asc" {% if sort == 'prenom_asc' %}selected{% endif %}>👤 Prénom A→Z</option>
+                        <option value="prenom_desc" {% if sort == 'prenom_desc' %}selected{% endif %}>👤 Prénom Z→A</option>
+                        <option value="telephone_asc" {% if sort == 'telephone_asc' %}selected{% endif %}>📞 Téléphone croissant</option>
+                        <option value="telephone_desc" {% if sort == 'telephone_desc' %}selected{% endif %}>📞 Téléphone décroissant</option>
+                        <option value="status_asc" {% if sort == 'status_asc' %}selected{% endif %}>🟢 Disponibles d'abord</option>
+                        <option value="status_desc" {% if sort == 'status_desc' %}selected{% endif %}>🔴 Indisponibles d'abord</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ path('app_admin_livreurs_liste') }}" class="btn btn-reset">
+                        <i class="fas fa-undo"></i> Réinitialiser les filtres
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for livreur in livreurs %}
+                <tr>
+                    <td>{{ livreur.idLivreur }}</td>
+                    <td>{{ livreur.nom }}</td>
+                    <td>{{ livreur.prenom }}</td>
+                    <td>{{ livreur.telephone }}</td>
+                    <td>
+                        {% if livreur.disponibilite %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> Disponible
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-truck"></i> En livraison
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('app_admin_livreur_edit', {id: livreur.idLivreur}) }}" class="btn btn-sm btn-warning" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ path('app_admin_livreur_delete', {id: livreur.idLivreur}) }}" method="post" style="display: inline-block;" 
+                              onsubmit="return confirm('Supprimer définitivement {{ livreur.prenom }} {{ livreur.nom }} ?')">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                        <p>Aucun livreur trouvé.</p>
+                        <a href="{{ path('app_admin_livreur_new') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Ajouter un livreur
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterByStatus(statut) {
+    const url = new URL(window.location.href);
+    if (statut) {
+        url.searchParams.set('status', statut);
+    } else {
+        url.searchParams.delete('status');
+    }
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

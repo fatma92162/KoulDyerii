@@ -1,0 +1,359 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des livraisons{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.1);
+    }
+    
+    .stat-card.active {
+        border-color: #8B0000;
+        background: #FFF8F0;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .filter-bar {
+        background: #FFF8F0;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #E8D5B7;
+    }
+    
+    .btn-reset {
+        background: #E8D5B7;
+        border: none;
+        color: #8B4513;
+        border-radius: 50px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reset:hover {
+        background: #D4A574;
+        color: white;
+    }
+    
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-en_cours {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .status-livree {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-annulee {
+        background: #9E9E9E;
+        color: white;
+    }
+    
+    .btn-action-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+    
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        color: #000;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        color: #fff;
+    }
+    
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: #fff;
+    }
+    
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        color: #fff;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        border: none;
+        color: #fff;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #A52A2A, #8B0000);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: #fff;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: #fff;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h3>🚚 Liste des livraisons</h3>
+        <div class="btn-group">
+            <a href="{{ path('app_admin_livraison_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle livraison
+            </a>
+            <a href="{{ path('app_admin_livraisons_index') }}" class="btn btn-secondary">
+                <i class="fas fa-truck"></i> Affecter un livreur
+            </a>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card {% if statusFilter == '' %}active{% endif %}" onclick="filterByStatus('')">
+            <div class="stat-number">{{ stats.total|default(0) }}</div>
+            <div class="stat-label">Total livraisons</div>
+        </div>
+        <div class="stat-card {% if statusFilter == 'en_cours' %}active{% endif %}" onclick="filterByStatus('en_cours')">
+            <div class="stat-number">{{ stats.en_cours|default(0) }}</div>
+            <div class="stat-label">🚚 En cours</div>
+        </div>
+        <div class="stat-card {% if statusFilter == 'livree' %}active{% endif %}" onclick="filterByStatus('livree')">
+            <div class="stat-number">{{ stats.livree|default(0) }}</div>
+            <div class="stat-label">✅ Livrées</div>
+        </div>
+        <div class="stat-card {% if statusFilter == 'annulee' %}active{% endif %}" onclick="filterByStatus('annulee')">
+            <div class="stat-number">{{ stats.annulee|default(0) }}</div>
+            <div class="stat-label">❌ Annulées</div>
+        </div>
+    </div>
+
+    <!-- Barre de filtres -->
+    <div class="filter-bar">
+        <form method="get" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="🔍 Rechercher par commande, livreur ou adresse..." 
+                           value="{{ search|default('') }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">📊 Tous les statuts</option>
+                        <option value="en_cours" {% if statusFilter == 'en_cours' %}selected{% endif %}>🚚 En cours</option>
+                        <option value="livree" {% if statusFilter == 'livree' %}selected{% endif %}>✅ Livrées</option>
+                        <option value="annulee" {% if statusFilter == 'annulee' %}selected{% endif %}>❌ Annulées</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>📅 Plus récentes</option>
+                        <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>📅 Plus anciennes</option>
+                        <option value="statut_asc" {% if sort == 'statut_asc' %}selected{% endif %}>📊 Statut A→Z</option>
+                        <option value="statut_desc" {% if sort == 'statut_desc' %}selected{% endif %}>📊 Statut Z→A</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ path('app_admin_livraisons_liste') }}" class="btn btn-reset">
+                        <i class="fas fa-undo"></i> Réinitialiser les filtres
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Livraison</th>
+                    <th>Commande #</th>
+                    <th>Adresse</th>
+                    <th>Livreur</th>
+                    <th>Statut</th>
+                    <th style="width: 280px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for livraison in livraisons %}
+                <tr>
+                    <td>{{ livraison.idLivraison }}</td>
+                    <td>
+                        <span class="badge bg-info">#{{ livraison.idCommande }}</span>
+                    </td>
+                    <td>{{ livraison.adresse|slice(0, 50) }}{% if livraison.adresse|length > 50 %}...{% endif %}</td>
+                    <td>
+                        {% if livraison.livreur %}
+                            <strong>{{ livraison.livreur.prenom }} {{ livraison.livreur.nom }}</strong>
+                            <br>
+                            <small class="text-muted">{{ livraison.livreur.telephone }}</small>
+                        {% else %}
+                            Livreur #{{ livraison.idLivreur }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ livraison.statutLivraison }}">
+                            {% if livraison.statutLivraison == 'en_cours' %}
+                                🚚 En cours
+                            {% elseif livraison.statutLivraison == 'livree' %}
+                                ✅ Livrée
+                            {% elseif livraison.statutLivraison == 'annulee' %}
+                                ❌ Annulée
+                            {% else %}
+                                ⏳ {{ livraison.statutLivraison }}
+                            {% endif %}
+                        </span>
+                     </td>
+                    <td>
+                        <div class="btn-action-group">
+                            <!-- Bouton MODIFIER -->
+                            <a href="{{ path('app_admin_livraison_edit', {id: livraison.idLivraison}) }}" 
+                               class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            
+                            <!-- Bouton SUPPRIMER -->
+                            <form action="{{ path('app_admin_livraison_delete', {id: livraison.idLivraison}) }}" 
+                                  method="post" 
+                                  style="display: inline-block;" 
+                                  onsubmit="return confirm('⚠️ Supprimer définitivement cette livraison ?')">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                            
+                            <!-- Bouton TERMINER (visible seulement si en cours) -->
+                            {% if livraison.statutLivraison == 'en_cours' %}
+                                <form action="{{ path('app_admin_livraison_terminer', {id: livraison.idLivraison}) }}" 
+                                      method="post" 
+                                      style="display: inline-block;">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('✅ Confirmer la livraison ?')">
+                                        <i class="fas fa-check"></i> Terminer
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="fas fa-truck fa-3x text-muted mb-3 d-block"></i>
+                        <p class="mb-3">Aucune livraison trouvée.</p>
+                        <a href="{{ path('app_admin_livraison_new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer une livraison
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterByStatus(status) {
+    const url = new URL(window.location.href);
+    if (status) {
+        url.searchParams.set('status', status);
+    } else {
+        url.searchParams.delete('status');
+    }
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes livraisons - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        color: white;
+        text-align: center;
+    }
+    
+    .livraison-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .livraison-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .livraison-header {
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0e6d6;
+    }
+    
+    .livraison-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+    
+    .livraison-body {
+        padding: 20px;
+    }
+    
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-en_cours {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .status-livree {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-annulee {
+        background: #9E9E9E;
+        color: white;
+    }
+    
+    .status-en_attente {
+        background: #2196F3;
+        color: white;
+    }
+    
+    .tracking-step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .tracking-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f0e6d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #8B0000;
+    }
+    
+    .tracking-icon.active {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .tracking-icon.current {
+        background: #FF9800;
+        color: white;
+    }
+    
+    .tracking-content {
+        flex: 1;
+    }
+    
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+    
+    .btn-track {
+        background: #8B0000;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-track:hover {
+        background: #A52A2A;
+        transform: translateY(-2px);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+    }
+    
+    .empty-state i {
+        font-size: 64px;
+        color: #ccc;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-truck"></i> Mes livraisons</h1>
+        <p class="mb-0">Suivez l'état de vos livraisons en temps réel</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('info') %}
+        <div class="alert alert-info alert-dismissible fade show">
+            <i class="fas fa-info-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    
+    {% if livraisons|length > 0 %}
+        {% for livraison in livraisons %}
+        <div class="livraison-card">
+            <div class="livraison-header">
+                <h5>Livraison #{{ livraison.idLivraison }}</h5>
+                <span class="status-badge status-{{ livraison.statutLivraison }}">
+                    {% if livraison.statutLivraison == 'en_cours' %}
+                        🚚 En cours
+                    {% elseif livraison.statutLivraison == 'livree' %}
+                        ✅ Livrée
+                    {% elseif livraison.statutLivraison == 'annulee' %}
+                        ❌ Annulée
+                    {% else %}
+                        ⏳ En attente
+                    {% endif %}
+                </span>
+            </div>
+            <div class="livraison-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>📦 Commande #{{ livraison.commande.id }}</strong></p>
+                        <p><strong>📍 Adresse de livraison :</strong> {{ livraison.adresse }}</p>
+                        <p><strong>📅 Date de commande :</strong> {{ livraison.commande.createdAt|date('d/m/Y H:i') }}</p>
+                        {% if livraison.livreur %}
+                            <p><strong>👨‍💼 Livreur :</strong> {{ livraison.livreur.prenom }} {{ livraison.livreur.nom }}</p>
+                            <p><strong>📞 Téléphone livreur :</strong> {{ livraison.livreur.telephone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Tracking de livraison -->
+                        <div class="tracking-step">
+                            <div class="tracking-icon {% if livraison.statutLivraison != 'annulee' %}active{% endif %}">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="tracking-content">
+                                <strong>Commande validée</strong>
+                                <small class="text-muted d-block">Votre commande a été acceptée</small>
+                            </div>
+                        </div>
+                        <div class="tracking-step">
+                            <div class="tracking-icon {% if livraison.statutLivraison == 'en_cours' %}current{% endif %}">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="tracking-content">
+                                <strong>En cours de livraison</strong>
+                                <small class="text-muted d-block">Votre colis est en route</small>
+                            </div>
+                        </div>
+                        <div class="tracking-step">
+                            <div class="tracking-icon {% if livraison.statutLivraison == 'livree' %}active{% endif %}">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="tracking-content">
+                                <strong>Livrée</strong>
+                                <small class="text-muted d-block">Votre colis a été livré</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-end">
+                    <a href="{{ path('app_client_livraison_commande', {id: livraison.commande.id}) }}" class="btn btn-track">
+                        <i class="fas fa-eye"></i> Voir les détails
+                    </a>
+                    {% if livraison.statutLivraison == 'en_cours' %}
+                        <form action="{{ path('app_client_livraison_annuler', {id: livraison.idLivraison}) }}" method="post" style="display: inline-block;">
+                            <button type="submit" class="btn btn-cancel" onclick="return confirm('Annuler cette livraison ?')">
+                                <i class="fas fa-times"></i> Annuler la livraison
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-truck"></i>
+            <h4>Aucune livraison trouvée</h4>
+            <p class="text-muted">Vous n'avez pas encore de livraisons en cours.</p>
+            <a href="{{ path('app_produits_index') }}" class="btn btn-primary">
+                <i class="fas fa-store"></i> Découvrir nos produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
