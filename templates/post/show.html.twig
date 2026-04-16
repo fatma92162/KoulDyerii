@@ -74,15 +74,41 @@
         color: #444;
     }
 
+    .post-body {
+        margin-top: 15px;
+    }
+    .post-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+    }
+    .post-body p {
+        margin-bottom: 1em;
+    }
+
     .post-image {
         width: 100%;
         max-height: 480px;
         object-fit: cover;
     }
 
+    .post-gif {
+        margin: 0 25px 20px;
+        text-align: center;
+    }
+    .post-gif img {
+        max-height: 300px;
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
     .post-actions {
         padding: 15px 25px;
         border-top: 1px solid #f0e6d6;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
     .btn-like {
@@ -134,6 +160,22 @@
         background: #5bc0de;
     }
 
+    .btn-signal {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #d9534f;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-signal:hover {
+        border-color: #d9534f;
+        background: #fff0f0;
+    }
+
     .comment-card {
         background: white;
         border-radius: 16px;
@@ -159,6 +201,21 @@
         font-size: 15px;
         line-height: 1.6;
     }
+    .comment-body p {
+        margin-bottom: 0.5em;
+    }
+
+    .comment-gif {
+        margin-top: 10px;
+        max-height: 150px;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+    .comment-gif img {
+        max-height: 150px;
+        width: auto;
+        border-radius: 8px;
+    }
 
     .comment-like {
         padding: 12px 20px;
@@ -183,6 +240,27 @@
     .btn-comment-like.reacted {
         background: #fff0f0;
         color: #FF6B6B;
+    }
+
+    .btn-reply {
+        background: none;
+        border: none;
+        color: #5bc0de;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-reply:hover {
+        color: #FF6B6B;
+        text-decoration: underline;
+    }
+
+    .reply-form-container {
+        margin-left: 40px;
+        margin-top: 10px;
     }
 
     .comment-actions button {
@@ -225,6 +303,126 @@
         font-size: 13px;
         margin-top: 5px;
         display: block;
+    }
+
+    .btn-gif {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 5px;
+    }
+    .btn-gif:hover {
+        background: #e0e0e0;
+    }
+    .gif-preview {
+        margin-top: 10px;
+        display: inline-block;
+        position: relative;
+    }
+    .gif-preview img {
+        max-height: 100px;
+        border-radius: 8px;
+    }
+    .remove-gif {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+    }
+    .gif-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .gif-modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow: auto;
+        padding: 20px;
+    }
+    .gif-search-input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #f0e6d6;
+        border-radius: 30px;
+        margin-bottom: 15px;
+    }
+    .gif-results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+    .gif-item {
+        cursor: pointer;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .gif-item:hover {
+        transform: scale(1.05);
+    }
+    .gif-item img {
+        width: 100%;
+        height: auto;
+    }
+
+    .post-hashtags {
+        margin: 15px 25px 0;
+    }
+    .hashtag-link {
+        background: #f0e6d6;
+        color: #8B4513;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    .hashtag-link:hover {
+        background: #FF6B6B;
+        color: white;
+    }
+    
+    /* Style pour le texte formaté */
+    .post-body strong, .comment-body strong {
+        font-weight: 700;
+        color: #333;
+    }
+    .post-body em, .comment-body em {
+        font-style: italic;
+        color: #555;
+    }
+    .post-body ul, .comment-body ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    .post-body li, .comment-body li {
+        margin: 5px 0;
     }
 </style>
 {% endblock %}
@@ -304,8 +502,32 @@
 
                 <div class="post-content">
                     <h2 class="mb-3">{{ post.title }}</h2>
-                    <p>{{ post.content|nl2br }}</p>
+                    <div class="post-body">
+                        {# ✅ AFFICHAGE CORRIGÉ - Sans balises HTML visibles #}
+                        {% if post.content %}
+                            {{ post.content|striptags('<strong><em><ul><li><br><p>')|raw|nl2br }}
+                        {% else %}
+                            <p class="text-muted">Aucun contenu</p>
+                        {% endif %}
+                    </div>
                 </div>
+
+                <!-- Affichage des hashtags -->
+                {% if post.hashtags|length > 0 %}
+                    <div class="post-hashtags">
+                        {% for hashtag in post.hashtags %}
+                            <a href="{{ path('app_posts_hashtag', {name: hashtag.name}) }}" class="hashtag-link me-1">
+                                #{{ hashtag.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if post.gifUrl %}
+                    <div class="post-gif">
+                        <img src="{{ post.gifUrl }}" alt="GIF animé" class="img-fluid">
+                    </div>
+                {% endif %}
 
                 {% if post.imagePath %}
                     <img src="{{ post.imagePath }}" class="post-image" alt="Image du post">
@@ -318,14 +540,21 @@
                         <span id="post-like-emoji-{{ post.id }}">{% if userLikedPost %}❤️{% else %}👍{% endif %}</span>
                         <span id="post-like-count-{{ post.id }}">{{ postLikesCount|default(0) }}</span>
                     </button>
+
+                    <!-- Bouton Signaler (uniquement pour les utilisateurs connectés non auteurs) -->
+                    {% if app.user and app.user.idUtilisateur != post.utilisateur.idUtilisateur %}
+                        <button class="btn-signal" onclick="signalPost({{ post.id }})">
+                            <i class="fas fa-flag"></i> Signaler
+                        </button>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Commentaires -->
-            <h4 class="mb-3 mt-4">💬 Commentaires ({{ commentaires|length }})</h4>
+            <!-- ========== SECTION COMMENTAIRES AVEC RÉPONSES ========== -->
+            {% import _self as commentMacro %}
 
-            {% for commentaire in commentaires %}
-                <div class="comment-card">
+            {% macro renderComment(commentaire, userLikedComments, commentLikesCount, postId) %}
+                <div class="comment-card" id="comment-{{ commentaire.id }}">
                     <div class="comment-header">
                         <div class="d-flex align-items-center">
                             <div class="author-avatar" style="width: 38px; height: 38px; font-size: 16px;">
@@ -357,18 +586,58 @@
                     </div>
 
                     <div class="comment-body">
-                        <p class="mb-0">{{ commentaire.content|nl2br }}</p>
+                        {# ✅ AFFICHAGE CORRIGÉ DES COMMENTAIRES #}
+                        {{ commentaire.content|striptags('<strong><em><br>')|raw|nl2br }}
+                        {% if commentaire.gifUrl %}
+                            <div class="comment-gif mt-2">
+                                <img src="{{ commentaire.gifUrl }}" alt="GIF" class="img-fluid rounded">
+                            </div>
+                        {% endif %}
                     </div>
 
-                    <div class="comment-like">
+                    <div class="comment-like d-flex gap-3 align-items-center">
                         <button class="btn-comment-like {% if userLikedComments[commentaire.id] is defined and userLikedComments[commentaire.id] %}reacted{% endif %}"
                                 onclick="toggleCommentLike({{ commentaire.id }})"
                                 id="comment-like-btn-{{ commentaire.id }}">
                             <i class="fas fa-heart"></i>
                             <span id="comment-like-count-{{ commentaire.id }}">{{ commentLikesCount[commentaire.id]|default(0) }}</span>
                         </button>
+                        {% if app.user %}
+                            <button class="btn-reply" onclick="showReplyForm({{ commentaire.id }})">
+                                <i class="fas fa-reply"></i> Répondre
+                            </button>
+                        {% endif %}
                     </div>
+
+                    {# Formulaire de réponse (caché) #}
+                    <div id="reply-form-{{ commentaire.id }}" class="reply-form-container" style="display: none;">
+                        <form method="post" action="{{ path('app_post_comment', {id: postId}) }}" class="reply-form">
+                            <input type="hidden" name="parent_id" value="{{ commentaire.id }}">
+                            <textarea name="content" rows="2" class="form-control" placeholder="Écrivez votre réponse..." required></textarea>
+                            <div class="mt-2 d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="hideReplyForm({{ commentaire.id }})">Annuler</button>
+                                <button type="submit" class="btn btn-sm btn-primary">Répondre</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {# Affichage récursif des réponses #}
+                    {% if commentaire.replies is defined and commentaire.replies|length > 0 %}
+                        <div class="replies" style="margin-left: 40px; margin-top: 10px;">
+                            {% for reponse in commentaire.replies %}
+                                {{ _self.renderComment(reponse, userLikedComments, commentLikesCount, postId) }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
+            {% endmacro %}
+
+            <h4 class="mb-3 mt-4">💬 Commentaires ({{ commentaires|filter(c => c.parent is null)|length }})</h4>
+
+            {% for commentaire in commentaires %}
+                {% if commentaire.parent is null %}
+                    {{ commentMacro.renderComment(commentaire, userLikedComments, commentLikesCount, post.id) }}
+                {% endif %}
             {% else %}
                 <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm">
                     <i class="fas fa-comment-dots fa-3x mb-3 opacity-50"></i>
@@ -376,7 +645,7 @@
                 </div>
             {% endfor %}
 
-            <!-- Formulaire pour ajouter un commentaire avec validation -->
+            <!-- Formulaire pour ajouter un commentaire principal (sans parent) avec GIF -->
             {% if app.user %}
                 <div class="card shadow-sm mt-4">
                     <div class="card-body">
@@ -394,7 +663,31 @@
                                     <small class="text-muted">Le commentaire doit contenir entre 2 et 1000 caractères.</small>
                                 {% endif %}
                             </div>
-                            <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+
+                            <input type="hidden" name="gif_url" id="gif_url" value="{{ formData.gif_url|default('') }}">
+
+                            <div class="mb-2">
+                                <button type="button" class="btn-gif" id="openGifBtn">
+                                    <i class="fas fa-grin-tears"></i> Choisir un GIF
+                                </button>
+                            </div>
+
+                            <div id="gifPreviewContainer" class="gif-preview" style="display: none;">
+                                <img id="gifPreviewImg" src="" alt="GIF">
+                                <button type="button" class="remove-gif" id="removeGifBtn">×</button>
+                            </div>
+
+                            <div id="gifModal" class="gif-modal">
+                                <div class="gif-modal-content">
+                                    <h5>Rechercher un GIF</h5>
+                                    <input type="text" id="gifSearch" class="gif-search-input" placeholder="Ex: rigolade, chat, bonjour...">
+                                    <div id="gifResults" class="gif-results">
+                                        <p class="text-muted">Recherchez un GIF...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary mt-3">Publier le commentaire</button>
                         </form>
                     </div>
                 </div>
@@ -410,6 +703,7 @@
 </div>
 
 <script>
+// ========== FONCTIONS POUR LES LIKES, ÉPINGLAGE ==========
 function togglePostLike(postId) {
     fetch(`/posts/${postId}/like`, {
         method: 'POST',
@@ -425,7 +719,6 @@ function togglePostLike(postId) {
             const countEl = document.getElementById('post-like-count-' + postId);
             const emojiEl = document.getElementById('post-like-emoji-' + postId);
             const btn = document.getElementById('post-like-btn-' + postId);
-
             if (countEl) countEl.textContent = data.count;
             if (emojiEl && btn) {
                 if (data.liked) {
@@ -455,7 +748,6 @@ function toggleCommentLike(commentId) {
         if (data.success) {
             const countEl = document.getElementById('comment-like-count-' + commentId);
             const btn = document.getElementById('comment-like-btn-' + commentId);
-
             if (countEl) countEl.textContent = data.count;
             if (btn && data.liked) {
                 btn.classList.add('reacted');
@@ -470,15 +762,12 @@ function toggleCommentLike(commentId) {
 function togglePin(postId) {
     fetch(`/posts/${postId}/pin`, {
         method: 'POST',
-        headers: { 
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
     })
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            window.location.reload();
         } else {
             alert(data.message || 'Une erreur est survenue');
         }
@@ -487,6 +776,120 @@ function togglePin(postId) {
         console.error('Erreur pin:', err);
         alert('Erreur de connexion');
     });
+}
+
+// ========== FONCTIONS POUR LES RÉPONSES ==========
+function showReplyForm(commentId) {
+    const formDiv = document.getElementById('reply-form-' + commentId);
+    if (formDiv) formDiv.style.display = 'block';
+}
+function hideReplyForm(commentId) {
+    const formDiv = document.getElementById('reply-form-' + commentId);
+    if (formDiv) formDiv.style.display = 'none';
+}
+
+// ========== FONCTION SIGNALER ==========
+function signalPost(postId) {
+    if (confirm('Signaler cette publication ?')) {
+        fetch(`/posts/${postId}/signal`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                if (data.deleted) {
+                    window.location.href = "{{ path('app_posts_index') }}";
+                }
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => console.error('Erreur signalement:', err));
+    }
+}
+
+// ========== SÉLECTEUR GIF (GIPHY API) ==========
+const GIPHY_API_KEY = 'zG36o0wRo5KYA5d6RkTYynPz1HuEIRpc';
+
+const openBtn = document.getElementById('openGifBtn');
+const modal = document.getElementById('gifModal');
+const searchInput = document.getElementById('gifSearch');
+const resultsDiv = document.getElementById('gifResults');
+const gifUrlInput = document.getElementById('gif_url');
+const previewContainer = document.getElementById('gifPreviewContainer');
+const previewImg = document.getElementById('gifPreviewImg');
+const removeBtn = document.getElementById('removeGifBtn');
+
+let searchTimeout;
+
+if (openBtn) {
+    openBtn.addEventListener('click', () => {
+        modal.style.display = 'flex';
+        searchInput.focus();
+    });
+}
+if (modal) {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+}
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        if (query.length < 2) {
+            resultsDiv.innerHTML = '<p class="text-muted">Saisissez au moins 2 caractères...</p>';
+            return;
+        }
+        searchTimeout = setTimeout(() => {
+            resultsDiv.innerHTML = '<div class="text-center">Recherche...</div>';
+            fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=12&rating=g&lang=fr`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.data.length === 0) {
+                        resultsDiv.innerHTML = '<p class="text-muted">Aucun GIF trouvé</p>';
+                        return;
+                    }
+                    resultsDiv.innerHTML = '';
+                    data.data.forEach(gif => {
+                        const gifUrl = gif.images.original.url;
+                        const thumbnail = gif.images.fixed_height_small.url;
+                        const div = document.createElement('div');
+                        div.className = 'gif-item';
+                        div.innerHTML = `<img src="${thumbnail}" data-url="${gifUrl}">`;
+                        div.querySelector('img').addEventListener('click', () => {
+                            gifUrlInput.value = gifUrl;
+                            previewImg.src = thumbnail;
+                            previewContainer.style.display = 'inline-block';
+                            modal.style.display = 'none';
+                            searchInput.value = '';
+                            resultsDiv.innerHTML = '<p class="text-muted">Recherchez un GIF...</p>';
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    console.error('Erreur GIPHY:', err);
+                    resultsDiv.innerHTML = '<p class="text-danger">Erreur de chargement</p>';
+                });
+        }, 400);
+    });
+}
+if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+        gifUrlInput.value = '';
+        previewContainer.style.display = 'none';
+        previewImg.src = '';
+    });
+}
+if (gifUrlInput && gifUrlInput.value) {
+    previewImg.src = gifUrlInput.value;
+    previewContainer.style.display = 'inline-block';
 }
 </script>
 {% endblock %}

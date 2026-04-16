@@ -34,7 +34,6 @@
         }
     }
     
-    /* Partie gauche - Style tunisien */
     .login-left {
         background: linear-gradient(135deg, #2c1810 0%, #8B4513 50%, #D2691E 100%);
         padding: 50px 30px;
@@ -119,7 +118,6 @@
         opacity: 0.6;
     }
     
-    /* Partie droite - Formulaire */
     .login-right {
         padding: 50px 40px;
         background: white;
@@ -270,7 +268,7 @@
 <div class="login-container">
     <div class="login-card">
         <div class="row g-0">
-            <!-- Partie gauche - Présentation -->
+            <!-- Partie gauche -->
             <div class="col-md-5 login-left">
                 <h2>🍽️ Koul Dyeri</h2>
                 <p>Retrouvez vos saveurs préférées</p>
@@ -281,63 +279,49 @@
                 </div>
                 
                 <ul class="feature-list">
-                    <li>
-                        <i class="fas fa-utensils"></i>
-                        <span>Découvrez des recettes authentiques</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-users"></i>
-                        <span>Partagez vos créations culinaires</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-star"></i>
-                        <span>Gagnez des points de fidélité</span>
-                    </li>
+                    <li><i class="fas fa-utensils"></i><span>Découvrez des recettes authentiques</span></li>
+                    <li><i class="fas fa-users"></i><span>Partagez vos créations culinaires</span></li>
+                    <li><i class="fas fa-star"></i><span>Gagnez des points de fidélité</span></li>
                 </ul>
                 
-                <div class="spices-decoration">
-                    🌶️ 🍅 🍋 🍞 🧂
-                </div>
+                <div class="spices-decoration">🌶️ 🍅 🍋 🍞 🧂</div>
             </div>
             
-            <!-- Partie droite - Formulaire de connexion -->
+            <!-- Partie droite - Formulaire -->
             <div class="col-md-7 login-right">
                 <h3>Connexion</h3>
                 <p class="subtitle">Accédez à votre compte culinaire</p>
                 
                 {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show">
                         <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
+                {% endif %}
+
+                {# Blocage du compte #}
+                {% if last_username and loginAttemptService.isBlocked(last_username) %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>Compte bloqué</strong> pour 15 minutes. Vous pouvez le débloquer par email.
+                        <a href="{{ path('app_unlock_request') }}" class="btn btn-sm btn-primary mt-2">Débloquer maintenant</a>
+                    </div>
+                    {% do app.session.set('last_blocked_email', last_username) %}
                 {% endif %}
                 
                 <form method="post" id="loginForm">
                     <div class="form-group">
                         <label for="email">Adresse email</label>
-                        <input type="email" 
-                               class="form-control" 
-                               id="email" 
-                               name="email" 
-                               value="{{ last_username }}" 
-                               placeholder="exemple@email.com"
-                               required
-                               autofocus>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ last_username }}" placeholder="exemple@email.com" required autofocus>
                     </div>
                     
                     <div class="form-group">
                         <label for="password">Mot de passe</label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="password" 
-                               name="password" 
-                               placeholder="••••••••"
-                               required>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
                         <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
                     </div>
                     
                     <div class="forgot-password">
-                        <a href="#">Mot de passe oublié ?</a>
+                        <a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
                     </div>
                     
                     <div class="checkbox-group">
@@ -365,7 +349,6 @@
 function togglePassword() {
     const passwordField = document.getElementById('password');
     const icon = document.querySelector('.password-toggle');
-    
     if (passwordField.type === 'password') {
         passwordField.type = 'text';
         icon.classList.remove('fa-eye');
@@ -377,17 +360,13 @@ function togglePassword() {
     }
 }
 
-// Animation au submit
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     
-    // Validation de l'email
     emailInput.addEventListener('input', function() {
         const value = this.value.trim();
         const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
-        
         if (value.length > 0 && !emailRegex.test(value)) {
             this.classList.add('is-invalid');
         } else {
@@ -395,7 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Validation du mot de passe
     passwordInput.addEventListener('input', function() {
         if (this.value.length > 0 && this.value.length < 6) {
             this.classList.add('is-invalid');

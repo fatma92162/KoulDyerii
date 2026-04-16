@@ -7,8 +7,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class RegisterController extends AbstractController
 {
@@ -38,10 +39,9 @@ class RegisterController extends AbstractController
             $password = $request->request->get('password');
             $confirmPassword = $request->request->get('confirm_password');
             $region = $request->request->get('region');
-            $role = $request->request->get('role');
+            $role = $request->request->get('role', 'user');
             $dateNaissance = $request->request->get('dateNaissance');
             
-            // Gestion de la photo
             $photoFile = $request->files->get('photo');
             $photoPath = null;
 
@@ -49,7 +49,6 @@ class RegisterController extends AbstractController
                 'nom' => $nom,
                 'email' => $email,
                 'region' => $region,
-                'role' => $role,
                 'dateNaissance' => $dateNaissance
             ];
 
@@ -83,7 +82,7 @@ class RegisterController extends AbstractController
                 $errors['password'] = 'Le mot de passe ne peut pas dépasser 255 caractères';
             }
 
-            // Validation de la confirmation du mot de passe
+            // Validation de la confirmation
             if ($password !== $confirmPassword) {
                 $errors['confirm_password'] = 'Les mots de passe ne correspondent pas';
             }
@@ -106,23 +105,17 @@ class RegisterController extends AbstractController
                 }
             }
 
-            // Validation et upload de la photo
+            // Upload de la photo
             if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
                 $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-                $maxFileSize = 2 * 1024 * 1024; // 2 MB
-                
+                $maxFileSize = 2 * 1024 * 1024;
                 if (!in_array($photoFile->getMimeType(), $allowedMimeTypes)) {
-                    $errors['photo'] = 'Format de fichier non autorisé (JPEG, PNG, GIF, WEBP uniquement)';
+                    $errors['photo'] = 'Format de fichier non autorisé';
                 } elseif ($photoFile->getSize() > $maxFileSize) {
                     $errors['photo'] = 'Le fichier ne doit pas dépasser 2 Mo';
                 } else {
-                    // Créer le dossier uploads s'il n'existe pas
                     $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profiles';
-                    if (!file_exists($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
-                    
-                    // Générer un nom unique pour la photo
+                    if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
                     $extension = $photoFile->guessExtension();
                     $newFileName = uniqid() . '_' . time() . '.' . $extension;
                     $photoFile->move($uploadDir, $newFileName);
@@ -130,7 +123,6 @@ class RegisterController extends AbstractController
                 }
             }
 
-            // Si pas d'erreurs, créer l'utilisateur
             if (empty($errors)) {
                 $user = new Utilisateur();
                 $user->setNom($nom);
@@ -138,19 +130,23 @@ class RegisterController extends AbstractController
                 $user->setRole($role);
                 $user->setRegion($region);
                 $user->setPhoto($photoPath);
-                
                 if (!empty($dateNaissance)) {
                     $user->setDateNaissance(new \DateTime($dateNaissance));
                 }
-
-                $hashedPassword = $passwordHasher->hashPassword($user, $password);
-                $user->setMotDePasse($hashedPassword);
+                $user->setMotDePasse($passwordHasher->hashPassword($user, $password));
 
                 $em->persist($user);
                 $em->flush();
 
-                $this->addFlash('success', 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
-                return $this->redirectToRoute('app_login');
+                // 🔐 Connexion automatique - méthode standard
+                $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+                $this->container->get('security.token_storage')->setToken($token);
+                
+                // Sauvegarde du token en session (nécessaire pour la persistance)
+                $request->getSession()->set('_security_main', serialize($token));
+
+                $this->addFlash('success', 'Inscription réussie ! Vous êtes maintenant connecté.');
+                return $this->redirectToRoute('app_home');
             }
         }
 

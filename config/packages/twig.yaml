@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        loginAttemptService: '@App\Security\LoginAttemptService'
 
 when@test:
     twig:

@@ -27,11 +27,17 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $commandes = $this->commandRepository->findByUtilisateur($user->getIdUtilisateur());
+        $userId = method_exists($user, 'getIdUtilisateur')
+            ? $user->getIdUtilisateur()
+            : $user->getId();
+
+        $commandes = $this->commandRepository->findBy(
+            ['idUtilisateur' => $userId],
+            ['createdAt' => 'DESC']
+        );
 
         foreach ($commandes as $commande) {
-            $produit = $this->produitRepository->find($commande->getProductId());
-            $commande->produit = $produit;
+            $commande->produit = $this->produitRepository->find($commande->getProductId());
         }
 
         return $this->render('commandes/index.html.twig', [
@@ -48,6 +54,10 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        $userId = method_exists($user, 'getIdUtilisateur')
+            ? $user->getIdUtilisateur()
+            : $user->getId();
+
         $commande = $this->commandRepository->find($id);
 
         if (!$commande) {
@@ -55,7 +65,7 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_mes_commandes_index');
         }
 
-        if ($commande->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+        if ($commande->getIdUtilisateur() !== $userId) {
             $this->addFlash('error', 'Vous ne pouvez pas annuler cette commande');
             return $this->redirectToRoute('app_mes_commandes_index');
         }
@@ -81,6 +91,10 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        $userId = method_exists($user, 'getIdUtilisateur')
+            ? $user->getIdUtilisateur()
+            : $user->getId();
+
         $commande = $this->commandRepository->find($id);
 
         if (!$commande) {
@@ -88,7 +102,7 @@ class CommandeController extends AbstractController
             return $this->redirectToRoute('app_mes_commandes_index');
         }
 
-        if ($commande->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+        if ($commande->getIdUtilisateur() !== $userId) {
             $this->addFlash('error', 'Accès non autorisé');
             return $this->redirectToRoute('app_mes_commandes_index');
         }

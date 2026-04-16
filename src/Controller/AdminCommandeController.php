@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Commande;
+use App\Repository\AbandonedCommandeRepository;
 use App\Repository\CommandRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\VisitorActivityRepository;
@@ -19,7 +21,8 @@ class AdminCommandeController extends AbstractController
         private EntityManagerInterface $entityManager,
         private CommandRepository $commandRepository,
         private ProduitRepository $produitRepository,
-        private VisitorActivityRepository $visitorActivityRepository
+        private VisitorActivityRepository $visitorActivityRepository,
+        private AbandonedCommandeRepository $abandonedCommandeRepository
     ) {}
 
     private function checkAdmin(): void
@@ -46,6 +49,19 @@ class AdminCommandeController extends AbstractController
             $commande->produit = $this->produitRepository->find($commande->getProductId());
         }
 
+        $abandonedCommandes = $this->abandonedCommandeRepository->findBy(
+            ['status' => 'draft'],
+            ['updatedAt' => 'DESC']
+        );
+
+        foreach ($abandonedCommandes as $draft) {
+            $draft->produit = null;
+
+            if ($draft->getProductId()) {
+                $draft->produit = $this->produitRepository->find($draft->getProductId());
+            }
+        }
+
         $total = count($this->commandRepository->findAll());
         $enAttente = $this->commandRepository->countByStatus('en_attente');
         $acceptee = $this->commandRepository->countByStatus('acceptee');
@@ -66,6 +82,7 @@ class AdminCommandeController extends AbstractController
 
         return $this->render('admin_commandes/index.html.twig', [
             'commandes' => $commandes,
+            'abandonedCommandes' => $abandonedCommandes,
             'search' => $search,
             'status' => $status,
             'sort' => $sort,
@@ -73,6 +90,101 @@ class AdminCommandeController extends AbstractController
             'onlineVisitors' => $this->visitorActivityRepository->countOnlineVisitorsByRoute('app_produits_index', 5),
             'deviceStats' => $deviceStats,
         ]);
+    }
+
+    #[Route('/abandoned/{id}/accepter', name: 'app_admin_abandoned_commandes_accepter', methods: ['POST'])]
+    public function accepterAbandoned(int $id): Response
+    {
+        $this->checkAdmin();
+
+        $draft = $this->abandonedCommandeRepository->find($id);
+
+        if (!$draft) {
+            $this->addFlash('error', 'Lead abandonné non trouvé');
+            return $this->redirectToRoute('app_admin_commandes_index');
+        }
+
+        $createdCount = 0;
+        $firstCommandeId = null;
+
+        if ($draft->getProductId()) {
+            $commande = new Commande();
+            $commande->setProductId($draft->getProductId());
+            $commande->setCustomerName($draft->getCustomerName() ?: 'Client');
+            $commande->setPhone($draft->getPhone() ?: '');
+            $commande->setLocation($draft->getLocation() ?: '');
+            $commande->setCreatedAt(new \DateTime());
+            $commande->setStatus('acceptee');
+
+            $this->entityManager->persist($commande);
+            $this->entityManager->flush();
+
+            $firstCommandeId = $commande->getId();
+            $createdCount = 1;
+        } else {
+            $cartData = $draft->getCartData() ?? [];
+
+            foreach ($cartData as $item) {
+                $productId = (int) ($item['product_id'] ?? 0);
+                $quantity = max(1, (int) ($item['quantity'] ?? 1));
+
+                if ($productId <= 0) {
+                    continue;
+                }
+
+                for ($i = 0; $i < $quantity; $i++) {
+                    $commande = new Commande();
+                    $commande->setProductId($productId);
+                    $commande->setCustomerName($draft->getCustomerName() ?: 'Client');
+                    $commande->setPhone($draft->getPhone() ?: '');
+                    $commande->setLocation($draft->getLocation() ?: '');
+                    $commande->setCreatedAt(new \DateTime());
+                    $commande->setStatus('acceptee');
+
+                    $this->entityManager->persist($commande);
+                    $this->entityManager->flush();
+
+                    if ($firstCommandeId === null) {
+                        $firstCommandeId = $commande->getId();
+                    }
+
+                    $createdCount++;
+                }
+            }
+        }
+
+        if ($createdCount === 0) {
+            $this->addFlash('error', 'Impossible de convertir ce lead en commande');
+            return $this->redirectToRoute('app_admin_commandes_index');
+        }
+
+        $draft->setStatus('converted');
+        $draft->setConvertedToCommandeId($firstCommandeId);
+        $draft->setUpdatedAt(new \DateTime());
+        $this->entityManager->flush();
+
+        $this->addFlash('success', '✅ Lead converti en commande acceptée');
+        return $this->redirectToRoute('app_admin_commandes_index');
+    }
+
+    #[Route('/abandoned/{id}/refuser', name: 'app_admin_abandoned_commandes_refuser', methods: ['POST'])]
+    public function refuserAbandoned(int $id): Response
+    {
+        $this->checkAdmin();
+
+        $draft = $this->abandonedCommandeRepository->find($id);
+
+        if (!$draft) {
+            $this->addFlash('error', 'Lead abandonné non trouvé');
+            return $this->redirectToRoute('app_admin_commandes_index');
+        }
+
+        $draft->setStatus('refusee');
+        $draft->setUpdatedAt(new \DateTime());
+        $this->entityManager->flush();
+
+        $this->addFlash('info', '❌ Lead abandonné refusé');
+        return $this->redirectToRoute('app_admin_commandes_index');
     }
 
     #[Route('/export-lookalike', name: 'app_admin_commandes_export_lookalike', methods: ['GET'])]
@@ -351,4 +463,227 @@ class AdminCommandeController extends AbstractController
             'sort' => $request->request->get('sort', 'date_desc'),
         ]);
     }
+    #[Route('/live-data', name: 'app_admin_commandes_live_data', methods: ['GET'])]
+public function liveData(Request $request): JsonResponse
+{
+    $this->checkAdmin();
+
+    $search = $request->query->get('search', '');
+    $status = $request->query->get('status', '');
+    $sort = $request->query->get('sort', 'date_desc');
+
+    $commandes = $this->commandRepository->findByFilters($search, $status, $sort);
+
+    foreach ($commandes as $commande) {
+        $commande->produit = $this->produitRepository->find($commande->getProductId());
+    }
+
+    $abandonedCommandes = $this->abandonedCommandeRepository->findBy(
+        ['status' => 'draft'],
+        ['updatedAt' => 'DESC']
+    );
+
+    foreach ($abandonedCommandes as $draft) {
+        $draft->produit = null;
+
+        if ($draft->getProductId()) {
+            $draft->produit = $this->produitRepository->find($draft->getProductId());
+        }
+    }
+
+    $normalRows = '';
+
+    foreach ($commandes as $commande) {
+        $productPhoto = ($commande->produit && method_exists($commande->produit, 'getPhoto') && $commande->produit->getPhoto())
+            ? '/uploads/produits/' . $commande->produit->getPhoto()
+            : null;
+
+        $productName = ($commande->produit && method_exists($commande->produit, 'getNom'))
+            ? $commande->produit->getNom()
+            : 'Produit';
+
+        $productPrice = ($commande->produit && method_exists($commande->produit, 'getPrix'))
+            ? number_format((float) $commande->produit->getPrix(), 2, ',', ' ') . ' TND'
+            : '-';
+
+        $statusLabel = match ($commande->getStatus()) {
+            'en_attente' => 'Pending',
+            'acceptee' => 'Accepted',
+            'refusee' => 'Rejected',
+            'annulee' => 'Cancelled',
+            default => $commande->getStatus(),
+        };
+
+        $normalRows .= '
+            <tr>
+                <td><strong>' . $commande->getId() . '</strong></td>
+                <td>
+                    <div class="product-cell">' .
+                        ($productPhoto
+                            ? '<img src="' . htmlspecialchars($productPhoto) . '" alt="' . htmlspecialchars($productName) . '" class="product-thumb">'
+                            : '<span class="product-fallback">📦</span>') .
+                        '<div>
+                            <div>' . htmlspecialchars($productName) . '</div>
+                            <small class="text-secondary">x1</small>
+                        </div>
+                    </div>
+                </td>
+                <td>' . htmlspecialchars((string) $commande->getCustomerName()) . '</td>
+                <td>' . $commande->getCreatedAt()?->format('d M Y, H:i') . '</td>
+                <td>' . htmlspecialchars((string) $commande->getLocation()) . '</td>
+                <td><span class="status-pill status-' . htmlspecialchars((string) $commande->getStatus()) . '">' . htmlspecialchars($statusLabel) . '</span></td>
+                <td>' . $productPrice . '</td>
+                <td>
+                    <div class="actions-cell">';
+
+        if ($commande->getStatus() === 'en_attente') {
+            $normalRows .= '
+                        <form action="/admin/commandes/' . $commande->getId() . '/accepter" method="post" class="inline-form">
+                            <input type="hidden" name="status" value="' . htmlspecialchars($status) . '">
+                            <input type="hidden" name="search" value="' . htmlspecialchars($search) . '">
+                            <input type="hidden" name="sort" value="' . htmlspecialchars($sort) . '">
+                            <button type="submit" class="icon-btn" title="Accepter">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+
+                        <form action="/admin/commandes/' . $commande->getId() . '/refuser" method="post" class="inline-form">
+                            <input type="hidden" name="status" value="' . htmlspecialchars($status) . '">
+                            <input type="hidden" name="search" value="' . htmlspecialchars($search) . '">
+                            <input type="hidden" name="sort" value="' . htmlspecialchars($sort) . '">
+                            <button type="submit" class="icon-btn" title="Refuser">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>';
+        }
+
+        $normalRows .= '
+                        <a href="/admin/commandes/' . $commande->getId() . '/edit?status=' . urlencode($status) . '&search=' . urlencode($search) . '&sort=' . urlencode($sort) . '" class="icon-btn" title="Modifier">
+                            <i class="fas fa-pen"></i>
+                        </a>
+
+                        <form action="/admin/commandes/' . $commande->getId() . '/delete" method="post" class="inline-form" onsubmit="return confirm(\'Supprimer cette commande ?\');">
+                            <input type="hidden" name="status" value="' . htmlspecialchars($status) . '">
+                            <input type="hidden" name="search" value="' . htmlspecialchars($search) . '">
+                            <input type="hidden" name="sort" value="' . htmlspecialchars($sort) . '">
+                            <button type="submit" class="icon-btn" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>';
+    }
+
+    if ($normalRows === '') {
+        $normalRows = '<tr><td colspan="8" class="text-center py-4">Aucune commande trouvée.</td></tr>';
+    }
+
+    $abandonedRows = '';
+
+    foreach ($abandonedCommandes as $draft) {
+        $draftProductPhoto = ($draft->produit && method_exists($draft->produit, 'getPhoto') && $draft->produit->getPhoto())
+            ? '/uploads/produits/' . $draft->produit->getPhoto()
+            : null;
+
+        $draftProductName = ($draft->produit && method_exists($draft->produit, 'getNom'))
+            ? $draft->produit->getNom()
+            : null;
+
+        $cartData = method_exists($draft, 'getCartData') ? $draft->getCartData() : null;
+
+        $abandonedRows .= '
+            <tr>
+                <td><strong>#' . $draft->getId() . '</strong></td>
+                <td>';
+
+        if ($draftProductName) {
+            $abandonedRows .= '
+                    <div class="product-cell">' .
+                        ($draftProductPhoto
+                            ? '<img src="' . htmlspecialchars($draftProductPhoto) . '" alt="' . htmlspecialchars($draftProductName) . '" class="product-thumb">'
+                            : '<span class="product-fallback">📦</span>') .
+                        '<div>
+                            <div>' . htmlspecialchars($draftProductName) . '</div>
+                            <small class="text-secondary">Produit direct</small>
+                        </div>
+                    </div>';
+        } elseif (!empty($cartData)) {
+            $abandonedRows .= '
+                    <div class="product-cell">
+                        <span class="product-fallback">🛒</span>
+                        <div>
+                            <div>Panier abandonné</div>
+                            <small class="text-secondary">' . count($cartData) . ' article(s)</small>
+                        </div>
+                    </div>';
+        } else {
+            $abandonedRows .= '
+                    <div class="product-cell">
+                        <span class="product-fallback">📦</span>
+                        <div>
+                            <div>Lead sans produit</div>
+                        </div>
+                    </div>';
+        }
+
+        $abandonedRows .= '
+                </td>
+                <td>' . htmlspecialchars((string) ($draft->getCustomerName() ?: '-')) . '</td>
+                <td>' . ($draft->getPhone()
+                    ? '<a href="tel:' . htmlspecialchars($draft->getPhone()) . '" style="color:#fff; text-decoration:underline;">' . htmlspecialchars($draft->getPhone()) . '</a>'
+                    : '-') . '</td>
+                <td>' . htmlspecialchars((string) ($draft->getLocation() ?: '-')) . '</td>
+                <td>' . htmlspecialchars((string) $draft->getSource()) . '</td>
+                <td>' . ($draft->getUpdatedAt() ? $draft->getUpdatedAt()->format('d M Y, H:i') : '-') . '</td>
+                <td><span class="status-pill status-en_attente">Abandonnée</span></td>
+                <td>
+                    <div class="actions-cell">
+                        <form action="/admin/commandes/abandoned/' . $draft->getId() . '/accepter" method="post" class="inline-form">
+                            <button type="submit" class="icon-btn" title="Accepter le lead">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+
+                        <form action="/admin/commandes/abandoned/' . $draft->getId() . '/refuser" method="post" class="inline-form">
+                            <button type="submit" class="icon-btn" title="Refuser le lead">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>';
+    }
+
+    if ($abandonedRows === '') {
+        $abandonedRows = '<tr><td colspan="9" class="text-center py-4">Aucune commande abandonnée.</td></tr>';
+    }
+
+    $latestOrder = null;
+
+    if (!empty($commandes)) {
+        $latestCommande = $commandes[0];
+        $latestProduit = $latestCommande->produit;
+
+        $latestOrder = [
+            'customerName' => $latestCommande->getCustomerName(),
+            'phone' => $latestCommande->getPhone(),
+            'productName' => $latestProduit && method_exists($latestProduit, 'getNom') ? $latestProduit->getNom() : 'Produit',
+            'price' => $latestProduit && method_exists($latestProduit, 'getPrix')
+                ? number_format((float) $latestProduit->getPrix(), 2, ',', ' ') . ' TND'
+                : '-',
+            'photo' => $latestProduit && method_exists($latestProduit, 'getPhoto') && $latestProduit->getPhoto()
+                ? '/uploads/produits/' . $latestProduit->getPhoto()
+                : null,
+        ];
+    }
+
+    return $this->json([
+        'normalCount' => count($commandes),
+        'abandonedCount' => count($abandonedCommandes),
+        'normalRows' => $normalRows,
+        'abandonedRows' => $abandonedRows,
+        'latestOrder' => $latestOrder,
+    ]);
+}
 }

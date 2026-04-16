@@ -1,126 +1,52 @@
 <?php
-
 namespace App\Service;
 
 use App\Entity\Pointssolde;
 use App\Entity\Utilisateur;
-use App\Repository\PointssoldeRepository;
-use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class PointsFideliteService
 {
-    private PointssoldeRepository $pointsRepository;
-    private UtilisateurRepository $utilisateurRepository;
-    private EntityManagerInterface $entityManager;
+    public function __construct(private EntityManagerInterface $em) {}
 
-    public const POINTS_PUBLICATION = 10;
-    public const POINTS_COMMENTAIRE = 5;
-    public const POINTS_LIKE_RECU = 2;
-    public const POINTS_LIKE_DONNE = 1;
-
-    public function __construct(
-        PointssoldeRepository $pointsRepository,
-        UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
-    ) {
-        $this->pointsRepository = $pointsRepository;
-        $this->utilisateurRepository = $utilisateurRepository;
-        $this->entityManager = $entityManager;
+    public function getSolde(int $utilisateurId): int
+    {
+        $solde = $this->em->getRepository(Pointssolde::class)->findOneBy(['utilisateur' => $utilisateurId]);
+        return $solde ? $solde->getSolde() : 0;
     }
 
-    public function ajouterPoints(int $idUtilisateur, int $points, string $raison = ""): Pointssolde
+    public function ajouterPoints(int $utilisateurId, int $points, string $raison = ''): void
     {
-        $utilisateur = $this->utilisateurRepository->find($idUtilisateur);
-        
-        if (!$utilisateur) {
-            throw new \Exception("Utilisateur non trouvé avec l'ID: " . $idUtilisateur);
+        $utilisateur = $this->em->getRepository(Utilisateur::class)->find($utilisateurId);
+        if (!$utilisateur) return;
+
+        $solde = $this->em->getRepository(Pointssolde::class)->findOneBy(['utilisateur' => $utilisateur]);
+        if (!$solde) {
+            $solde = new Pointssolde();
+            $solde->setUtilisateur($utilisateur);
+            $solde->setSolde(0);
+            $now = new \DateTime();
+            $solde->setDateCreation($now);
+            $solde->setDateModification($now);
+            $this->em->persist($solde);
+        } else {
+            $solde->setDateModification(new \DateTime());
         }
-        
-        $pointsSolde = $this->pointsRepository->findOneBy(["utilisateur" => $utilisateur]);
-        
-        if (!$pointsSolde) {
-            $pointsSolde = new Pointssolde();
-            $pointsSolde->setUtilisateur($utilisateur);
-            $pointsSolde->setSolde(0);
-            $pointsSolde->setDateCreation(new \DateTime());
-            $pointsSolde->setDateModification(new \DateTime());
-            $this->entityManager->persist($pointsSolde);
+        $solde->setSolde($solde->getSolde() + $points);
+        $this->em->flush();
+    }
+
+    public function retirerPoints(int $utilisateurId, int $points, string $raison = ''): void
+    {
+        $this->ajouterPoints($utilisateurId, -$points, $raison);
+    }
+
+    public function supprimerSolde(int $utilisateurId): void
+    {
+        $solde = $this->em->getRepository(Pointssolde::class)->findOneBy(['utilisateur' => $utilisateurId]);
+        if ($solde) {
+            $this->em->remove($solde);
+            $this->em->flush();
         }
-        
-        $pointsSolde->setSolde($pointsSolde->getSolde() + $points);
-        $pointsSolde->setDateModification(new \DateTime());
-        $this->entityManager->flush();
-        
-        return $pointsSolde;
-    }
-
-    public function retirerPoints(int $idUtilisateur, int $points, string $raison = ""): Pointssolde
-    {
-        $utilisateur = $this->utilisateurRepository->find($idUtilisateur);
-        
-        if (!$utilisateur) {
-            throw new \Exception("Utilisateur non trouvé avec l'ID: " . $idUtilisateur);
-        }
-        
-        $pointsSolde = $this->pointsRepository->findOneBy(["utilisateur" => $utilisateur]);
-        
-        if (!$pointsSolde) {
-            $pointsSolde = new Pointssolde();
-            $pointsSolde->setUtilisateur($utilisateur);
-            $pointsSolde->setSolde(0);
-            $pointsSolde->setDateCreation(new \DateTime());
-            $pointsSolde->setDateModification(new \DateTime());
-            $this->entityManager->persist($pointsSolde);
-        }
-        
-        $pointsSolde->setSolde(max(0, $pointsSolde->getSolde() - $points));
-        $pointsSolde->setDateModification(new \DateTime());
-        $this->entityManager->flush();
-        
-        return $pointsSolde;
-    }
-
-    public function getSolde(int $idUtilisateur): int
-    {
-        $utilisateur = $this->utilisateurRepository->find($idUtilisateur);
-        if (!$utilisateur) {
-            return 0;
-        }
-        
-        $pointsSolde = $this->pointsRepository->findOneBy(["utilisateur" => $utilisateur]);
-        return $pointsSolde ? $pointsSolde->getSolde() : 0;
-    }
-
-    public function supprimerSolde(int $idUtilisateur): void
-    {
-        $utilisateur = $this->utilisateurRepository->find($idUtilisateur);
-        if ($utilisateur) {
-            $pointsSolde = $this->pointsRepository->findOneBy(["utilisateur" => $utilisateur]);
-            if ($pointsSolde) {
-                $this->entityManager->remove($pointsSolde);
-                $this->entityManager->flush();
-            }
-        }
-    }
-
-    public function onPublicationAjoutee(int $idUtilisateur): void
-    {
-        $this->ajouterPoints($idUtilisateur, self::POINTS_PUBLICATION, "Nouvelle publication créée");
-    }
-
-    public function onCommentaireAjoute(int $idUtilisateur): void
-    {
-        $this->ajouterPoints($idUtilisateur, self::POINTS_COMMENTAIRE, "Nouveau commentaire ajouté");
-    }
-
-    public function onLikeRecu(int $idUtilisateur): void
-    {
-        $this->ajouterPoints($idUtilisateur, self::POINTS_LIKE_RECU, "Like reçu sur une publication");
-    }
-
-    public function onLikeDonne(int $idUtilisateur): void
-    {
-        $this->ajouterPoints($idUtilisateur, self::POINTS_LIKE_DONNE, "Like donné à une publication");
     }
 }

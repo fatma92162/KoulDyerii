@@ -4,97 +4,64 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: PasswordResetTokenRepository::class)]
-#[ORM\Table(name: 'password_reset_tokens')]
+#[ORM\Entity]
 class PasswordResetToken
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', nullable: false)]
+    private ?Utilisateur $user = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $token = null;
+
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $expiresAt = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(?int $id): self
+    public function getUser(): ?Utilisateur
     {
-        $this->id = $id;
+        return $this->user;
+    }
+
+    public function setUser(?Utilisateur $user): self
+    {
+        $this->user = $user;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $email = null;
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(?string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $token = null;
 
     public function getToken(): ?string
     {
         return $this->token;
     }
 
-    public function setToken(?string $token): self
+    public function setToken(string $token): self
     {
         $this->token = $token;
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $date_expiration = null;
-
-    public function getDate_expiration(): ?\DateTimeInterface
+    public function getExpiresAt(): ?\DateTimeInterface
     {
-        return $this->date_expiration;
+        return $this->expiresAt;
     }
 
-    public function setDate_expiration(?\DateTimeInterface $date_expiration): self
+    public function setExpiresAt(\DateTimeInterface $expiresAt): self
     {
-        $this->date_expiration = $date_expiration;
+        $this->expiresAt = $expiresAt;
         return $this;
     }
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $utilise = null;
-
-    public function getUtilise(): ?bool
+    public function isExpired(): bool
     {
-        return $this->utilise;
+        return $this->expiresAt < new \DateTime();
     }
-
-    public function setUtilise(?bool $utilise): self
-    {
-        $this->utilise = $utilise;
-        return $this;
-    }
-
-    public function getDateExpiration(): ?\DateTime
-    {
-        return $this->date_expiration;
-    }
-
-    public function setDateExpiration(\DateTime $date_expiration): static
-    {
-        $this->date_expiration = $date_expiration;
-
-        return $this;
-    }
-
-    public function isUtilise(): ?bool
-    {
-        return $this->utilise;
-    }
-
 }

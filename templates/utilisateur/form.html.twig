@@ -108,7 +108,6 @@
         box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
     }
 
-    /* ✅ États de validation */
     .form-control.is-valid,
     .form-select.is-valid {
         border-color: #28a745;
@@ -126,7 +125,6 @@
         box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12);
     }
 
-    /* ✅ Messages sous les champs */
     .field-message {
         font-size: 12px;
         margin-top: 6px;
@@ -150,7 +148,6 @@
         visibility: hidden;
     }
 
-    /* ✅ Barre de force du mot de passe */
     .password-strength {
         margin-top: 8px;
     }
@@ -175,7 +172,6 @@
         color: #999;
     }
 
-    /* ✅ Bouton afficher/masquer mot de passe */
     .toggle-pw {
         position: absolute;
         right: 15px;
@@ -194,7 +190,6 @@
         color: #FF6B6B;
     }
 
-    /* ✅ Compteur de caractères */
     .char-counter {
         font-size: 11px;
         color: #bbb;
@@ -283,7 +278,30 @@
         border: 1px solid #ffd4d4;
     }
 
-    /* ✅ Aperçu photo */
+    /* Aperçu photo/avatar */
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #f0e6d6;
+        background: #f8f9fa;
+        margin-bottom: 15px;
+    }
+    .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .avatar-option {
+        transition: transform 0.2s, border 0.2s;
+        cursor: pointer;
+    }
+    .avatar-option:hover {
+        transform: scale(1.1);
+        border-color: #FF6B6B !important;
+    }
+
     .photo-preview {
         margin-top: 10px;
         display: none;
@@ -465,25 +483,42 @@
                 <div id="date-msg" class="field-message hidden"></div>
             </div>
 
-            {# ── PHOTO DE PROFIL ── #}
+            {# ── PHOTO DE PROFIL / AVATAR (les deux options) ── #}
             <div class="form-group">
-                <label for="photo">🖼️ PHOTO DE PROFIL</label>
-                <div class="input-group">
-                    <span class="icon">🖼️</span>
-                    <input type="file"
-                           id="photo"
-                           name="photo"
-                           class="form-control"
-                           accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                <label>🖼️ PHOTO DE PROFIL / AVATAR</label>
+                
+                {# Aperçu commun #}
+                <div class="avatar-preview" id="avatarPreviewContainer">
+                    {% if utilisateur and utilisateur.photo %}
+                        <img src="{{ utilisateur.photo }}" id="avatarPreviewImg">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ utilisateur ? utilisateur.nom|url_encode : 'User' }}&background=FF6B6B&color=fff&bold=true&length=2&rounded=true" id="avatarPreviewImg">
+                    {% endif %}
                 </div>
-                <div id="photo-msg" class="field-message hidden"></div>
-                <div class="photo-preview" id="photo-preview">
-                    <img id="photo-thumb" src="#" alt="Aperçu">
-                    <p id="photo-info"></p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="small text-muted">📁 Télécharger une photo</label>
+                        <input type="file"
+                               id="photo"
+                               name="photo"
+                               class="form-control"
+                               accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                        <div id="photo-msg" class="field-message hidden"></div>
+                        <div class="photo-preview" id="photo-preview">
+                            <img id="photo-thumb" src="#" alt="Aperçu">
+                            <p id="photo-info"></p>
+                        </div>
+                        <small style="color:#aaa;font-size:12px;display:block">Formats : JPG, PNG, GIF, WEBP — Max 2 Mo</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted">🎨 Choisir un avatar</label>
+                        <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                            🎨 Choisir un avatar
+                        </button>
+                    </div>
                 </div>
-                <small style="color:#aaa;font-size:12px;margin-top:4px;display:block">
-                    Formats acceptés : JPG, PNG, GIF, WEBP — Max 2 Mo
-                </small>
+                <input type="hidden" name="avatar_url" id="avatarUrlInput" value="{{ utilisateur.photo ?? '' }}">
             </div>
 
             <button type="submit" class="btn-submit" id="submitBtn">
@@ -498,9 +533,26 @@
     </div>
 </div>
 
+{# MODALE DE SÉLECTION D'AVATARS #}
+<div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choisissez votre avatar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="avatar-list">
+                    <div class="text-center">Chargement...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 /* =========================================================
-   UTILITAIRES
+   UTILITAIRES (validation, etc.)
    ========================================================= */
 const isEdit = {{ utilisateur ? 'true' : 'false' }};
 
@@ -538,9 +590,7 @@ function resetState(inputId) {
     el.classList.remove('is-valid', 'is-invalid');
 }
 
-/* =========================================================
-   AFFICHER / MASQUER MOT DE PASSE
-   ========================================================= */
+/* Afficher / masquer mot de passe */
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
     if (input.type === 'password') {
@@ -642,7 +692,6 @@ function getPasswordStrength(pw) {
 function validatePassword() {
     const val = mdpInput.value;
 
-    // En mode édition, champ optionnel
     if (isEdit && val.length === 0) {
         resetState('motDePasse');
         clearMsg('mdp-msg');
@@ -657,7 +706,6 @@ function validatePassword() {
         return false;
     }
 
-    // Afficher la barre de force
     pwStrength.style.display = 'block';
     const score = getPasswordStrength(val);
     const levels = [
@@ -681,7 +729,6 @@ function validatePassword() {
 
     setValid('motDePasse');
     showMsg('mdp-msg', 'success', 'Mot de passe accepté.');
-    // Re-valider la confirmation si déjà remplie
     if (confirmInput.value.length > 0) validateConfirm();
     return true;
 }
@@ -690,7 +737,7 @@ mdpInput.addEventListener('input', validatePassword);
 mdpInput.addEventListener('blur', validatePassword);
 
 /* =========================================================
-   VALIDATION CONFIRMATION MOT DE PASSE
+   VALIDATION CONFIRMATION
    ========================================================= */
 const confirmInput = document.getElementById('confirm_password');
 
@@ -736,11 +783,10 @@ const dateInput = document.getElementById('dateNaissance');
 
 function validateDate() {
     const val = dateInput.value;
-
     if (val === '') {
         resetState('dateNaissance');
         clearMsg('date-msg');
-        return true; // optionnel
+        return true;
     }
 
     const birth    = new Date(val);
@@ -758,7 +804,6 @@ function validateDate() {
         return false;
     }
 
-    // Calcul de l'âge
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
@@ -778,7 +823,7 @@ dateInput.addEventListener('change', validateDate);
 dateInput.addEventListener('blur', validateDate);
 
 /* =========================================================
-   VALIDATION PHOTO
+   VALIDATION PHOTO (upload)
    ========================================================= */
 const photoInput   = document.getElementById('photo');
 const photoPreview = document.getElementById('photo-preview');
@@ -791,44 +836,95 @@ const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
 function validatePhoto() {
     const file = photoInput.files[0];
+    const avatarUrl = document.getElementById('avatarUrlInput').value;
 
-    if (!file) {
+    if (!file && !avatarUrl) {
         resetState('photo');
         clearMsg('photo-msg');
         photoPreview.style.display = 'none';
-        return true; // optionnel
+        return true; // pas d'erreur, car avatar peut être choisi
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-        setInvalid('photo');
-        showMsg('photo-msg', 'error', 'Format non accepté. Utilisez JPG, PNG, GIF ou WEBP.');
-        photoPreview.style.display = 'none';
-        return false;
+    if (file) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            setInvalid('photo');
+            showMsg('photo-msg', 'error', 'Format non accepté. Utilisez JPG, PNG, GIF ou WEBP.');
+            photoPreview.style.display = 'none';
+            return false;
+        }
+        if (file.size > MAX_SIZE_BYTES) {
+            setInvalid('photo');
+            const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+            showMsg('photo-msg', 'error', 'Fichier trop lourd (' + sizeMb + ' Mo). Maximum : 2 Mo.');
+            photoPreview.style.display = 'none';
+            return false;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            photoThumb.src = e.target.result;
+            photoInfo.textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
+            photoPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        setValid('photo');
+        showMsg('photo-msg', 'success', 'Photo valide.');
+        return true;
     }
-
-    if (file.size > MAX_SIZE_BYTES) {
-        setInvalid('photo');
-        const sizeMb = (file.size / 1024 / 1024).toFixed(2);
-        showMsg('photo-msg', 'error', 'Fichier trop lourd (' + sizeMb + ' Mo). Maximum : 2 Mo.');
-        photoPreview.style.display = 'none';
-        return false;
-    }
-
-    // Aperçu
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        photoThumb.src = e.target.result;
-        photoInfo.textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
-        photoPreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-
+    // Pas de fichier, mais avatar déjà renseigné (c'est ok)
     setValid('photo');
-    showMsg('photo-msg', 'success', 'Photo valide.');
+    showMsg('photo-msg', 'success', 'Avatar sélectionné.');
     return true;
 }
 
 photoInput.addEventListener('change', validatePhoto);
+
+/* =========================================================
+   GESTION DES AVATARS (modale)
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarList = document.getElementById('avatar-list');
+    const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+    const avatarUrlInput = document.getElementById('avatarUrlInput');
+    const photoField = document.getElementById('photo');
+
+    const styles = ['adventurer', 'avataaars', 'bottts', 'identicon', 'micah', 'open-peeps', 'pixel-art'];
+
+    function loadAvatars() {
+        avatarList.innerHTML = '';
+        styles.forEach(style => {
+            for (let i = 0; i < 6; i++) {
+                const seed = Math.random().toString(36).substring(7);
+                const url = `https://api.dicebear.com/9.x/${style}/svg?seed=${seed}&size=80`;
+                const col = document.createElement('div');
+                col.className = 'col-2 mb-3 text-center';
+                col.innerHTML = `<img src="${url}" style="width: 70px; height: 70px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="avatar-option" data-url="${url}">`;
+                avatarList.appendChild(col);
+            }
+        });
+    }
+
+    loadAvatars();
+
+    avatarList.addEventListener('click', (e) => {
+        const img = e.target.closest('.avatar-option');
+        if (img) {
+            const url = img.getAttribute('data-url');
+            // Mettre à jour l'aperçu
+            avatarPreviewImg.src = url;
+            // Stocker l'URL dans le champ caché
+            avatarUrlInput.value = url;
+            // Vider l'input file (priorité à l'avatar si les deux sont fournis)
+            if (photoField) photoField.value = '';
+            // Cacher l'aperçu de la photo uploadée
+            if (photoPreview) photoPreview.style.display = 'none';
+            // Fermer la modale
+            const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+            modal.hide();
+            // Mettre à jour la validation de la photo
+            validatePhoto();
+        }
+    });
+});
 
 /* =========================================================
    SOUMISSION DU FORMULAIRE
@@ -843,8 +939,6 @@ document.getElementById('profileForm').addEventListener('submit', function (e) {
 
     if (!nomOk || !emailOk || !mdpOk || !confirmOk || !dateOk || !photoOk) {
         e.preventDefault();
-
-        // Scroll vers la première erreur
         const firstError = document.querySelector('.is-invalid');
         if (firstError) {
             firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });

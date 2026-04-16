@@ -2,26 +2,26 @@
 
 namespace App\Controller;
 
+use App\Entity\AbandonedCommande;
 use App\Entity\Commande;
 use App\Entity\VisitorActivity;
+use App\Repository\AbandonedCommandeRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\VisitorActivityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
-
-
-
 
 #[Route('/produits')]
 class ProduitController extends AbstractController
 {
     public function __construct(
         private ProduitRepository $produitRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private AbandonedCommandeRepository $abandonedCommandeRepository
     ) {}
 
     #[Route('/', name: 'app_produits_index', methods: ['GET'])]
@@ -107,69 +107,158 @@ class ProduitController extends AbstractController
         return $this->redirectToRoute('app_panier_index');
     }
 
-    #[Route('/produits/panier/commander', name: 'app_panier_commander', methods: ['POST'])]
-public function commanderPanier(Request $request): Response
-{
-    $panier = $request->getSession()->get('panier', []);
+    #[Route('/abandoned/save', name: 'app_abandoned_commandes_save', methods: ['POST'])]
+    public function saveAbandonedCommande(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
 
-    if (empty($panier)) {
-        $this->addFlash('error', 'Votre panier est vide.');
-        return $this->redirectToRoute('app_panier_index');
-    }
-
-    $customerName = trim((string) $request->request->get('customer_name'));
-    $phone = trim((string) $request->request->get('phone'));
-    $location = trim((string) $request->request->get('location'));
-
-    if ($customerName === '' || $phone === '' || $location === '') {
-        $this->addFlash('error', 'Veuillez remplir tous les champs.');
-        return $this->redirectToRoute('app_panier_index');
-    }
-
-    $user = $this->getUser();
-    $createdCount = 0;
-
-    foreach ($panier as $productId => $quantite) {
-        $produit = $this->produitRepository->find($productId);
-
-        if (!$produit) {
-            continue;
+        if (!is_array($data)) {
+            $data = $request->request->all();
         }
 
-        for ($i = 0; $i < (int) $quantite; $i++) {
-            $commande = new Commande();
-            $commande->setProductId($produit->getIdProduit());
-            $commande->setCustomerName($customerName);
-            $commande->setPhone($phone);
-            $commande->setLocation($location);
-            $commande->setCreatedAt(new \DateTime());
-            $commande->setStatus('en_attente');
+        $phone = trim((string) ($data['phone'] ?? ''));
+        $customerName = trim((string) ($data['customer_name'] ?? ''));
+        $location = trim((string) ($data['location'] ?? ''));
+        $source = trim((string) ($data['source'] ?? 'panier'));
+        $productId = isset($data['product_id']) && $data['product_id'] !== '' ? (int) $data['product_id'] : null;
+        $draftId = isset($data['draft_id']) && $data['draft_id'] !== '' ? (int) $data['draft_id'] : null;
 
-            if ($user) {
-                if (method_exists($user, 'getIdUtilisateur')) {
-                    $commande->setIdUtilisateur($user->getIdUtilisateur());
-                } elseif (method_exists($user, 'getId')) {
-                    $commande->setIdUtilisateur($user->getId());
-                }
+        if ($phone === '' || strlen($phone) < 6) {
+            return $this->json([
+                'saved' => false,
+                'message' => 'Phone too short',
+            ]);
+        }
+
+        $draft = null;
+
+        if ($draftId > 0) {
+            $draft = $this->abandonedCommandeRepository->find($draftId);
+        }
+
+        if (!$draft) {
+            $draft = $this->abandonedCommandeRepository->findLatestDraftByPhone($phone, $source);
+        }
+
+        if (!$draft) {
+            $draft = new AbandonedCommande();
+            $draft->setCreatedAt(new \DateTime());
+            $draft->setStatus('draft');
+        }
+
+        $draft->setUpdatedAt(new \DateTime());
+        $draft->setPhone($phone);
+        $draft->setCustomerName($customerName !== '' ? $customerName : null);
+        $draft->setLocation($location !== '' ? $location : null);
+        $draft->setSource($source);
+
+        if ($source === 'panier') {
+            $panier = $request->getSession()->get('panier', []);
+            $cartData = [];
+
+            foreach ($panier as $id => $quantite) {
+                $cartData[] = [
+                    'product_id' => (int) $id,
+                    'quantity' => (int) $quantite,
+                ];
             }
 
-            $this->entityManager->persist($commande);
-            $createdCount++;
+            $draft->setCartData($cartData);
+            $draft->setProductId(null);
+        } else {
+            $draft->setProductId($productId);
+            $draft->setCartData(null);
         }
+
+        $this->entityManager->persist($draft);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'saved' => true,
+            'draft_id' => $draft->getId(),
+        ]);
     }
 
-    if ($createdCount === 0) {
-        $this->addFlash('error', 'Impossible de créer la commande.');
+    #[Route('/panier/commander', name: 'app_panier_commander', methods: ['POST'])]
+    public function commanderPanier(Request $request): Response
+    {
+        $panier = $request->getSession()->get('panier', []);
+
+        if (empty($panier)) {
+            $this->addFlash('error', 'Votre panier est vide.');
+            return $this->redirectToRoute('app_panier_index');
+        }
+
+        $customerName = trim((string) $request->request->get('customer_name'));
+        $phone = trim((string) $request->request->get('phone'));
+        $location = trim((string) $request->request->get('location'));
+        $draftId = (int) $request->request->get('abandoned_draft_id', 0);
+
+        if ($customerName === '' || $phone === '' || $location === '') {
+            $this->addFlash('error', 'Veuillez remplir tous les champs.');
+            return $this->redirectToRoute('app_panier_index');
+        }
+
+        $user = $this->getUser();
+        $createdCount = 0;
+        $firstCommandeId = null;
+
+        foreach ($panier as $productId => $quantite) {
+            $produit = $this->produitRepository->find($productId);
+
+            if (!$produit) {
+                continue;
+            }
+
+            for ($i = 0; $i < (int) $quantite; $i++) {
+                $commande = new Commande();
+                $commande->setProductId($produit->getIdProduit());
+                $commande->setCustomerName($customerName);
+                $commande->setPhone($phone);
+                $commande->setLocation($location);
+                $commande->setCreatedAt(new \DateTime());
+                $commande->setStatus('en_attente');
+
+                if ($user) {
+                    if (method_exists($user, 'getIdUtilisateur')) {
+                        $commande->setIdUtilisateur($user->getIdUtilisateur());
+                    } elseif (method_exists($user, 'getId')) {
+                        $commande->setIdUtilisateur($user->getId());
+                    }
+                }
+
+                $this->entityManager->persist($commande);
+                $this->entityManager->flush();
+
+                if ($firstCommandeId === null) {
+                    $firstCommandeId = $commande->getId();
+                }
+
+                $createdCount++;
+            }
+        }
+
+        if ($createdCount === 0) {
+            $this->addFlash('error', 'Impossible de créer la commande.');
+            return $this->redirectToRoute('app_panier_index');
+        }
+
+        if ($draftId > 0) {
+            $draft = $this->abandonedCommandeRepository->find($draftId);
+
+            if ($draft) {
+                $draft->setStatus('converted');
+                $draft->setUpdatedAt(new \DateTime());
+                $draft->setConvertedToCommandeId($firstCommandeId);
+                $this->entityManager->flush();
+            }
+        }
+
+        $request->getSession()->remove('panier');
+
+        $this->addFlash('success', $createdCount . ' commande(s) créée(s) avec succès.');
         return $this->redirectToRoute('app_panier_index');
     }
-
-    $this->entityManager->flush();
-
-    $request->getSession()->remove('panier');
-
-    $this->addFlash('success', $createdCount . ' commande(s) créée(s) avec succès.');
-    return $this->redirectToRoute('app_panier_index');
-}
 
     #[Route('/panier/{id}/modifier', name: 'app_panier_update', methods: ['POST'])]
     public function modifierPanier(int $id, Request $request): Response
@@ -244,7 +333,7 @@ public function commanderPanier(Request $request): Response
         return $this->redirectToRoute('app_produits_index');
     }
 
-    #[Route('/{id}/commander', name: 'app_produits_commander', methods: ['POST'])]
+    #[Route('/{id<\d+>}/commander', name: 'app_produits_commander', methods: ['POST'])]
     public function commander(int $id, Request $request): Response
     {
         $user = $this->getUser();
@@ -269,36 +358,40 @@ public function commanderPanier(Request $request): Response
         $customerName = trim((string) $request->request->get('customer_name'));
         $phone = trim((string) $request->request->get('phone'));
         $location = trim((string) $request->request->get('location'));
+        $draftId = (int) $request->request->get('abandoned_draft_id', 0);
 
         if ($customerName === '' || $phone === '' || $location === '') {
             $this->addFlash('error', 'Tous les champs sont obligatoires');
             return $this->redirectToRoute('app_produits_show', ['id' => $id]);
         }
 
-        $prix = (float) $produit->getPrix();
-
         $commande = new Commande();
         $commande->setProductId($produit->getIdProduit());
-        $commande->setIdUtilisateur($user->getIdUtilisateur());
         $commande->setCustomerName($customerName);
         $commande->setPhone($phone);
         $commande->setLocation($location);
         $commande->setCreatedAt(new \DateTime());
         $commande->setStatus('en_attente');
-        $commande->setTotal($prix);
-        $commande->setCartItems([
-            [
-                'product_id' => $produit->getIdProduit(),
-                'name' => $produit->getNom(),
-                'price' => $prix,
-                'quantity' => 1,
-                'subtotal' => $prix,
-                'photo' => $produit->getPhoto(),
-            ]
-        ]);
+
+        if (method_exists($user, 'getIdUtilisateur')) {
+            $commande->setIdUtilisateur($user->getIdUtilisateur());
+        } elseif (method_exists($user, 'getId')) {
+            $commande->setIdUtilisateur($user->getId());
+        }
 
         $this->entityManager->persist($commande);
         $this->entityManager->flush();
+
+        if ($draftId > 0) {
+            $draft = $this->abandonedCommandeRepository->find($draftId);
+
+            if ($draft) {
+                $draft->setStatus('converted');
+                $draft->setUpdatedAt(new \DateTime());
+                $draft->setConvertedToCommandeId($commande->getId());
+                $this->entityManager->flush();
+            }
+        }
 
         $this->addFlash('success', '✅ Votre commande a été envoyée avec succès !');
 

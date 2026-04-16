@@ -1,45 +1,39 @@
 <?php
-
 namespace App\Entity;
 
-use App\Repository\PointssoldeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: PointssoldeRepository::class)]
+#[ORM\Entity]
 #[ORM\Table(name: 'pointssolde')]
 class Pointssolde
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_points', type: 'integer')]
-    private ?int $idPoints = null;
+    private ?int $id_points = null;
 
-    #[ORM\Column(name: 'solde', type: 'integer', nullable: false, options: ['default' => 0])]
-    private ?int $solde = 0;
-
-    #[ORM\OneToOne(targetEntity: Utilisateur::class, inversedBy: 'pointsSolde')]
-    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'idUtilisateur', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\OneToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'idUtilisateur')]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\Column(name: 'date_creation', type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $dateCreation = null;
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $solde = 0;
 
-    #[ORM\Column(name: 'date_modification', type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $dateModification = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_modification = null;
+
+    // Getters / Setters
     public function getIdPoints(): ?int
     {
-        return $this->idPoints;
+        return $this->id_points;
     }
 
-    public function getSolde(): ?int
+    public function setIdPoints(?int $id_points): self
     {
-        return $this->solde;
-    }
-
-    public function setSolde(?int $solde): self
-    {
-        $this->solde = $solde;
+        $this->id_points = $id_points;
         return $this;
     }
 
@@ -54,25 +48,36 @@ class Pointssolde
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTimeInterface
+    public function getSolde(): int
     {
-        return $this->dateCreation;
+        return $this->solde;
     }
 
-    public function setDateCreation(?\DateTimeInterface $dateCreation): self
+    public function setSolde(int $solde): self
     {
-        $this->dateCreation = $dateCreation;
+        $this->solde = $solde;
+        return $this;
+    }
+
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->date_creation;
+    }
+
+    public function setDateCreation(?\DateTimeInterface $date_creation): self
+    {
+        $this->date_creation = $date_creation;
         return $this;
     }
 
     public function getDateModification(): ?\DateTimeInterface
     {
-        return $this->dateModification;
+        return $this->date_modification;
     }
 
-    public function setDateModification(?\DateTimeInterface $dateModification): self
+    public function setDateModification(?\DateTimeInterface $date_modification): self
     {
-        $this->dateModification = $dateModification;
+        $this->date_modification = $date_modification;
         return $this;
     }
 }

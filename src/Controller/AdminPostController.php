@@ -1,4 +1,5 @@
 <?php
+// src/Controller/AdminPostController.php
 
 namespace App\Controller;
 
@@ -8,6 +9,7 @@ use App\Entity\Reaction;
 use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\ReactionRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,10 +23,10 @@ class AdminPostController extends AbstractController
         private EntityManagerInterface $entityManager,
         private PostRepository $postRepository,
         private CommentaireRepository $commentaireRepository,
-        private ReactionRepository $reactionRepository
+        private ReactionRepository $reactionRepository,
+        private Connection $connection
     ) {}
 
-    // ✅ Vérification du rôle admin
     private function checkAdmin(): void
     {
         $user = $this->getUser();
@@ -33,7 +35,7 @@ class AdminPostController extends AbstractController
         }
     }
 
-    // ✅ Liste des publications avec likes, recherche, tri et statistiques
+    // ✅ Liste des publications + données pour les graphiques
     #[Route('/', name: 'app_admin_posts_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
@@ -46,17 +48,14 @@ class AdminPostController extends AbstractController
             ->leftJoin('p.utilisateur', 'u')
             ->addSelect('u');
         
-        // Recherche
         if (!empty($search)) {
             $qb->andWhere('p.title LIKE :search OR p.content LIKE :search OR u.nom LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
         
-        // Tri avec épinglés en premier
         switch ($sort) {
             case 'oldest':
-                $qb->orderBy('p.is_pinned', 'DESC')
-                   ->addOrderBy('p.created_at', 'ASC');
+                $qb->orderBy('p.is_pinned', 'DESC')->addOrderBy('p.created_at', 'ASC');
                 break;
             case 'popular':
                 $qb->leftJoin('p.commentaires', 'c')
@@ -65,66 +64,161 @@ class AdminPostController extends AbstractController
                    ->addOrderBy('COUNT(c.id)', 'DESC');
                 break;
             case 'pinned':
-                $qb->orderBy('p.is_pinned', 'DESC')
-                   ->addOrderBy('p.created_at', 'DESC');
+                $qb->orderBy('p.is_pinned', 'DESC')->addOrderBy('p.created_at', 'DESC');
                 break;
-            case 'recent':
             default:
-                $qb->orderBy('p.is_pinned', 'DESC')
-                   ->addOrderBy('p.created_at', 'DESC');
+                $qb->orderBy('p.is_pinned', 'DESC')->addOrderBy('p.created_at', 'DESC');
                 break;
         }
         
         $posts = $qb->getQuery()->getResult();
         
-        // Statistiques
+        // Statistiques des cartes
         $totalPosts = count($this->postRepository->findAll());
         $pinnedPosts = count($this->postRepository->findBy(['is_pinned' => true]));
-        $notPinnedPosts = $totalPosts - $pinnedPosts;
-        
         $stats = [
             'total' => $totalPosts,
             'pinned' => $pinnedPosts,
-            'not_pinned' => $notPinnedPosts,
+            'not_pinned' => $totalPosts - $pinnedPosts,
             'with_comments' => 0,
             'with_images' => 0
         ];
-        
-        // Compter les posts avec commentaires et images
         foreach ($posts as $post) {
-            if (count($post->getCommentaires()) > 0) {
-                $stats['with_comments']++;
-            }
-            if ($post->getImagePath()) {
-                $stats['with_images']++;
-            }
+            if (count($post->getCommentaires()) > 0) $stats['with_comments']++;
+            if ($post->getImagePath()) $stats['with_images']++;
         }
         
-        // Récupérer les likes pour chaque post
+        // Likes
         $likesCount = [];
         $userLikes = [];
         $user = $this->getUser();
-        
         foreach ($posts as $post) {
             $likesCount[$post->getId()] = $this->reactionRepository->countByPost($post->getId());
             if ($user) {
-                $userLikes[$post->getId()] = $this->reactionRepository->userHasReacted(
-                    $user->getIdUtilisateur(), $post->getId()
-                );
+                $userLikes[$post->getId()] = $this->reactionRepository->userHasReacted($user->getIdUtilisateur(), $post->getId());
             }
         }
-        
+
+        // ---------- Données pour les graphiques (nécessaires pour la modale) ----------
+        $sqlPosts = "SELECT DATE(created_at) as date, COUNT(*) as count FROM post WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $postsData = $this->connection->executeQuery($sqlPosts)->fetchAllAssociative();
+        $postsDates = array_column($postsData, 'date');
+        $postsCounts = array_column($postsData, 'count');
+
+        $sqlComments = "SELECT DATE(created_at) as date, COUNT(*) as count FROM commentaire WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $commentsData = $this->connection->executeQuery($sqlComments)->fetchAllAssociative();
+        $commentsDates = array_column($commentsData, 'date');
+        $commentsCounts = array_column($commentsData, 'count');
+
+        $sqlLikes = "SELECT DATE(created_at) as date, COUNT(*) as count FROM reaction WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $likesData = $this->connection->executeQuery($sqlLikes)->fetchAllAssociative();
+        $likesDates = array_column($likesData, 'date');
+        $likesCounts = array_column($likesData, 'count');
+
+        $sqlTopUsers = "SELECT u.nom, (COUNT(DISTINCT p.id) + COUNT(DISTINCT c.id)) as total_activity FROM utilisateur u LEFT JOIN post p ON p.user_id = u.idUtilisateur LEFT JOIN commentaire c ON c.user_id = u.idUtilisateur GROUP BY u.idUtilisateur ORDER BY total_activity DESC LIMIT 5";
+        $topUsers = $this->connection->executeQuery($sqlTopUsers)->fetchAllAssociative();
+        $topUsersNames = array_column($topUsers, 'nom');
+        $topUsersActivity = array_column($topUsers, 'total_activity');
+
+        $totalPostsCount = $this->postRepository->count([]);
+        $pinnedPostsCount = $this->postRepository->count(['is_pinned' => true]);
+        $unpinnedPostsCount = $totalPostsCount - $pinnedPostsCount;
+
+        $sqlImg = "SELECT COUNT(*) as count FROM post WHERE image_path IS NOT NULL";
+        $withImage = $this->connection->executeQuery($sqlImg)->fetchOne();
+        $withoutImage = $totalPostsCount - $withImage;
+
+        $totalComments = $this->commentaireRepository->count([]);
+        $totalLikes = $this->reactionRepository->count([]);
+        $avgComments = $totalPostsCount > 0 ? round($totalComments / $totalPostsCount, 2) : 0;
+        $avgLikes = $totalPostsCount > 0 ? round($totalLikes / $totalPostsCount, 2) : 0;
+
         return $this->render('admin_posts/index.html.twig', [
             'posts' => $posts,
             'likesCount' => $likesCount,
             'userLikes' => $userLikes,
             'search' => $search,
             'sort' => $sort,
-            'stats' => $stats
+            'stats' => $stats,
+            'postsDates' => json_encode($postsDates),
+            'postsCounts' => json_encode($postsCounts),
+            'commentsDates' => json_encode($commentsDates),
+            'commentsCounts' => json_encode($commentsCounts),
+            'likesDates' => json_encode($likesDates),
+            'likesCounts' => json_encode($likesCounts),
+            'topUsersNames' => json_encode($topUsersNames),
+            'topUsersActivity' => json_encode($topUsersActivity),
+            'pinnedPosts' => $pinnedPostsCount,
+            'unpinnedPosts' => $unpinnedPostsCount,
+            'withImage' => $withImage,
+            'withoutImage' => $withoutImage,
+            'totalComments' => $totalComments,
+            'totalLikes' => $totalLikes,
+            'avgComments' => $avgComments,
+            'avgLikes' => $avgLikes,
         ]);
     }
 
-    // ✅ Ajouter une publication (admin peut ajouter)
+    // ✅ Route pour la modale des statistiques (chargée en AJAX)
+    #[Route('/stats-modal', name: 'app_admin_stats_modal', methods: ['GET'])]
+    public function statsModal(): Response
+    {
+        $this->checkAdmin();
+
+        $sqlPosts = "SELECT DATE(created_at) as date, COUNT(*) as count FROM post WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $postsData = $this->connection->executeQuery($sqlPosts)->fetchAllAssociative();
+        $postsDates = array_column($postsData, 'date');
+        $postsCounts = array_column($postsData, 'count');
+
+        $sqlComments = "SELECT DATE(created_at) as date, COUNT(*) as count FROM commentaire WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $commentsData = $this->connection->executeQuery($sqlComments)->fetchAllAssociative();
+        $commentsDates = array_column($commentsData, 'date');
+        $commentsCounts = array_column($commentsData, 'count');
+
+        $sqlLikes = "SELECT DATE(created_at) as date, COUNT(*) as count FROM reaction WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
+        $likesData = $this->connection->executeQuery($sqlLikes)->fetchAllAssociative();
+        $likesDates = array_column($likesData, 'date');
+        $likesCounts = array_column($likesData, 'count');
+
+        $sqlTopUsers = "SELECT u.nom, (COUNT(DISTINCT p.id) + COUNT(DISTINCT c.id)) as total_activity FROM utilisateur u LEFT JOIN post p ON p.user_id = u.idUtilisateur LEFT JOIN commentaire c ON c.user_id = u.idUtilisateur GROUP BY u.idUtilisateur ORDER BY total_activity DESC LIMIT 5";
+        $topUsers = $this->connection->executeQuery($sqlTopUsers)->fetchAllAssociative();
+        $topUsersNames = array_column($topUsers, 'nom');
+        $topUsersActivity = array_column($topUsers, 'total_activity');
+
+        $totalPosts = $this->postRepository->count([]);
+        $pinnedPosts = $this->postRepository->count(['is_pinned' => true]);
+        $unpinnedPosts = $totalPosts - $pinnedPosts;
+        $sqlImg = "SELECT COUNT(*) as count FROM post WHERE image_path IS NOT NULL";
+        $withImage = $this->connection->executeQuery($sqlImg)->fetchOne();
+        $withoutImage = $totalPosts - $withImage;
+
+        $totalComments = $this->commentaireRepository->count([]);
+        $totalLikes = $this->reactionRepository->count([]);
+        $avgComments = $totalPosts > 0 ? round($totalComments / $totalPosts, 2) : 0;
+        $avgLikes = $totalPosts > 0 ? round($totalLikes / $totalPosts, 2) : 0;
+
+        return $this->render('admin_parts/stats_modal_content.html.twig', [
+            'postsDates' => json_encode($postsDates),
+            'postsCounts' => json_encode($postsCounts),
+            'commentsDates' => json_encode($commentsDates),
+            'commentsCounts' => json_encode($commentsCounts),
+            'likesDates' => json_encode($likesDates),
+            'likesCounts' => json_encode($likesCounts),
+            'topUsersNames' => json_encode($topUsersNames),
+            'topUsersActivity' => json_encode($topUsersActivity),
+            'pinnedPosts' => $pinnedPosts,
+            'unpinnedPosts' => $unpinnedPosts,
+            'withImage' => $withImage,
+            'withoutImage' => $withoutImage,
+            'totalPosts' => $totalPosts,
+            'totalComments' => $totalComments,
+            'totalLikes' => $totalLikes,
+            'avgComments' => $avgComments,
+            'avgLikes' => $avgLikes,
+        ]);
+    }
+
+    // ✅ Ajouter une publication
     #[Route('/new', name: 'app_admin_post_new', methods: ['GET'])]
     public function new(): Response
     {
@@ -137,7 +231,7 @@ class AdminPostController extends AbstractController
         ]);
     }
 
-    // ✅ Créer une publication AVEC CONTRÔLE DE SAISIE
+    // ✅ Créer une publication
     #[Route('/create', name: 'app_admin_post_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
@@ -649,5 +743,19 @@ class AdminPostController extends AbstractController
 
         $this->addFlash('success', '✅ Commentaire supprimé avec succès !');
         return $this->redirectToRoute('app_admin_post_show', ['id' => $postId]);
+    }
+
+    // ✅ Réinitialiser le compteur de signalements
+    #[Route('/{id}/reset-signals', name: 'app_admin_post_reset_signals', methods: ['POST'])]
+    public function resetSignals(int $id): Response
+    {
+        $this->checkAdmin();
+        $post = $this->postRepository->find($id);
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post non trouvé'], 404);
+        }
+        $post->setSignalementCount(0);
+        $this->entityManager->flush();
+        return $this->json(['success' => true]);
     }
 }

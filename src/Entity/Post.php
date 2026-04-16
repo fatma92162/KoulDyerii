@@ -1,4 +1,5 @@
 <?php
+// src/Entity/Post.php
 
 namespace App\Entity;
 
@@ -29,118 +30,53 @@ class Post
     #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $created_at = null;
 
-    // ✅ AJOUT : Champ pour épingler un post
     #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => false])]
     private ?bool $is_pinned = false;
+
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    private ?string $gif_url = null;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $signalement_count = 0;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    // Relation OneToMany avec Commentaire
     #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'post', cascade: ['remove'])]
     private Collection $commentaires;
+
+    #[ORM\ManyToMany(targetEntity: Hashtag::class, inversedBy: 'posts', cascade: ['persist'])]
+    #[ORM\JoinTable(name: 'post_hashtag')]
+    private Collection $hashtags;
 
     public function __construct()
     {
         $this->commentaires = new ArrayCollection();
+        $this->hashtags = new ArrayCollection();
     }
 
-    // Getters et Setters
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): self
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    public function getContent(): ?string
-    {
-        return $this->content;
-    }
-
-    public function setContent(?string $content): self
-    {
-        $this->content = $content;
-        return $this;
-    }
-
-    public function getImagePath(): ?string
-    {
-        return $this->image_path;
-    }
-
-    public function setImagePath(?string $image_path): self
-    {
-        $this->image_path = $image_path;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
-    {
-        $this->created_at = $created_at;
-        return $this;
-    }
-
-    // ✅ Getter et Setter pour is_pinned
-    public function isPinned(): ?bool
-    {
-        return $this->is_pinned;
-    }
-
-    public function setIsPinned(?bool $is_pinned): self
-    {
-        $this->is_pinned = $is_pinned;
-        return $this;
-    }
-
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): self
-    {
-        $this->utilisateur = $utilisateur;
-        return $this;
-    }
-
-    // Getter et Setter pour les commentaires
-    public function getCommentaires(): Collection
-    {
-        return $this->commentaires;
-    }
-
-    public function addCommentaire(Commentaire $commentaire): self
-    {
-        if (!$this->commentaires->contains($commentaire)) {
-            $this->commentaires->add($commentaire);
-            $commentaire->setPost($this);
-        }
-        return $this;
-    }
-
-    public function removeCommentaire(Commentaire $commentaire): self
-    {
-        if ($this->commentaires->removeElement($commentaire)) {
-            if ($commentaire->getPost() === $this) {
-                $commentaire->setPost(null);
-            }
-        }
-        return $this;
-    }
+    // ========== GETTERS & SETTERS ==========
+    public function getId(): ?int { return $this->id; }
+    public function getTitle(): ?string { return $this->title; }
+    public function setTitle(?string $title): self { $this->title = $title; return $this; }
+    public function getContent(): ?string { return $this->content; }
+    public function setContent(?string $content): self { $this->content = $content; return $this; }
+    public function getImagePath(): ?string { return $this->image_path; }
+    public function setImagePath(?string $image_path): self { $this->image_path = $image_path; return $this; }
+    public function getCreatedAt(): ?\DateTimeInterface { return $this->created_at; }
+    public function setCreatedAt(?\DateTimeInterface $created_at): self { $this->created_at = $created_at; return $this; }
+    public function isPinned(): ?bool { return $this->is_pinned; }
+    public function setIsPinned(?bool $is_pinned): self { $this->is_pinned = $is_pinned; return $this; }
+    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
+    public function setUtilisateur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function getCommentaires(): Collection { return $this->commentaires; }
+    public function getGifUrl(): ?string { return $this->gif_url; }
+    public function setGifUrl(?string $gif_url): self { $this->gif_url = $gif_url; return $this; }
+    public function getSignalementCount(): int { return $this->signalement_count; }
+    public function setSignalementCount(int $signalement_count): self { $this->signalement_count = $signalement_count; return $this; }
+    public function incrementSignalementCount(): self { $this->signalement_count++; return $this; }
+    public function getHashtags(): Collection { return $this->hashtags; }
+    public function addHashtag(Hashtag $hashtag): self { if (!$this->hashtags->contains($hashtag)) { $this->hashtags->add($hashtag); } return $this; }
+    public function removeHashtag(Hashtag $hashtag): self { $this->hashtags->removeElement($hashtag); return $this; }
 }

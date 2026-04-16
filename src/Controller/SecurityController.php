@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Service\PointsFideliteService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -17,15 +19,11 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Si déjà connecté, rediriger selon le rôle
         if ($this->getUser()) {
             $user = $this->getUser();
-            
-            // Si admin → rediriger vers la liste des utilisateurs
             if ($user->getRole() === 'admin') {
                 return $this->redirectToRoute('app_utilisateur_liste');
             }
-            // Si user → rediriger vers la page d'accueil
             return $this->redirectToRoute('app_home');
         }
 
@@ -62,5 +60,23 @@ class SecurityController extends AbstractController
             'utilisateur' => $user,
             'points' => $points
         ]);
+    }
+
+    #[Route(path: '/deconnecter-tous-appareils', name: 'app_logout_all_devices')]
+    public function logoutAllDevices(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $user->incrementTokenVersion();
+        $em->flush();
+
+        $request->getSession()->invalidate();
+        $this->container->get('security.token_storage')->setToken(null);
+
+        $this->addFlash('success', 'Vous avez été déconnecté de tous vos appareils.');
+        return $this->redirectToRoute('app_login');
     }
 }

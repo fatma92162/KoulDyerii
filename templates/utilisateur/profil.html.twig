@@ -67,10 +67,6 @@
         object-fit: cover;
     }
     
-    .profile-avatar .avatar-placeholder {
-        font-size: 60px;
-    }
-    
     .profile-header h2 {
         color: white;
         font-size: 28px;
@@ -194,6 +190,7 @@
         margin-top: 40px;
         padding-top: 30px;
         border-top: 1px solid #f0e6d6;
+        flex-wrap: wrap;
     }
     
     .btn-action {
@@ -242,6 +239,31 @@
         box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
         color: #333;
     }
+
+    /* ✅ NOUVEAU : Bouton Historique */
+    .btn-history {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-history:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        background: #bb2d3b;
+        transform: translateY(-3px);
+        color: white;
+    }
     
     /* Modal styles */
     .modal-points {
@@ -269,9 +291,6 @@
             width: 90px;
             height: 90px;
         }
-        .profile-avatar .avatar-placeholder {
-            font-size: 45px;
-        }
         .points-value {
             font-size: 24px;
         }
@@ -285,17 +304,15 @@
         <div class="profile-header" onclick="showPointsModal()">
             <div class="profile-avatar">
                 {% if utilisateur.photo %}
-                    <img src="{{ utilisateur.photo }}" alt="Photo de profil">
+                    <img src="{{ utilisateur.photo }}" alt="Avatar de {{ utilisateur.nom }}">
                 {% else %}
-                    <div class="avatar-placeholder">
-                        🍽️
-                    </div>
+                    {% set avatar_url = 'https://ui-avatars.com/api/?name=' ~ utilisateur.nom|url_encode ~ '&background=FF6B6B&color=fff&bold=true&length=2&rounded=true&size=120' %}
+                    <img src="{{ avatar_url }}" alt="Avatar de {{ utilisateur.nom }}">
                 {% endif %}
             </div>
             <h2>{{ utilisateur.nom }}</h2>
             <p>Membre de Koul Dyeri</p>
             
-            <!-- ✅ Carte des points de fidélité -->
             <div class="points-card">
                 <div class="row align-items-center">
                     <div class="col-4 text-start">
@@ -351,15 +368,18 @@
                 <a href="{{ path('app_recompenses_index') }}" class="btn-action btn-rewards">
                     🎁 Voir les récompenses
                 </a>
-                <a href="{{ path('app_logout') }}" class="btn-action btn-logout">
-                    🔓 Déconnexion
+                <!-- ✅ NOUVEAU : Bouton Historique -->
+                <a href="{{ path('app_historique_index') }}" class="btn-action btn-history">
+                    📜 Historique
                 </a>
+                
+                
             </div>
         </div>
     </div>
 </div>
 
-<!-- ✅ Modal pour les détails des points -->
+<!-- Modal pour les détails des points -->
 <div class="modal fade" id="pointsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

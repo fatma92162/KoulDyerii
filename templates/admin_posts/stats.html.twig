@@ -1,0 +1,286 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - Administration{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stats-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .card-stats {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        padding: 20px;
+        margin-bottom: 30px;
+        transition: transform 0.2s;
+    }
+    .card-stats:hover {
+        transform: translateY(-5px);
+    }
+    .stat-number {
+        font-size: 42px;
+        font-weight: 800;
+        color: #FF6B6B;
+    }
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .chart-container {
+        margin-top: 20px;
+        height: 350px;
+    }
+    .admin-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 40px;
+        border-radius: 0 0 30px 30px;
+    }
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 20px;
+    }
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="fas fa-chart-line"></i> Statistiques avancées</h1>
+            <a href="{{ path('app_admin_posts_index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour à la gestion
+            </a>
+        </div>
+        <p class="mb-0">Analyse des performances de la plateforme</p>
+    </div>
+</div>
+
+<div class="stats-container">
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card-stats text-center">
+                <div class="stat-number">{{ totalPosts }}</div>
+                <div class="stat-label">Publications</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-stats text-center">
+                <div class="stat-number">{{ totalComments }}</div>
+                <div class="stat-label">Commentaires</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-stats text-center">
+                <div class="stat-number">{{ totalLikes }}</div>
+                <div class="stat-label">Likes</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-stats text-center">
+                <div class="stat-number">{{ avgComments }}</div>
+                <div class="stat-label">Moy. commentaires/post</div>
+                <div class="stat-number mt-2">{{ avgLikes }}</div>
+                <div class="stat-label">Moy. likes/post</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Évolution des publications -->
+        <div class="col-md-6">
+            <div class="card-stats">
+                <h4><i class="fas fa-chart-line"></i> Publications (30 derniers jours)</h4>
+                <div class="chart-container">
+                    <canvas id="postsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Évolution des commentaires -->
+        <div class="col-md-6">
+            <div class="card-stats">
+                <h4><i class="fas fa-comments"></i> Commentaires (30 derniers jours)</h4>
+                <div class="chart-container">
+                    <canvas id="commentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Évolution des likes -->
+        <div class="col-md-6">
+            <div class="card-stats">
+                <h4><i class="fas fa-heart"></i> Likes (30 derniers jours)</h4>
+                <div class="chart-container">
+                    <canvas id="likesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 utilisateurs les plus actifs -->
+        <div class="col-md-6">
+            <div class="card-stats">
+                <h4><i class="fas fa-trophy"></i> Top 5 utilisateurs actifs</h4>
+                <div class="chart-container">
+                    <canvas id="topUsersChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Répartition épinglés vs non épinglés -->
+        <div class="col-md-4">
+            <div class="card-stats">
+                <h4><i class="fas fa-thumbtack"></i> Publications épinglées</h4>
+                <div class="chart-container">
+                    <canvas id="pinnedChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Répartition avec/sans image -->
+        <div class="col-md-4">
+            <div class="card-stats">
+                <h4><i class="fas fa-image"></i> Publications avec image</h4>
+                <div class="chart-container">
+                    <canvas id="imageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé rapide -->
+        <div class="col-md-4">
+            <div class="card-stats">
+                <h4><i class="fas fa-chart-pie"></i> Résumé</h4>
+                <ul class="list-unstyled mt-3">
+                    <li><strong>📊 Taux d'engagement :</strong> {{ totalComments + totalLikes }} interactions</li>
+                    <li><strong>📌 Épinglés :</strong> {{ pinnedPosts }} ({{ (pinnedPosts / totalPosts * 100)|round(1) }}%)</li>
+                    <li><strong>🖼️ Avec image :</strong> {{ withImage }} ({{ (withImage / totalPosts * 100)|round(1) }}%)</li>
+                    <li><strong>💬 Commentaires par post :</strong> {{ avgComments }}</li>
+                    <li><strong>❤️ Likes par post :</strong> {{ avgLikes }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Évolution des publications
+const ctxPosts = document.getElementById('postsChart').getContext('2d');
+new Chart(ctxPosts, {
+    type: 'line',
+    data: {
+        labels: {{ postsDates|raw }},
+        datasets: [{
+            label: 'Publications',
+            data: {{ postsCounts|raw }},
+            borderColor: '#FF6B6B',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// Évolution des commentaires
+const ctxComments = document.getElementById('commentsChart').getContext('2d');
+new Chart(ctxComments, {
+    type: 'line',
+    data: {
+        labels: {{ commentsDates|raw }},
+        datasets: [{
+            label: 'Commentaires',
+            data: {{ commentsCounts|raw }},
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// Évolution des likes
+const ctxLikes = document.getElementById('likesChart').getContext('2d');
+new Chart(ctxLikes, {
+    type: 'line',
+    data: {
+        labels: {{ likesDates|raw }},
+        datasets: [{
+            label: 'Likes',
+            data: {{ likesCounts|raw }},
+            borderColor: '#FFC107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// Top 5 utilisateurs
+const ctxUsers = document.getElementById('topUsersChart').getContext('2d');
+new Chart(ctxUsers, {
+    type: 'bar',
+    data: {
+        labels: {{ topUsersNames|raw }},
+        datasets: [{
+            label: "Nombre d'actions (posts + commentaires)",
+            data: {{ topUsersActivity|raw }},
+            backgroundColor: '#8B0000',
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, title: { display: true, text: 'Actions' } } }
+    }
+});
+
+// Répartition épinglés
+const ctxPinned = document.getElementById('pinnedChart').getContext('2d');
+new Chart(ctxPinned, {
+    type: 'doughnut',
+    data: {
+        labels: ['Épinglés', 'Non épinglés'],
+        datasets: [{
+            data: [{{ pinnedPosts }}, {{ unpinnedPosts }}],
+            backgroundColor: ['#5bc0de', '#f0e6d6'],
+            borderWidth: 0
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// Répartition avec/sans image
+const ctxImage = document.getElementById('imageChart').getContext('2d');
+new Chart(ctxImage, {
+    type: 'doughnut',
+    data: {
+        labels: ['Avec image', 'Sans image'],
+        datasets: [{
+            data: [{{ withImage }}, {{ withoutImage }}],
+            backgroundColor: ['#FF8E53', '#f0e6d6'],
+            borderWidth: 0
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+</script>
+{% endblock %}

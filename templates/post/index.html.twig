@@ -49,7 +49,6 @@
         color: white; 
     }
 
-    /* Barre de recherche */
     .search-bar {
         background: white;
         border-radius: 60px;
@@ -164,6 +163,21 @@
         line-height: 1.6; 
         margin-bottom: 15px; 
     }
+    
+    .post-content strong {
+        font-weight: 700;
+        color: #333;
+    }
+    .post-content em {
+        font-style: italic;
+    }
+    .post-content ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    .post-content li {
+        margin: 3px 0;
+    }
 
     .post-image { 
         width: 100%; 
@@ -182,11 +196,6 @@
         flex-wrap: wrap;
     }
 
-    .reaction-wrapper { 
-        position: relative; 
-        display: inline-flex; 
-    }
-
     .btn-reaction-main {
         background: none; 
         border: 2px solid #f0e6d6; 
@@ -200,7 +209,6 @@
         align-items: center; 
         gap: 7px;
         transition: all 0.3s ease; 
-        user-select: none;
     }
 
     .btn-reaction-main:hover, 
@@ -208,44 +216,6 @@
         border-color: #FF6B6B; 
         color: #FF6B6B; 
         background: #fff0f0; 
-    }
-
-    .reaction-picker {
-        position: absolute; 
-        bottom: 50px; 
-        left: 0; 
-        background: white;
-        border-radius: 50px; 
-        padding: 8px 12px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        display: none; 
-        gap: 8px; 
-        z-index: 100;
-        animation: popUp 0.2s ease;
-    }
-
-    .reaction-picker.show { 
-        display: flex; 
-    }
-
-    @keyframes popUp {
-        from { opacity: 0; transform: translateY(10px) scale(0.8); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .reaction-emoji {
-        font-size: 24px; 
-        cursor: pointer; 
-        transition: transform 0.2s ease;
-        border: none; 
-        background: none; 
-        padding: 2px; 
-        border-radius: 50%; 
-        position: relative;
-    }
-
-    .reaction-emoji:hover { 
-        transform: scale(1.4); 
     }
 
     .btn-comment, 
@@ -305,7 +275,6 @@
         display: block; 
     }
     
-    /* Styles pour les messages flash */
     .alert {
         padding: 12px 20px;
         border-radius: 12px;
@@ -320,14 +289,6 @@
         background: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
-    }
-    
-    /* ✅ Styles pour les messages d'erreur sous les champs */
-    .error-message {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
-        display: block;
     }
     
     @media (max-width: 768px) {
@@ -351,7 +312,6 @@
         </a>
     </div>
 
-    <!-- Barre de recherche et filtres -->
     <div class="search-bar">
         <form method="get" action="{{ path('app_posts_index') }}" class="d-flex gap-2">
             <div class="flex-grow-1">
@@ -385,14 +345,13 @@
     {% for post in posts %}
         <div class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-card-{{ post.id }}">
             
-            {# Badge Épinglé #}
             {% if post.isPinned %}
                 <div class="pin-badge">
                     <i class="fas fa-thumbtack"></i> Épinglé
                 </div>
             {% endif %}
             
-            <div class="post-card-body">
+            <div class="post-card-body p-3">
 
                 <div class="post-author">
                     <div class="author-avatar">
@@ -407,7 +366,6 @@
                         <small>{{ post.createdAt|date('d/m/Y à H:i') }}</small>
                     </div>
                     
-                    {# Menu Modifier / Supprimer (seulement pour l'auteur ou admin) #}
                     {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
                         <div class="ms-auto dropdown">
                             <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 32px; height: 32px;">
@@ -432,8 +390,11 @@
                 </div>
 
                 <div class="post-title">{{ post.title }}</div>
-                <div class="post-content">
-                    {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                
+                {# Affichage avec censure + conversion Markdown → HTML #}
+                <div class="post-content markdown-content" 
+                     data-markdown="{{ post.content|censor|escape('html_attr') }}">
+                    {{ post.content|censor|slice(0, 200)|escape }}...
                 </div>
 
                 {% if post.imagePath %}
@@ -441,34 +402,19 @@
                 {% endif %}
 
                 <div class="post-actions">
-                    {# Réactions #}
-                    <div class="reaction-wrapper" id="wrapper-{{ post.id }}"
-                         onmouseenter="showPicker({{ post.id }})"
-                         onmouseleave="hidePicker({{ post.id }})">
-
-                        <button class="btn-reaction-main {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}"
-                                onclick="sendReaction({{ post.id }}, 'like', '👍')"
-                                id="btn-{{ post.id }}">
-                            <span id="current-emoji-{{ post.id }}">
-                                {% if userLikes[post.id] is defined and userLikes[post.id] %}❤️{% else %}👍{% endif %}
-                            </span>
-                            <span id="like-count-{{ post.id }}">{{ likesCount[post.id] ?? 0 }}</span>
-                        </button>
-
-                        <div class="reaction-picker" id="picker-{{ post.id }}">
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="like" data-emoji="👍">👍 <span class="tooltip-label">J'aime</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="love" data-emoji="❤️">❤️ <span class="tooltip-label">J'adore</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="haha" data-emoji="😂">😂 <span class="tooltip-label">Haha</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="triste" data-emoji="😢">😢 <span class="tooltip-label">Triste</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="grr" data-emoji="😡">😡 <span class="tooltip-label">Grr</span></button>
-                        </div>
-                    </div>
+                    <button class="btn-reaction-main {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}"
+                            onclick="sendReaction({{ post.id }}, 'like')"
+                            id="btn-{{ post.id }}">
+                        <span id="current-emoji-{{ post.id }}">
+                            {% if userLikes[post.id] is defined and userLikes[post.id] %}❤️{% else %}👍{% endif %}
+                        </span>
+                        <span id="like-count-{{ post.id }}">{{ likesCount[post.id] ?? 0 }}</span>
+                    </button>
 
                     <a href="{{ path('app_post_show', {id: post.id}) }}" class="btn-comment">
                         <i class="fas fa-comment"></i> Commenter
                     </a>
 
-                    {# Bouton Épingler / Désépingler → Visible pour TOUS les utilisateurs connectés #}
                     {% if app.user %}
                         <button class="btn-pin {% if post.isPinned %}pinned{% endif %}" 
                                 id="pin-btn-{{ post.id }}"
@@ -498,29 +444,66 @@
 </div>
 
 <script>
-let hideTimeout = {};
+// Fonction pour convertir le markdown simple (gras, italique, listes) en HTML
+function markdownToHtml(text) {
+    if (!text) return '';
+    let html = text;
+    
+    // Gras **texte**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italique *texte*
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Listes à puces : lignes commençant par "- "
+    const lines = html.split('\n');
+    let inList = false;
+    const result = [];
+    for (let line of lines) {
+        if (line.trim().startsWith('- ')) {
+            if (!inList) result.push('<ul>');
+            inList = true;
+            const item = line.trim().substring(2);
+            result.push('<li>' + item + '</li>');
+        } else {
+            if (inList) result.push('</ul>');
+            inList = false;
+            if (line.trim()) result.push(line);
+            else result.push('<br>');
+        }
+    }
+    if (inList) result.push('</ul>');
+    html = result.join('');
+    
+    // Remplacer les retours à la ligne par <br> et nettoyer
+    html = html.replace(/\n/g, '<br>');
+    html = html.replace(/<\/li><br><li>/g, '</li><li>');
+    html = html.replace(/<\/ul><br>/g, '</ul>');
+    html = html.replace(/<br><ul>/g, '<ul>');
+    
+    return html;
+}
 
-function showPicker(postId) {
-    clearTimeout(hideTimeout[postId]);
-    document.querySelectorAll('.reaction-picker').forEach(p => {
-        if (p.id !== 'picker-' + postId) p.classList.remove('show');
+// Appliquer la conversion à tous les éléments .markdown-content
+function convertAllMarkdown() {
+    document.querySelectorAll('.markdown-content').forEach(el => {
+        const raw = el.getAttribute('data-markdown');
+        if (raw) {
+            let short = raw;
+            if (raw.length > 200) {
+                short = raw.substring(0, 200);
+                short = short.replace(/\*\*[^*]*$/, '');
+                short = short.replace(/\*[^*]*$/, '');
+                short = short.replace(/- [^\n]*$/, '');
+                short = short + '...';
+            }
+            const html = markdownToHtml(short);
+            el.innerHTML = html;
+        }
     });
-    const picker = document.getElementById('picker-' + postId);
-    if (picker) picker.classList.add('show');
 }
 
-function hidePicker(postId) {
-    hideTimeout[postId] = setTimeout(() => {
-        const picker = document.getElementById('picker-' + postId);
-        if (picker) picker.classList.remove('show');
-    }, 300);
-}
-
-// Fonction améliorée pour gérer tous les emojis
-function sendReaction(postId, type, emoji) {
-    const picker = document.getElementById('picker-' + postId);
-    if (picker) picker.classList.remove('show');
-
+// Fonctions existantes
+function sendReaction(postId, type) {
     fetch(`/posts/${postId}/like`, {
         method: 'POST',
         headers: {
@@ -535,11 +518,9 @@ function sendReaction(postId, type, emoji) {
             const countEl = document.getElementById('like-count-' + postId);
             const emojiEl = document.getElementById('current-emoji-' + postId);
             const btn = document.getElementById('btn-' + postId);
-            
             if (countEl) countEl.textContent = data.count;
-            
             if (data.liked) {
-                if (emojiEl) emojiEl.textContent = emoji;
+                if (emojiEl) emojiEl.textContent = '❤️';
                 if (btn) btn.classList.add('reacted');
             } else {
                 if (emojiEl) emojiEl.textContent = '👍';
@@ -550,19 +531,6 @@ function sendReaction(postId, type, emoji) {
     .catch(err => console.error('Erreur réaction :', err));
 }
 
-// Attacher les événements aux boutons d'emoji après chargement
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.reaction-emoji').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            const type = this.getAttribute('data-type');
-            const emoji = this.getAttribute('data-emoji');
-            sendReaction(postId, type, emoji);
-        });
-    });
-});
-
-// Fonction pour épingler / désépingler (accessible à tous les utilisateurs connectés)
 function togglePin(postId) {
     fetch(`/posts/${postId}/pin`, {
         method: 'POST',
@@ -584,5 +552,10 @@ function togglePin(postId) {
         alert('Erreur de connexion');
     });
 }
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    convertAllMarkdown();
+});
 </script>
 {% endblock %}

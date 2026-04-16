@@ -8,6 +8,7 @@ use App\Entity\Reaction;
 use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\ReactionRepository;
+use App\Service\PointsFideliteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,8 @@ class PostController extends AbstractController
         private EntityManagerInterface $entityManager,
         private PostRepository $postRepository,
         private CommentaireRepository $commentaireRepository,
-        private ReactionRepository $reactionRepository
+        private ReactionRepository $reactionRepository,
+        private PointsFideliteService $pointsService
     ) {}
 
     // ✅ INDEX AVEC TRI ET RECHERCHE
@@ -109,8 +111,9 @@ class PostController extends AbstractController
 
         $title = trim($request->request->get('title'));
         $content = trim($request->request->get('content'));
+        $gifUrl = trim($request->request->get('gif_url', ''));
         $errors = [];
-        $formData = ['title' => $title, 'content' => $content];
+        $formData = ['title' => $title, 'content' => $content, 'gif_url' => $gifUrl];
 
         // Validation du titre
         if (empty($title)) {
@@ -159,6 +162,10 @@ class PostController extends AbstractController
         $post->setUtilisateur($user);
         $post->setCreatedAt(new \DateTime());
         $post->setIsPinned(false);
+        
+        if (!empty($gifUrl)) {
+            $post->setGifUrl($gifUrl);
+        }
 
         if ($imageFile && $imageFile->getError() === UPLOAD_ERR_OK) {
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/posts';
@@ -172,6 +179,9 @@ class PostController extends AbstractController
 
         $this->entityManager->persist($post);
         $this->entityManager->flush();
+
+        // 🔥 Ajout des points : +10 pour la publication
+        $this->pointsService->ajouterPoints($user->getIdUtilisateur(), 10, 'Publication d\'un article');
 
         $this->addFlash('success', '✅ Votre publication a été créée avec succès !');
         return $this->redirectToRoute('app_posts_index');
@@ -196,7 +206,11 @@ class PostController extends AbstractController
             'post' => $post,
             'titre' => 'Modifier la publication',
             'errors' => [],
-            'formData' => ['title' => $post->getTitle(), 'content' => $post->getContent()]
+            'formData' => [
+                'title' => $post->getTitle(), 
+                'content' => $post->getContent(),
+                'gif_url' => $post->getGifUrl()
+            ]
         ]);
     }
 
@@ -217,9 +231,10 @@ class PostController extends AbstractController
 
         $title = trim($request->request->get('title'));
         $content = trim($request->request->get('content'));
+        $gifUrl = trim($request->request->get('gif_url', ''));
         $deleteImage = $request->request->get('delete_image');
         $errors = [];
-        $formData = ['title' => $title, 'content' => $content];
+        $formData = ['title' => $title, 'content' => $content, 'gif_url' => $gifUrl];
 
         if (empty($title)) {
             $errors['title'] = '❌ Le titre est obligatoire.';
@@ -261,6 +276,12 @@ class PostController extends AbstractController
 
         $post->setTitle($title);
         $post->setContent($content);
+        
+        if (!empty($gifUrl)) {
+            $post->setGifUrl($gifUrl);
+        } else {
+            $post->setGifUrl(null);
+        }
 
         if ($deleteImage && $post->getImagePath()) {
             $oldImagePath = $this->getParameter('kernel.project_dir') . '/public' . $post->getImagePath();
@@ -309,6 +330,14 @@ class PostController extends AbstractController
             return $this->redirectToRoute('app_posts_index');
         }
 
+        // Supprimer l'image associée si elle existe
+        if ($post->getImagePath()) {
+            $imagePath = $this->getParameter('kernel.project_dir') . '/public' . $post->getImagePath();
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
         foreach ($post->getCommentaires() as $commentaire) {
             $this->entityManager->remove($commentaire);
         }
@@ -320,7 +349,7 @@ class PostController extends AbstractController
         return $this->redirectToRoute('app_posts_index');
     }
 
-    // ✅ ÉPINGLER/DÉSÉPINGLER UN POST
+    // ✅ ÉPINGLER/DÉSÉPINGLER UN POST - TOUT UTILISATEUR CONNECTÉ PEUT ÉPINGLER
     #[Route('/{id}/pin', name: 'app_post_pin', methods: ['POST'])]
     public function pin(int $id, Request $request): Response
     {
@@ -334,7 +363,12 @@ class PostController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Connectez-vous pour épingler'], 401);
         }
 
+        // ✅ AUCUNE VÉRIFICATION - Tout utilisateur connecté peut épingler
         $post->setIsPinned(!$post->isPinned());
+        if ($post->isPinned()) {
+            $post->setCreatedAt(new \DateTime());
+        }
+
         $this->entityManager->flush();
 
         return $this->json([
@@ -491,8 +525,11 @@ class PostController extends AbstractController
         }
 
         $content = trim($request->request->get('content'));
+        $gifUrl = trim($request->request->get('gif_url', ''));
+        $parentId = $request->request->get('parent_id');
+        
         $errors = [];
-        $formData = ['content' => $content];
+        $formData = ['content' => $content, 'gif_url' => $gifUrl];
 
         if (empty($content)) {
             $errors['content'] = '❌ Le commentaire ne peut pas être vide.';
@@ -535,9 +572,23 @@ class PostController extends AbstractController
         $commentaire->setUtilisateur($user);
         $commentaire->setPost($post);
         $commentaire->setCreatedAt(new \DateTime());
+        
+        if (!empty($gifUrl)) {
+            $commentaire->setGifUrl($gifUrl);
+        }
+        
+        if ($parentId) {
+            $parentCommentaire = $this->commentaireRepository->find($parentId);
+            if ($parentCommentaire) {
+                $commentaire->setParent($parentCommentaire);
+            }
+        }
 
         $this->entityManager->persist($commentaire);
         $this->entityManager->flush();
+
+        // 🔥 Ajout des points : +5 pour le commentaire
+        $this->pointsService->ajouterPoints($user->getIdUtilisateur(), 5, 'Commentaire publié');
 
         $this->addFlash('success', '✅ Votre commentaire a été ajouté !');
         return $this->redirectToRoute('app_post_show', ['id' => $id]);
@@ -577,6 +628,16 @@ class PostController extends AbstractController
 
             $this->entityManager->persist($reaction);
             $this->entityManager->flush();
+
+            // 🔥 Points pour celui qui like (+1)
+            $this->pointsService->ajouterPoints($user->getIdUtilisateur(), 1, 'A donné un like');
+
+            // 🔥 Points pour l'auteur du post (+2) s'il est différent
+            $auteur = $post->getUtilisateur();
+            if ($auteur->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+                $this->pointsService->ajouterPoints($auteur->getIdUtilisateur(), 2, 'A reçu un like sur son article');
+            }
+
             $likesCount = $this->reactionRepository->countByPost($id);
             return $this->json(['success' => true, 'liked' => true, 'count' => $likesCount]);
         }
@@ -616,8 +677,144 @@ class PostController extends AbstractController
 
             $this->entityManager->persist($reaction);
             $this->entityManager->flush();
+
+            // 🔥 Points pour celui qui like (+1)
+            $this->pointsService->ajouterPoints($user->getIdUtilisateur(), 1, 'A donné un like');
+
+            // 🔥 Points pour l'auteur du commentaire (+2) s'il est différent
+            $auteur = $commentaire->getUtilisateur();
+            if ($auteur->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+                $this->pointsService->ajouterPoints($auteur->getIdUtilisateur(), 2, 'A reçu un like sur son commentaire');
+            }
+
             $likesCount = $this->reactionRepository->countByCommentaire($id);
             return $this->json(['success' => true, 'liked' => true, 'count' => $likesCount]);
         }
+    }
+    
+    // ✅ RECHERCHE PAR HASHTAG
+    #[Route('/hashtag/{name}', name: 'app_posts_hashtag', methods: ['GET'])]
+    public function postsByHashtag(string $name, Request $request): Response
+    {
+        $search = $request->query->get('search', '');
+        $sort = $request->query->get('sort', 'recent');
+        
+        $qb = $this->postRepository->createQueryBuilder('p')
+            ->leftJoin('p.utilisateur', 'u')
+            ->leftJoin('p.hashtags', 'h')
+            ->addSelect('u')
+            ->where('h.name = :hashtag')
+            ->setParameter('hashtag', $name);
+        
+        if (!empty($search)) {
+            $qb->andWhere('p.title LIKE :search OR p.content LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+        
+        switch ($sort) {
+            case 'oldest':
+                $qb->orderBy('p.created_at', 'ASC');
+                break;
+            case 'popular':
+                $qb->leftJoin('p.commentaires', 'c')
+                   ->groupBy('p.id')
+                   ->orderBy('COUNT(c.id)', 'DESC');
+                break;
+            case 'pinned':
+                $qb->orderBy('p.is_pinned', 'DESC');
+                break;
+            case 'recent':
+            default:
+                $qb->orderBy('p.created_at', 'DESC');
+                break;
+        }
+        
+        if ($sort !== 'pinned') {
+            $qb->addOrderBy('p.is_pinned', 'DESC');
+        }
+        
+        $posts = $qb->getQuery()->getResult();
+        
+        $likesCount = [];
+        $userLikes = [];
+        $user = $this->getUser();
+
+        foreach ($posts as $post) {
+            $likesCount[$post->getId()] = $this->reactionRepository->countByPost($post->getId());
+            if ($user) {
+                $userLikes[$post->getId()] = $this->reactionRepository->userHasReacted(
+                    $user->getIdUtilisateur(), $post->getId()
+                );
+            }
+        }
+
+        return $this->render('post/index.html.twig', [
+            'posts' => $posts,
+            'likesCount' => $likesCount,
+            'userLikes' => $userLikes,
+            'search' => $search,
+            'sort' => $sort,
+            'hashtag' => $name
+        ]);
+    }
+    
+    // ✅ SIGNALER UN POST
+    #[Route('/{id}/signal', name: 'app_post_signal', methods: ['POST'])]
+    public function signal(int $id, Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Connectez-vous pour signaler'], 401);
+        }
+        
+        $post = $this->postRepository->find($id);
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post non trouvé'], 404);
+        }
+        
+        // Vérifier si l'utilisateur est l'auteur
+        if ($post->getUtilisateur()->getIdUtilisateur() === $user->getIdUtilisateur()) {
+            return $this->json(['success' => false, 'message' => 'Vous ne pouvez pas signaler votre propre publication'], 403);
+        }
+        
+        // Incrémenter le compteur de signalements
+        $signalCount = $post->getSignalCount() + 1;
+        $post->setSignalCount($signalCount);
+        
+        // Si 5 signalements ou plus, supprimer automatiquement le post
+        $deleted = false;
+        if ($signalCount >= 5) {
+            // Supprimer l'image associée
+            if ($post->getImagePath()) {
+                $imagePath = $this->getParameter('kernel.project_dir') . '/public' . $post->getImagePath();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            
+            foreach ($post->getCommentaires() as $commentaire) {
+                $this->entityManager->remove($commentaire);
+            }
+            
+            $this->entityManager->remove($post);
+            $deleted = true;
+        }
+        
+        $this->entityManager->flush();
+        
+        if ($deleted) {
+            return $this->json([
+                'success' => true, 
+                'deleted' => true,
+                'message' => 'Ce post a été supprimé suite à de nombreux signalements'
+            ]);
+        }
+        
+        return $this->json([
+            'success' => true,
+            'deleted' => false,
+            'signalCount' => $signalCount,
+            'message' => 'Publication signalée (' . $signalCount . '/5)'
+        ]);
     }
 }

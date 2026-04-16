@@ -376,7 +376,15 @@
                         <input type="date" class="form-control" id="dateNaissance" name="dateNaissance">
                     </div>
                     
-                    <input type="hidden" name="role" value="user">
+                    <!-- ✅ AJOUT : Champ pour choisir le rôle -->
+                    <div class="form-group">
+                        <label for="role">Rôle</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="user">Utilisateur standard</option>
+                            <option value="admin">Administrateur</option>
+                        </select>
+                        <small class="text-muted">⚠️ Sélectionnez "Administrateur" uniquement si vous avez l'autorisation.</small>
+                    </div>
                     
                     <button type="submit" class="btn-register">
                         <i class="fas fa-user-plus"></i> Créer mon compte

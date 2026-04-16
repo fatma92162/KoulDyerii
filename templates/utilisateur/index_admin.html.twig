@@ -5,28 +5,34 @@
 {% block admin_content %}
 <div class="admin-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Liste des utilisateurs</h3>
-        <a href="{{ path('app_utilisateur_nouveau') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter un utilisateur
-        </a>
+        <h3>👥 Gestion des utilisateurs</h3>
+        <div>
+            <a href="{{ path('app_utilisateur_export_pdf') }}" id="exportPdfBtn" class="btn btn-success me-2">
+                <i class="fas fa-file-pdf"></i> Exporter PDF
+            </a>
+            <a href="{{ path('app_utilisateur_nouveau') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un utilisateur
+            </a>
+        </div>
     </div>
 
     {% for message in app.flashes('success') %}
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
 
+    <!-- Filtres avec chatbot -->
     <div style="background: #fefcf8; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #f0e6d6;">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">🔍 Recherche (ID ou Nom)</label>
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">🔍 Recherche (ID ou Nom)</label>
                 <input type="text" id="searchInput" class="form-control" placeholder="ID ou nom...">
             </div>
             <div class="col-md-2">
-                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">📧 Email</label>
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">📧 Email</label>
                 <input type="text" id="searchEmail" class="form-control" placeholder="Email...">
             </div>
             <div class="col-md-2">
-                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">👤 Rôle</label>
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">👤 Rôle</label>
                 <select id="filterRole" class="form-control">
                     <option value="">Tous</option>
                     <option value="admin">Admin</option>
@@ -34,7 +40,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">📍 Région</label>
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">📍 Région</label>
                 <select id="filterRegion" class="form-control">
                     <option value="">Toutes</option>
                     {% set regions = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'] %}
@@ -44,7 +50,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase; letter-spacing: 0.5px;">🔃 Trier par</label>
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">🔃 Trier par</label>
                 <select id="sortBy" class="form-control">
                     <option value="">-- Trier --</option>
                     <option value="id-asc">ID ↑</option>
@@ -61,23 +67,44 @@
                 <button onclick="resetFilters()" class="btn btn-secondary w-100">↺</button>
             </div>
         </div>
+
+        {# Ligne chatbot #}
+        <div class="row mt-3">
+            <div class="col-md-10">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">🤖 Assistant IA (langage naturel)</label>
+                <div class="input-group">
+                    <input type="text" id="chatSearchInput" class="form-control" placeholder="Ex: 'admins de Tunis', 'utilisateurs actifs avec plus de 50 points', 'trier par points décroissant'">
+                    <button class="btn btn-primary" type="button" id="chatSearchBtn">
+                        <i class="fas fa-robot"></i> Chercher
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label style="font-size: 12px; font-weight: 600; color: #FF6B6B; text-transform: uppercase;">&nbsp;</label>
+                <button class="btn btn-outline-secondary w-100" id="clearChatBtn">
+                    <i class="fas fa-eraser"></i> Effacer
+                </button>
+            </div>
+        </div>
         <div class="mt-2">
             <small id="resultCount" style="color: #666;"></small>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered" id="usersTable">
-            <thead class="table-dark">
+    <!-- Tableau -->
+    <div class="table-responsive" style="border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.02);">
+        <table class="table table-hover align-middle mb-0" id="usersTable" style="border-collapse: separate; border-spacing: 0; width: 100%;">
+            <thead style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; border: none;">
                 <tr>
-                    <th style="cursor:pointer;" onclick="sortTable('id')">ID <span id="sort-id">↕</span></th>
-                    <th style="cursor:pointer;" onclick="sortTable('nom')">Nom <span id="sort-nom">↕</span></th>
-                    <th>Email</th>
-                    <th style="cursor:pointer;" onclick="sortTable('role')">Rôle <span id="sort-role">↕</span></th>
-                    <th style="cursor:pointer;" onclick="sortTable('region')">Région <span id="sort-region">↕</span></th>
-                    <th>Date naissance</th>
-                    <th style="cursor:pointer;" onclick="sortTable('points')">⭐ Points <span id="sort-points">↕</span></th>
-                    <th>Actions</th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable('id')">ID <span id="sort-id" style="margin-left: 5px;">↕</span></th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable('nom')">Nom <span id="sort-nom" style="margin-left: 5px;">↕</span></th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Email</th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable('role')">Rôle <span id="sort-role" style="margin-left: 5px;">↕</span></th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable('region')">Région <span id="sort-region" style="margin-left: 5px;">↕</span></th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Date naissance</th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable('points')">⭐ Points <span id="sort-points" style="margin-left: 5px;">↕</span></th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Statut</th>
+                    <th style="padding: 18px 12px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
                 </tr>
             </thead>
             <tbody id="usersBody">
@@ -89,47 +116,351 @@
                     data-role="{{ u.role }}"
                     data-region="{{ u.region|lower }}"
                     data-points="{{ u.pointsFidelite|default(0) }}"
+                    data-banned="{{ u.isBanned ? 'true' : 'false' }}"
+                    data-ban-until="{{ u.bannedUntil ? u.bannedUntil|date('Y-m-d H:i:s') : '' }}"
+                    style="transition: all 0.2s; border-bottom: 1px solid #f0e6d6;"
                 >
-                    <td>{{ u.idUtilisateur }}</td>
+                    <td><span class="fw-bold text-primary">{{ u.idUtilisateur }}</span></td>
                     <td>{{ u.nom }}</td>
                     <td>{{ u.email }}</td>
                     <td>
                         {% if u.role == 'admin' %}
-                            <span class="badge bg-danger">Admin</span>
+                            <span class="badge" style="background: linear-gradient(135deg, #dc3545, #b02a37); padding: 6px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;">👑 Admin</span>
                         {% else %}
-                            <span class="badge bg-success">User</span>
+                            <span class="badge" style="background: linear-gradient(135deg, #28a745, #1e7e34); padding: 6px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;">👤 User</span>
                         {% endif %}
                     </td>
-                    <td>{{ u.region ?: '-' }}</td>
+                    <td>
+                        {% if u.region %}
+                            <span style="background: #f0e6d6; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">📍 {{ u.region }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
                     <td>{{ u.dateNaissance ? u.dateNaissance|date('d/m/Y') : '-' }}</td>
                     <td>
-                        <span class="badge bg-warning text-dark" style="font-size: 14px; padding: 6px 12px;">
+                        <span class="badge" style="background: #f0ad4e; color: #2c3e50; padding: 6px 12px; border-radius: 30px; font-weight: 700;">
                             ⭐ {{ u.pointsFidelite|default(0) }}
                         </span>
                     </td>
                     <td>
-                        <a href="{{ path('app_utilisateur_editer', {id: u.idUtilisateur}) }}" class="btn btn-sm btn-warning">
-                            <i class="fas fa-edit"></i> Modifier
-                        </a>
-                        {% if u.idUtilisateur != app.user.idUtilisateur %}
-                            <form action="{{ path('app_utilisateur_delete', {id: u.idUtilisateur}) }}" method="post" style="display:inline-block">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer {{ u.nom }} ?')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </form>
+                        {% if u.isBanned %}
+                            <span class="badge" style="background: #6c757d; padding: 6px 12px; border-radius: 30px;">
+                                🚫 Banni{% if u.bannedUntil and u.bannedUntil|date('Y') < 3000 %} (jusqu'au {{ u.bannedUntil|date('d/m/Y H:i') }}){% endif %}
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background: #28a745; padding: 6px 12px; border-radius: 30px;">✅ Actif</span>
                         {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_utilisateur_editer', {id: u.idUtilisateur}) }}" class="btn btn-sm btn-outline-warning rounded-pill">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            {% if u.idUtilisateur != app.user.idUtilisateur %}
+                                <form action="{{ path('app_utilisateur_delete', {id: u.idUtilisateur}) }}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Supprimer {{ u.nom }} ?')">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            {% endif %}
+                            {% if u.isBanned %}
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill" onclick="unbanUser({{ u.idUtilisateur }}, '{{ u.nom|escape('js') }}')">
+                                    <i class="fas fa-check-circle"></i> Débannir
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="openBanModal({{ u.idUtilisateur }}, '{{ u.nom|escape('js') }}')">
+                                    <i class="fas fa-gavel"></i> Bannir
+                                </button>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div id="noResults" style="display:none; text-align:center; padding: 30px; color: #999;">
+        <div id="noResults" style="display:none; text-align:center; padding: 40px; color: #999;">
             😕 Aucun utilisateur trouvé
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <span class="text-muted" style="font-size: 0.85rem;">Affichage de <span id="pageStart">0</span> à <span id="pageEnd">0</span> sur <span id="totalFiltered">0</span> utilisateur(s)</span>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary rounded-pill" id="prevPageBtn" disabled>« Précédent</button>
+            <span class="mx-2 fw-semibold">Page <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+            <button class="btn btn-sm btn-outline-primary rounded-pill" id="nextPageBtn" disabled>Suivant »</button>
         </div>
     </div>
 </div>
 
+<!-- Modal de bannissement (inchangée) -->
+<div class="modal fade" id="banModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🚫 Bannir un utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Utilisateur : <strong id="banUserName"></strong></p>
+                <div class="mb-3">
+                    <label>Durée du bannissement</label>
+                    <select id="banDuration" class="form-select">
+                        <option value="1day">1 jour</option>
+                        <option value="2days">2 jours</option>
+                        <option value="1week">1 semaine</option>
+                        <option value="infinite">♾️ Infini</option>
+                        <option value="custom">Personnalisé</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="customDateDiv" style="display:none;">
+                    <label>Date de fin (format YYYY-MM-DD HH:MM)</label>
+                    <input type="datetime-local" id="customBanDate" class="form-control">
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> L'utilisateur ne pourra pas se connecter jusqu'à la date indiquée.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" onclick="confirmBan()">Confirmer le bannissement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODALE VIDÉO D'AIDE (YouTube) ========== -->
+<div class="modal fade" id="helpVideoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-play-circle text-danger"></i> Vidéo d'aide - Administration
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/OEZ06hJZ8ao?autoplay=0&rel=0" 
+                            title="Vidéo d'aide"
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== WIDGET D'ASSISTANCE CONTEXTUELLE ========== -->
+<div class="help-widget" id="helpWidget">
+    <div class="help-bubble" id="helpBubble">
+        <i class="fas fa-question"></i>
+    </div>
+    <div class="help-panel" id="helpPanel">
+        <div class="help-header">
+            <i class="fas fa-robot"></i> Assistant Admin
+            <button class="help-close" id="helpCloseBtn">&times;</button>
+        </div>
+        <div class="help-content">
+            <p>Que souhaitez-vous faire ?</p>
+            <div class="help-suggestions" id="helpSuggestions">
+                <button class="help-suggestion" data-action="profil">
+                    <i class="fas fa-user-edit"></i> Modifier mon profil
+                </button>
+                <button class="help-suggestion" data-action="ban">
+                    <i class="fas fa-gavel"></i> Bannir un utilisateur
+                </button>
+                <button class="help-suggestion" data-action="search">
+                    <i class="fas fa-search"></i> Recherche avancée
+                </button>
+                <button class="help-suggestion" data-action="stats">
+                    <i class="fas fa-chart-line"></i> Statistiques
+                </button>
+                <button class="help-suggestion" data-action="export">
+                    <i class="fas fa-file-pdf"></i> Exporter la liste
+                </button>
+                <button class="help-suggestion" data-action="help">
+                    <i class="fas fa-question-circle"></i> Aide / Documentation
+                </button>
+            </div>
+        </div>
+        <div class="help-footer">
+            <small>Suggestions basées sur la page actuelle</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Widget d'assistance */
+    .help-widget {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .help-bubble {
+        width: 55px;
+        height: 55px;
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        animation: bounce 1s ease infinite;
+    }
+    .help-bubble:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .help-bubble i {
+        font-size: 28px;
+        color: white;
+        transition: transform 0.2s;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    .help-panel {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        width: 320px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px) scale(0.95);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.98);
+        border: 1px solid rgba(255,107,107,0.3);
+    }
+    .help-panel.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+    .help-header {
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+    }
+    .help-header i {
+        margin-right: 8px;
+    }
+    .help-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        line-height: 1;
+        transition: transform 0.2s;
+    }
+    .help-close:hover {
+        transform: scale(1.2);
+    }
+    .help-content {
+        padding: 20px;
+    }
+    .help-content p {
+        margin: 0 0 12px 0;
+        color: #555;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .help-suggestions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .help-suggestion {
+        background: #f8f9fa;
+        border: 1px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 10px 15px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .help-suggestion i {
+        width: 24px;
+        color: #FF6B6B;
+        font-size: 16px;
+    }
+    .help-suggestion:hover {
+        background: linear-gradient(135deg, #FFF0F0, #FFF5F0);
+        border-color: #FF6B6B;
+        transform: translateX(5px);
+    }
+    .help-footer {
+        background: #fefcf8;
+        padding: 10px 20px;
+        text-align: center;
+        font-size: 11px;
+        color: #999;
+        border-top: 1px solid #f0e6d6;
+    }
+</style>
+
 <script>
+// ========== PAGINATION (identique) ==========
+let currentPage = 1;
+const rowsPerPage = 10;
+let filteredRows = [];
+let totalPages = 1;
+
+function updatePagination() {
+    const total = filteredRows.length;
+    totalPages = Math.ceil(total / rowsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    document.querySelectorAll('#usersBody tr').forEach(row => row.style.display = 'none');
+    for (let i = start; i < end && i < total; i++) {
+        filteredRows[i].style.display = '';
+    }
+    document.getElementById('pageStart').textContent = total === 0 ? 0 : start + 1;
+    document.getElementById('pageEnd').textContent = Math.min(end, total);
+    document.getElementById('totalFiltered').textContent = total;
+    document.getElementById('currentPage').textContent = currentPage;
+    document.getElementById('totalPages').textContent = totalPages || 1;
+    document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+    document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+}
+
+function goToPrevPage() {
+    if (currentPage > 1) { currentPage--; updatePagination(); }
+}
+
+function goToNextPage() {
+    if (currentPage < totalPages) { currentPage++; updatePagination(); }
+}
+
+// ========== FILTRES ET TRI ==========
 let sortDirections = { id: 'asc', nom: 'asc', role: 'asc', region: 'asc', points: 'asc' };
 
 function applyFilters() {
@@ -137,56 +468,40 @@ function applyFilters() {
     const email  = document.getElementById('searchEmail').value.toLowerCase();
     const role   = document.getElementById('filterRole').value;
     const region = document.getElementById('filterRegion').value.toLowerCase();
-    const rows   = document.querySelectorAll('#usersBody tr');
+    const rows   = Array.from(document.querySelectorAll('#usersBody tr'));
 
-    let visible = 0;
-    rows.forEach(row => {
+    filteredRows = rows.filter(row => {
         const id        = row.dataset.id;
         const nom       = row.dataset.nom;
         const rowEmail  = row.dataset.email;
         const rowRole   = row.dataset.role;
         const rowRegion = row.dataset.region;
-
         const matchSearch = !search || id.includes(search) || nom.includes(search);
         const matchEmail  = !email  || rowEmail.includes(email);
         const matchRole   = !role   || rowRole === role;
         const matchRegion = !region || rowRegion.includes(region);
-
-        if (matchSearch && matchEmail && matchRole && matchRegion) {
-            row.style.display = '';
-            visible++;
-        } else {
-            row.style.display = 'none';
-        }
+        return matchSearch && matchEmail && matchRole && matchRegion;
     });
 
-    document.getElementById('resultCount').textContent = visible + ' utilisateur(s) trouvé(s)';
-    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    document.getElementById('resultCount').textContent = filteredRows.length + ' utilisateur(s) trouvé(s)';
+    document.getElementById('noResults').style.display = filteredRows.length === 0 ? 'block' : 'none';
+    currentPage = 1;
+    updatePagination();
 }
 
 function sortTable(col) {
     const tbody = document.getElementById('usersBody');
-    const rows  = Array.from(tbody.querySelectorAll('tr'));
-    const dir   = sortDirections[col] === 'asc' ? 1 : -1;
-
-    ['id','nom','role','region','points'].forEach(c => {
-        const el = document.getElementById('sort-' + c);
-        if (el) el.textContent = '↕';
-    });
-
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const dir = sortDirections[col] === 'asc' ? 1 : -1;
     rows.sort((a, b) => {
         let valA = a.dataset[col] || '';
         let valB = b.dataset[col] || '';
-        if (col === 'id' || col === 'points') {
-            return (parseInt(valA) - parseInt(valB)) * dir;
-        }
+        if (col === 'id' || col === 'points') return (parseInt(valA) - parseInt(valB)) * dir;
         return valA.localeCompare(valB) * dir;
     });
-
+    rows.forEach(row => tbody.appendChild(row));
     sortDirections[col] = sortDirections[col] === 'asc' ? 'desc' : 'asc';
     document.getElementById('sort-' + col).textContent = dir === 1 ? '↑' : '↓';
-
-    rows.forEach(row => tbody.appendChild(row));
     applyFilters();
 }
 
@@ -196,16 +511,176 @@ function resetFilters() {
     document.getElementById('filterRole').value   = '';
     document.getElementById('filterRegion').value = '';
     document.getElementById('sortBy').value       = '';
-    document.getElementById('resultCount').textContent = '';
-    document.querySelectorAll('#usersBody tr').forEach(r => r.style.display = '');
-    document.getElementById('noResults').style.display = 'none';
+    sortDirections = { id: 'asc', nom: 'asc', role: 'asc', region: 'asc', points: 'asc' };
     ['id','nom','role','region','points'].forEach(c => {
         const el = document.getElementById('sort-' + c);
         if (el) el.textContent = '↕';
     });
-    sortDirections = { id: 'asc', nom: 'asc', role: 'asc', region: 'asc', points: 'asc' };
+    applyFilters();
 }
 
+// ========== EXPORT PDF ==========
+document.getElementById('exportPdfBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const search = document.getElementById('searchInput').value;
+    const email = document.getElementById('searchEmail').value;
+    const role = document.getElementById('filterRole').value;
+    const region = document.getElementById('filterRegion').value;
+    const sort = document.getElementById('sortBy').value;
+    let url = "{{ path('app_utilisateur_export_pdf') }}?search=" + encodeURIComponent(search) +
+              "&email=" + encodeURIComponent(email) +
+              "&role=" + encodeURIComponent(role) +
+              "&region=" + encodeURIComponent(region) +
+              "&sort=" + encodeURIComponent(sort);
+    window.open(url, '_blank');
+});
+
+// ========== CHATBOT SEARCH ==========
+document.getElementById('chatSearchBtn').addEventListener('click', function() {
+    const query = document.getElementById('chatSearchInput').value.trim();
+    if (!query) return;
+
+    fetch("{{ path('app_utilisateur_chat_search') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.filters) {
+            const f = data.filters;
+            if (f.search !== undefined) document.getElementById('searchInput').value = f.search;
+            if (f.email !== undefined) document.getElementById('searchEmail').value = f.email;
+            if (f.role !== undefined) document.getElementById('filterRole').value = f.role;
+            if (f.region !== undefined) document.getElementById('filterRegion').value = f.region;
+            if (f.sort !== undefined) document.getElementById('sortBy').value = f.sort;
+            applyFilters();
+            if (f.sort) {
+                const [col, dir] = f.sort.split('-');
+                sortDirections[col] = dir === 'asc' ? 'desc' : 'asc';
+                sortTable(col);
+            }
+        }
+    })
+    .catch(error => console.error('Erreur chatbot:', error));
+});
+
+document.getElementById('clearChatBtn').addEventListener('click', function() {
+    document.getElementById('chatSearchInput').value = '';
+});
+
+// ========== BANNISSEMENT ==========
+let currentBanUserId = null;
+let currentBanUserName = '';
+
+function openBanModal(userId, userName) {
+    currentBanUserId = userId;
+    currentBanUserName = userName;
+    document.getElementById('banUserName').innerText = userName;
+    const banModal = new bootstrap.Modal(document.getElementById('banModal'));
+    banModal.show();
+}
+
+document.getElementById('banDuration').addEventListener('change', function() {
+    document.getElementById('customDateDiv').style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+function computeBanDate(duration, customDate = null) {
+    if (duration === 'custom' && customDate) return customDate;
+    const now = new Date();
+    switch(duration) {
+        case '1day': now.setDate(now.getDate() + 1); break;
+        case '2days': now.setDate(now.getDate() + 2); break;
+        case '1week': now.setDate(now.getDate() + 7); break;
+        case 'infinite': return '2999-12-31 23:59:59';
+        default: return null;
+    }
+    return now.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function confirmBan() {
+    const duration = document.getElementById('banDuration').value;
+    let banUntil = null;
+    if (duration === 'custom') {
+        const customDate = document.getElementById('customBanDate').value;
+        if (!customDate) { alert('Veuillez choisir une date de fin.'); return; }
+        banUntil = customDate.replace('T', ' ') + ':00';
+    } else {
+        banUntil = computeBanDate(duration);
+    }
+    fetch('/utilisateur/' + currentBanUserId + '/ban', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ banned_until: banUntil })
+    })
+    .then(response => response.json())
+    .then(data => { if (data.success) location.reload(); else alert('Erreur : ' + data.message); })
+    .catch(error => { console.error(error); alert('Une erreur est survenue.'); });
+}
+
+function unbanUser(userId, userName) {
+    if (confirm(`Débannir ${userName} ? L'utilisateur pourra à nouveau se connecter.`)) {
+        fetch('/utilisateur/' + userId + '/ban', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banned_until: null })
+        })
+        .then(response => response.json())
+        .then(data => { if (data.success) location.reload(); else alert('Erreur : ' + data.message); })
+        .catch(error => { console.error(error); alert('Une erreur est survenue.'); });
+    }
+}
+
+// ========== WIDGET D'ASSISTANCE ==========
+document.getElementById('helpBubble').addEventListener('click', function() {
+    document.getElementById('helpPanel').classList.toggle('show');
+});
+document.getElementById('helpCloseBtn').addEventListener('click', function() {
+    document.getElementById('helpPanel').classList.remove('show');
+});
+document.addEventListener('click', function(event) {
+    const widget = document.querySelector('.help-widget');
+    if (!widget.contains(event.target)) {
+        document.getElementById('helpPanel').classList.remove('show');
+    }
+});
+
+document.querySelectorAll('.help-suggestion').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const action = this.dataset.action;
+        document.getElementById('helpPanel').classList.remove('show');
+        switch(action) {
+            case 'profil':
+                window.location.href = "{{ path('app_mon_profil') }}";
+                break;
+            case 'ban':
+                const firstUser = document.querySelector('#usersBody tr');
+                if (firstUser) {
+                    const userId = firstUser.dataset.id;
+                    const userName = firstUser.querySelector('td:nth-child(2)').innerText;
+                    openBanModal(userId, userName);
+                } else {
+                    alert('Aucun utilisateur trouvé.');
+                }
+                break;
+            case 'search':
+                document.getElementById('searchInput').focus();
+                break;
+            case 'stats':
+                window.location.href = "/admin/statistiques";
+                break;
+            case 'export':
+                document.getElementById('exportPdfBtn').click();
+                break;
+            case 'help':
+                const videoModal = new bootstrap.Modal(document.getElementById('helpVideoModal'));
+                videoModal.show();
+                break;
+        }
+    });
+});
+
+// ========== ÉVÉNEMENTS EXISTANTS ==========
 document.getElementById('sortBy').addEventListener('change', function() {
     const val = this.value;
     if (!val) return;
@@ -213,10 +688,14 @@ document.getElementById('sortBy').addEventListener('change', function() {
     sortDirections[col] = dir === 'asc' ? 'desc' : 'asc';
     sortTable(col);
 });
-
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('searchEmail').addEventListener('input', applyFilters);
 document.getElementById('filterRole').addEventListener('change', applyFilters);
 document.getElementById('filterRegion').addEventListener('change', applyFilters);
+document.getElementById('prevPageBtn').addEventListener('click', goToPrevPage);
+document.getElementById('nextPageBtn').addEventListener('click', goToNextPage);
+
+// Initialisation
+applyFilters();
 </script>
 {% endblock %}

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;
 
+use App\Entity\HistoriqueConnexion; // Remplacez par le nom de votre entité si différent
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,5 @@ class HistoriqueConnexionRepository extends ServiceEntityRepository
         parent::__construct($registry, HistoriqueConnexion::class);
     }
 
-    //    /**
-    //     * @return HistoriqueConnexion[] Returns an array of HistoriqueConnexion objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('h.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?HistoriqueConnexion
-    //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // Vous pouvez ajouter ici des méthodes personnalisées si besoin
 }

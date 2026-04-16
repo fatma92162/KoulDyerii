@@ -41,12 +41,35 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true, name: 'empreinte')]
     private ?string $empreinte = null;
 
-    // ✅ RELATION VERS POINTS SOLDE - Version simplifiée
+    // RELATION VERS POINTS SOLDE
     #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: Pointssolde::class, cascade: ['persist', 'remove'])]
     private ?Pointssolde $pointsSolde = null;
 
+    // Permission d'épingler
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private ?bool $can_pin = false;
+
+    // Téléphone pour déblocage SMS
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $telephone = null;
+
+    // ✅ Date de fin de bannissement (null = pas banni)
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $banned_until = null;
+
+    // ✅ Version du token pour déconnexion multi-appareils
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $tokenVersion = 0;
+
     // Propriété virtuelle pour les points
     private ?int $pointsFidelite = null;
+
+    // ========== CONSTRUCTEUR ==========
+    
+    public function __construct()
+    {
+        $this->can_pin = false;
+    }
 
     // ========== GETTERS ET SETTERS ==========
 
@@ -174,6 +197,68 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPointsFidelite(?int $pointsFidelite): self
     {
         $this->pointsFidelite = $pointsFidelite;
+        return $this;
+    }
+
+    // GETTER ET SETTER POUR CAN_PIN
+    public function getCanPin(): ?bool
+    {
+        return $this->can_pin;
+    }
+
+    public function setCanPin(bool $can_pin): self
+    {
+        $this->can_pin = $can_pin;
+        return $this;
+    }
+
+    // GETTER ET SETTER POUR TELEPHONE
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): self
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
+    // ✅ BANNISSEMENT
+    public function getBannedUntil(): ?\DateTimeInterface
+    {
+        return $this->banned_until;
+    }
+
+    public function setBannedUntil(?\DateTimeInterface $banned_until): self
+    {
+        $this->banned_until = $banned_until;
+        return $this;
+    }
+
+    public function isBanned(): bool
+    {
+        if ($this->banned_until === null) {
+            return false;
+        }
+        return $this->banned_until > new \DateTime();
+    }
+
+    // ✅ VERSION DU TOKEN (pour déconnexion multi-appareils)
+    public function getTokenVersion(): int
+    {
+        return $this->tokenVersion;
+    }
+
+    public function setTokenVersion(int $tokenVersion): self
+    {
+        $this->tokenVersion = $tokenVersion;
+        return $this;
+    }
+
+    public function incrementTokenVersion(): self
+    {
+        $this->tokenVersion++;
         return $this;
     }
 

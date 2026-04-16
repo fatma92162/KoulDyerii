@@ -63,11 +63,38 @@
             <div class="invalid-feedback" id="err-date"></div>
         </div>
 
+        {# ===== SECTION PHOTO / AVATAR (avec les deux options) ===== #}
         <div class="mb-3">
-            <label>Photo</label>
-            <input type="file" name="photo" id="photo" class="form-control" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
-            <div class="invalid-feedback" id="err-photo"></div>
-            <small class="text-muted">Formats acceptés : JPG, PNG, GIF, WEBP (Max 2 Mo)</small>
+            <label>Photo / Avatar</label>
+            
+            {# Aperçu commun #}
+            <div class="avatar-preview" id="avatarPreviewContainer" style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin-bottom: 15px;">
+                {% if utilisateur and utilisateur.photo %}
+                    <img src="{{ utilisateur.photo }}" id="avatarPreviewImg" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ utilisateur ? utilisateur.nom|url_encode : 'User' }}&background=FF6B6B&color=fff&bold=true&length=2&rounded=true" id="avatarPreviewImg" style="width: 100%; height: 100%;">
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="small text-muted">📁 Télécharger une photo</label>
+                    <input type="file" name="photo" id="photo" class="form-control" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                    <div class="invalid-feedback" id="err-photo"></div>
+                    <div class="photo-preview" id="photo-preview" style="display: none; margin-top: 10px;">
+                        <img id="photo-thumb" src="#" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                        <p id="photo-info" style="font-size: 12px; margin-top: 5px;"></p>
+                    </div>
+                    <small class="text-muted">Formats acceptés : JPG, PNG, GIF, WEBP (Max 2 Mo)</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="small text-muted">🎨 Choisir un avatar</label>
+                    <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                        🎨 Choisir un avatar
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="avatar_url" id="avatarUrlInput" value="{{ utilisateur.photo ?? '' }}">
         </div>
 
         <button type="submit" class="btn btn-primary">Enregistrer</button>
@@ -75,9 +102,49 @@
     </form>
 </div>
 
+{# MODALE DE SÉLECTION D'AVATARS #}
+<div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choisissez votre avatar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="avatar-list">
+                    <div class="text-center">Chargement...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #f0e6d6;
+        background: #f8f9fa;
+    }
+    .avatar-option {
+        transition: transform 0.2s, border 0.2s;
+        cursor: pointer;
+    }
+    .avatar-option:hover {
+        transform: scale(1.1);
+        border-color: #FF6B6B !important;
+    }
+    .photo-preview img {
+        border: 2px solid #28a745;
+    }
+</style>
+
 <script>
 const isEdit = {{ utilisateur ? 'true' : 'false' }};
 
+// Fonctions existantes de validation (inchangées)
 function showError(fieldId, errId, message) {
     const field = document.getElementById(fieldId);
     const err   = document.getElementById(errId);
@@ -176,7 +243,7 @@ function validateForm(e) {
         }
     }
 
-    // Photo
+    // Photo / Avatar : on vérifie uniquement si un fichier est sélectionné
     const photo = document.getElementById('photo');
     if (photo.files.length > 0) {
         const file    = photo.files[0];
@@ -198,6 +265,7 @@ function validateForm(e) {
 
 document.getElementById('userForm').addEventListener('submit', validateForm);
 
+// Nettoyage des erreurs à la saisie
 document.getElementById('nom').addEventListener('input', () => clearError('nom', 'err-nom'));
 document.getElementById('email').addEventListener('input', () => clearError('email', 'err-email'));
 document.getElementById('motDePasse').addEventListener('input', () => clearError('motDePasse', 'err-motDePasse'));
@@ -205,5 +273,79 @@ document.getElementById('confirm_password').addEventListener('input', () => clea
 document.getElementById('region').addEventListener('change', () => clearError('region', 'err-region'));
 document.getElementById('dateNaissance').addEventListener('change', () => clearError('dateNaissance', 'err-date'));
 document.getElementById('photo').addEventListener('change', () => clearError('photo', 'err-photo'));
+
+// ========== GESTION DES AVATARS (modale DiceBear) ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarList = document.getElementById('avatar-list');
+    const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+    const avatarUrlInput = document.getElementById('avatarUrlInput');
+    const photoField = document.getElementById('photo');
+    const photoPreviewDiv = document.getElementById('photo-preview');
+    const photoThumb = document.getElementById('photo-thumb');
+    const photoInfo = document.getElementById('photo-info');
+
+    const styles = ['adventurer', 'avataaars', 'bottts', 'identicon', 'micah', 'open-peeps', 'pixel-art'];
+
+    function loadAvatars() {
+        if (!avatarList) return;
+        avatarList.innerHTML = '';
+        styles.forEach(style => {
+            for (let i = 0; i < 6; i++) {
+                const seed = Math.random().toString(36).substring(7);
+                const url = `https://api.dicebear.com/9.x/${style}/svg?seed=${seed}&size=80`;
+                const col = document.createElement('div');
+                col.className = 'col-2 mb-3 text-center';
+                col.innerHTML = `<img src="${url}" style="width: 70px; height: 70px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="avatar-option" data-url="${url}">`;
+                avatarList.appendChild(col);
+            }
+        });
+    }
+
+    loadAvatars();
+
+    // Sélection d'un avatar
+    if (avatarList) {
+        avatarList.addEventListener('click', (e) => {
+            const img = e.target.closest('.avatar-option');
+            if (img) {
+                const url = img.getAttribute('data-url');
+                // Mettre à jour l'aperçu principal
+                if (avatarPreviewImg) avatarPreviewImg.src = url;
+                // Stocker l'URL dans le champ caché
+                avatarUrlInput.value = url;
+                // Vider l'input file pour éviter la confusion
+                if (photoField) photoField.value = '';
+                // Cacher l'aperçu de la photo uploadée
+                if (photoPreviewDiv) photoPreviewDiv.style.display = 'none';
+                // Fermer la modale
+                const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+                if (modal) modal.hide();
+                // Nettoyer l'erreur éventuelle sur le champ photo
+                clearError('photo', 'err-photo');
+            }
+        });
+    }
+
+    // Aperçu photo uploadée
+    if (photoField) {
+        photoField.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (photoThumb) photoThumb.src = e.target.result;
+                    if (photoInfo) photoInfo.textContent = file.name + ' — ' + (file.size / 1024).toFixed(0) + ' Ko';
+                    if (photoPreviewDiv) photoPreviewDiv.style.display = 'block';
+                    // On efface l'avatar précédent (priorité à la photo)
+                    avatarUrlInput.value = '';
+                    if (avatarPreviewImg) avatarPreviewImg.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                if (photoPreviewDiv) photoPreviewDiv.style.display = 'none';
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
