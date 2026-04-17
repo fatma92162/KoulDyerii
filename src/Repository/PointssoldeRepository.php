@@ -3,7 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Pointssolde;
+<<<<<<< HEAD
 use App\Entity\Utilisateur;
+=======
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +17,7 @@ class PointssoldeRepository extends ServiceEntityRepository
         parent::__construct($registry, Pointssolde::class);
     }
 
+<<<<<<< HEAD
     /**
      * Trouver le solde d'un utilisateur
      */
@@ -52,4 +56,7 @@ class PointssoldeRepository extends ServiceEntityRepository
         
         return $pointsSolde;
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -578,4 +579,64 @@
     {% endblock %}
 
 </body>
+=======
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Kouldiery{% endblock %}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}{% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-red">
+            <div class="container">
+                <a class="navbar-brand" href="{{ path('forum_list') }}">Kouldiery</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="{{ path('forum_list') }}">Accueil</a></li>
+
+                        <!-- Admin dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Admin</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ path('admin_forum') }}">Kouldiery (admin)</a></li>
+                                <li><a class="dropdown-item" href="{{ path('admin_post_index') }}">Gérer les articles</a></li>
+                                <li><a class="dropdown-item" href="{{ path('admin_commentaire_index') }}">Gérer les commentaires</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- User dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Utilisateur</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ path('user_forum') }}">Kouldiery (user)</a></li>
+                                <li><a class="dropdown-item" href="{{ path('user_post_index') }}">Mes articles</a></li>
+                                <li><a class="dropdown-item" href="{{ path('user_commentaire_index') }}">Mes commentaires</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 </html>

@@ -13,6 +13,7 @@ class LivraisonRepository extends ServiceEntityRepository
         parent::__construct($registry, Livraison::class);
     }
 
+<<<<<<< HEAD
     public function findByFilters(string $search = '', string $status = '', string $sort = 'id_desc'): array
     {
         $qb = $this->createQueryBuilder('l');
@@ -45,4 +46,7 @@ class LivraisonRepository extends ServiceEntityRepository
         
         return $qb->getQuery()->getResult();
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }

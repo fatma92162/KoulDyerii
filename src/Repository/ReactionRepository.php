@@ -13,6 +13,7 @@ class ReactionRepository extends ServiceEntityRepository
         parent::__construct($registry, Reaction::class);
     }
 
+<<<<<<< HEAD
     // ✅ CORRIGÉ : utiliser l'association 'post' au lieu de 'post_id'
     public function countByPost(int $postId): int
     {
@@ -81,4 +82,7 @@ class ReactionRepository extends ServiceEntityRepository
             'post' => $postId
         ]);
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }

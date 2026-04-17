@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 // src/Entity/Commentaire.php
 
 namespace App\Entity;
@@ -10,10 +11,20 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CommentaireRepository::class)]
 #[ORM\Table(name: 'commentaire')]
+=======
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[ORM\Entity]
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 class Commentaire
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
+<<<<<<< HEAD
     #[ORM\Column]
     private ?int $id = null;
 
@@ -50,10 +61,33 @@ class Commentaire
     // Getters et Setters
 
     public function getId(): ?int
+=======
+    #[ORM\Column(type: "integer")]
+    private int $id;
+
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: "commentaires")]
+    #[ORM\JoinColumn(name: "post_id", referencedColumnName: "id", nullable: false)]
+    private Post $post;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "idUtilisateur", nullable: true)]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column(type: "text")]
+    #[Assert\NotBlank(message: "Le commentaire ne peut pas être vide.")]
+    #[Assert\Length(min: 2, max: 1000, minMessage: "Le commentaire doit faire au moins 2 caractères.", maxMessage: "Le commentaire ne peut pas dépasser 1000 caractères.")]
+    private string $content;
+
+    #[ORM\Column(type: "datetime_immutable")]
+    private \DateTimeImmutable $created_at;
+
+    public function getId(): int
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
     {
         return $this->id;
     }
 
+<<<<<<< HEAD
     public function getContent(): ?string
     {
         return $this->content;
@@ -88,11 +122,18 @@ class Commentaire
     }
 
     public function getPost(): ?Post
+=======
+    public function getPost(): Post
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
     {
         return $this->post;
     }
 
+<<<<<<< HEAD
     public function setPost(?Post $post): self
+=======
+    public function setPost(Post $post): self
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
     {
         $this->post = $post;
         return $this;
@@ -109,6 +150,7 @@ class Commentaire
         return $this;
     }
 
+<<<<<<< HEAD
     public function getParent(): ?self
     {
         return $this->parent;
@@ -141,6 +183,27 @@ class Commentaire
                 $reply->setParent(null);
             }
         }
+=======
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    public function setContent(string $content): self
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $created_at): self
+    {
+        $this->created_at = $created_at;
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
         return $this;
     }
 }

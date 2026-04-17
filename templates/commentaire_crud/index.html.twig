@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des commentaires{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-danger">💬 Gestion des commentaires</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="search" class="form-control" placeholder="🔍 Rechercher dans le contenu ou le titre de l'article..." value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-red w-100">Rechercher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th><a href="{{ path('admin_commentaire_index', {search: search, sort: 'id', order: (sort == 'id' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">ID {% if sort == 'id' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th><a href="{{ path('admin_commentaire_index', {search: search, sort: 'content', order: (sort == 'content' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">Commentaire {% if sort == 'content' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Article</th>
+                <th><a href="{{ path('admin_commentaire_index', {search: search, sort: 'created_at', order: (sort == 'created_at' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">Date {% if sort == 'created_at' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commentaire in commentaires %}
+            <tr>
+                <td>{{ commentaire.id }}</td>
+                <td>{{ commentaire.content|slice(0, 60) }}...{% if commentaire.content|length > 60 %}…{% endif %}</td>
+                <td>{{ commentaire.post.title }}</td>
+                <td>{{ commentaire.createdAt|date('d/m/Y H:i') }}</td>
+                <td>
+                    <a href="{{ path('admin_commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-info">Voir</a>
+                    <a href="{{ path('admin_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                    <form method="post" action="{{ path('admin_commentaire_delete', {'id': commentaire.id}) }}" style="display:inline-block">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce commentaire ?')">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">Aucun commentaire trouvé</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('admin_forum') }}" class="btn btn-secondary mt-3">← Retour au forum</a>
+</div>
+{% endblock %}

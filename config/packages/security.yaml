@@ -1,4 +1,5 @@
 security:
+<<<<<<< HEAD
     password_hashers:
         App\Entity\Utilisateur:
             algorithm: plaintext
@@ -30,3 +31,8 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/utilisateur, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/mon-profil, roles: IS_AUTHENTICATED_FULLY }
+=======
+    firewalls:
+        main:
+            security: false
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd

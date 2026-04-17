@@ -1,4 +1,8 @@
 <?php
+<<<<<<< HEAD
+=======
+
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 namespace App\Repository;
 
 use App\Entity\Notification;
@@ -12,6 +16,7 @@ class NotificationRepository extends ServiceEntityRepository
         parent::__construct($registry, Notification::class);
     }
 
+<<<<<<< HEAD
     public function countUnreadByUser(int $userId): int
     {
         return $this->createQueryBuilder('n')
@@ -34,4 +39,7 @@ class NotificationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }

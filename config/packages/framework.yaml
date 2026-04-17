@@ -4,7 +4,10 @@ framework:
     annotations: false
     http_method_override: false
     handle_all_throwables: true
+<<<<<<< HEAD
     translator: false   # ← déplacé ici (désactive la traduction)
+=======
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
@@ -22,4 +25,8 @@ when@test:
     framework:
         test: true
         session:
+<<<<<<< HEAD
             storage_factory_id: session.storage.factory.mock_file
+=======
+            storage_factory_id: session.storage.factory.mock_file
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd

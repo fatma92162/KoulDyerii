@@ -1,6 +1,13 @@
 framework:
+<<<<<<< HEAD
     default_locale: 'fr'
     translator:
         fallbacks: ['en']
         paths:
             - '%kernel.project_dir%/translations'
+=======
+    default_locale: en
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+        providers:
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd

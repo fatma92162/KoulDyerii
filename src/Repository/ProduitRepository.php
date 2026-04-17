@@ -13,6 +13,7 @@ class ProduitRepository extends ServiceEntityRepository
         parent::__construct($registry, Produit::class);
     }
 
+<<<<<<< HEAD
     /**
      * Récupérer tous les produits avec filtres et tri
      */
@@ -110,4 +111,7 @@ class ProduitRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }

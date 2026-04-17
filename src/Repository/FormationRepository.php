@@ -13,6 +13,7 @@ class FormationRepository extends ServiceEntityRepository
         parent::__construct($registry, Formation::class);
     }
 
+<<<<<<< HEAD
     /**
      * Récupérer les formations avec filtres et tri
      */
@@ -71,4 +72,7 @@ class FormationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+=======
+    // Add custom methods as needed
+>>>>>>> c5068dc4fcc54b142830cfad3e0547f2bfd72acd
 }
