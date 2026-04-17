@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;   // ⚠️ Changement crucial : namespace App\Repository (pas App\Entity)
 
+use App\Entity\GifFavori;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,15 @@ class GifFavoriRepository extends ServiceEntityRepository
         parent::__construct($registry, GifFavori::class);
     }
 
-    //    /**
-    //     * @return GifFavori[] Returns an array of GifFavori objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?GifFavori
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // ========== MÉTHODES PERSONNALISÉES ==========
+    // Exemple : récupérer les favoris d'un utilisateur
+    public function findByUtilisateur(int $userId): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.utilisateur = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

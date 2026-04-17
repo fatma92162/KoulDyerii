@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\AbandonedCommandeRepository;
 use App\Repository\CommandRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\VisitorActivityRepository;
@@ -19,7 +20,8 @@ class AdminCommandeController extends AbstractController
         private EntityManagerInterface $entityManager,
         private CommandRepository $commandRepository,
         private ProduitRepository $produitRepository,
-        private VisitorActivityRepository $visitorActivityRepository
+        private VisitorActivityRepository $visitorActivityRepository,
+        private AbandonedCommandeRepository $abandonedCommandeRepository
     ) {}
 
     private function checkAdmin(): void
@@ -46,6 +48,31 @@ class AdminCommandeController extends AbstractController
             $commande->produit = $this->produitRepository->find($commande->getProductId());
         }
 
+        $abandonedCommandes = $this->abandonedCommandeRepository->findBy(
+            ['status' => 'draft'],
+            ['updatedAt' => 'DESC']
+        );
+
+        foreach ($abandonedCommandes as $draft) {
+            $draft->produit = null;
+
+            if ($draft->getProductId()) {
+                $draft->produit = $this->produitRepository->find($draft->getProductId());
+            }
+            $abandonedCommandes = $this->abandonedCommandeRepository->findBy(
+    ['status' => 'draft'],
+    ['updatedAt' => 'DESC']
+);
+
+foreach ($abandonedCommandes as $draft) {
+    $draft->produit = null;
+
+    if ($draft->getProductId()) {
+        $draft->produit = $this->produitRepository->find($draft->getProductId());
+    }
+}
+        }
+
         $total = count($this->commandRepository->findAll());
         $enAttente = $this->commandRepository->countByStatus('en_attente');
         $acceptee = $this->commandRepository->countByStatus('acceptee');
@@ -66,6 +93,7 @@ class AdminCommandeController extends AbstractController
 
         return $this->render('admin_commandes/index.html.twig', [
             'commandes' => $commandes,
+            'abandonedCommandes' => $abandonedCommandes,
             'search' => $search,
             'status' => $status,
             'sort' => $sort,

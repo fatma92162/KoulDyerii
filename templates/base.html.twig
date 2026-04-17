@@ -331,10 +331,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_produits_index') }}"><i class="fas fa-store"></i> Produits</a>
                         </li>
-                        <!-- Mes commandes -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_mes_commandes_index') }}"><i class="fas fa-shopping-cart"></i> Mes commandes</a>
-                        </li>
+                       
                          <!-- Mes livraisons -->
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_client_livraisons') }}"><i class="fas fa-truck"></i> Mes livraisons</a>
@@ -342,17 +339,14 @@
 
                         <!-- Partenaire -->
                        <li class="nav-item">
-                           <a class="nav-link" href="{{ path('app_partenaire_index') }}"><i class="fas fa-handshake"></i> Partenaire
-                           </a>
+                           <a class="nav-link" href="{{ path('app_partenaire_index') }}"><i class="fas fa-handshake"></i> Partenaire</a>
                        </li>
                        <!-- Formations -->
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_formations_index') }}"><i class="fas fa-graduation-cap"></i> Formations</a>
                         </li>
                         
-                    
-                        
-                        <!-- Mes inscriptions (visible seulement connecté) -->
+                        <!-- Mes inscriptions -->
                         {% if app.user %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_mes_inscriptions') }}">
@@ -360,8 +354,6 @@
                             </a>
                         </li>
                         {% endif %}
-                        
-                       
                         
                         <!-- Admin uniquement -->
                         {% if app.user.role is defined and app.user.role == 'admin' %}
@@ -380,6 +372,70 @@
                                 </ul>
                             </li>
                         {% endif %}
+
+                        <!-- ========== SÉLECTEUR DE LANGUE ========== -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-globe"></i> {{ app.request.locale|upper }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                                <li>
+                                    <a class="dropdown-item {% if app.request.locale == 'fr' %}active{% endif %}" href="{{ path('app_set_locale', {locale: 'fr'}) }}">
+                                        🇫🇷 Français
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if app.request.locale == 'en' %}active{% endif %}" href="{{ path('app_set_locale', {locale: 'en'}) }}">
+                                        🇬🇧 English
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- ========== NOTIFICATIONS ========== -->
+                        {% set unreadCount = unread_notifications_count(app.user.idUtilisateur) %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                {% if unreadCount > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ unreadCount }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;" aria-labelledby="notificationDropdown">
+                                {% set recentNotifs = recent_notifications(app.user.idUtilisateur, 10) %}
+                                {% if recentNotifs|length > 0 %}
+                                    {% for notif in recentNotifs %}
+                                        <li>
+                                            <a class="dropdown-item {% if not notif.isRead %}bg-light{% endif %}" 
+                                               href="{{ path('app_post_show', {id: notif.postId}) }}"
+                                               onclick="markNotificationAsRead({{ notif.id }})">
+                                                <div>{{ notif.message }}</div>
+                                                <small class="text-muted">{{ notif.createdAt|date('d/m/Y H:i') }}</small>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-center" href="{{ path('app_notifications_index') }}">Voir toutes les notifications</a></li>
+                                {% else %}
+                                    <li><span class="dropdown-item text-muted">Aucune notification</span></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+
+                        <!-- ========== MESSAGERIE ========== -->
+                        {% set unreadMsgCount = unread_messages_count(app.user.idUtilisateur) %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{{ path('app_messages_inbox') }}" title="Messagerie">
+                                <i class="fas fa-envelope"></i>
+                                {% if unreadMsgCount > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ unreadMsgCount }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
 
                         <!-- Avatar -->
                         <li class="nav-item ms-3">
@@ -505,6 +561,19 @@
                 overlay.classList.remove('show');
             }
         });
+
+        // ========== FONCTION POUR MARQUER UNE NOTIFICATION COMME LUE ==========
+        function markNotificationAsRead(notificationId) {
+            fetch(`/notification/${notificationId}/read`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recharge la page pour mettre à jour le compteur (optionnel)
+                        location.reload();
+                    }
+                })
+                .catch(console.error);
+        }
     </script>
     {% endblock %}
 

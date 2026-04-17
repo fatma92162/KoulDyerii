@@ -1,8 +1,5 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
+# config/services.yaml
 
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
 
 services:
@@ -22,3 +19,31 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # ✅ Définition de votre extension Twig pour la censure
+    App\Twig\CensorshipExtension:
+        tags: ['twig.extension']
+
+    # ✅ Définition de l'écouteur de locale pour la traduction
+    App\EventListener\LocaleListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 20 }
+
+    # ✅ Définition du service de notifications
+    App\Service\NotificationService:
+        autowire: true
+        autoconfigure: true
+
+    # ✅ Définition de l'extension Twig pour les messages
+    App\Twig\MessageExtension:
+        tags: ['twig.extension']
+
+    # ✅ Définition du service AI Assistant (Google Gemini)
+    App\Service\AIAssistant:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+
+    # ✅ Définition du service AiReplyService
+    App\Service\AiReplyService:
+        arguments:
+            $gemini: '@gemini'  # ou '@Gemini\Gemini' selon votre bundle

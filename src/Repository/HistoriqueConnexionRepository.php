@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;   // ⚠️ Changement crucial : namespace App\Repository (pas App\Entity)
 
+use App\Entity\HistoriqueConnexion;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,15 @@ class HistoriqueConnexionRepository extends ServiceEntityRepository
         parent::__construct($registry, HistoriqueConnexion::class);
     }
 
-    //    /**
-    //     * @return HistoriqueConnexion[] Returns an array of HistoriqueConnexion objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('h.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?HistoriqueConnexion
-    //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // ========== MÉTHODES PERSONNALISÉES ==========
+    // Exemple : récupérer l'historique d'un utilisateur
+    public function findByUtilisateur(int $userId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.utilisateur = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('h.dateConnexion', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conversation avec {{ otherUser.nom }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 800px;">
+    <h2 class="mb-3">💬 Conversation avec {{ otherUser.nom }}</h2>
+    <div class="card">
+        <div class="card-body" style="height: 400px; overflow-y: auto;" id="message-list">
+            {% for msg in messages %}
+                <div class="mb-3 {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}text-end{% endif %}">
+                    <div class="d-inline-block p-2 rounded {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}bg-primary text-white{% else %}bg-light{% endif %}" style="max-width: 75%;">
+                        {{ msg.content }}
+                    </div>
+                    <div class="small text-muted mt-1">{{ msg.createdAt|date('H:i, d/m/Y') }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer">
+            <form method="post">
+                <div class="input-group">
+                    <textarea name="content" class="form-control" rows="2" placeholder="Écrivez votre message..." required></textarea>
+                    <button class="btn btn-primary" type="submit">Envoyer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        const msgList = document.getElementById('message-list');
+        if (msgList) msgList.scrollTop = msgList.scrollHeight;
+    </script>
+</div>
+{% endblock %}

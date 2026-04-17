@@ -54,4 +54,31 @@ class ReactionRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getSingleScalarResult() > 0;
     }
+
+    // =================== MÉTHODES POUR RÉACTIONS MULTIPLES ===================
+    /**
+     * Compte le nombre de réactions d'un type spécifique pour un post
+     */
+    public function countByPostAndType(int $postId, string $type): int
+    {
+        return $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.post = :postId')
+            ->andWhere('r.type = :type')
+            ->setParameter('postId', $postId)
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Retourne la réaction d'un utilisateur pour un post (ou null)
+     */
+    public function userReactionForPost(int $userId, int $postId): ?Reaction
+    {
+        return $this->findOneBy([
+            'utilisateur' => $userId,
+            'post' => $postId
+        ]);
+    }
 }

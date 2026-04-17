@@ -119,6 +119,95 @@
         color: #155724;
         border: 1px solid #c3e6cb;
     }
+
+    /* Styles pour l'éditeur de texte */
+    .editor-toolbar {
+        background: #f8f9fa;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px 12px 0 0;
+        padding: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 0;
+    }
+    .editor-toolbar button {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .editor-toolbar button:hover {
+        background: #FF6B6B;
+        color: white;
+        border-color: #FF6B6B;
+    }
+    .editor-toolbar button i {
+        margin-right: 5px;
+    }
+    .content-editor {
+        border: 2px solid #f0e6d6;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        padding: 16px;
+        min-height: 200px;
+        font-size: 15px;
+        line-height: 1.6;
+        width: 100%;
+        font-family: inherit;
+        resize: vertical;
+    }
+    .content-editor:focus {
+        outline: none;
+        border-color: #FF6B6B;
+    }
+    
+    /* Styles pour l'aperçu en direct */
+    .preview-panel {
+        margin-top: 15px;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .preview-header {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-bottom: 1px solid #f0e6d6;
+        font-weight: 600;
+        color: #555;
+        font-size: 14px;
+    }
+    .preview-content {
+        padding: 15px;
+        background: #fafafa;
+        min-height: 120px;
+        max-height: 250px;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .preview-content strong {
+        font-weight: 700;
+        color: #333;
+    }
+    .preview-content em {
+        font-style: italic;
+        color: #555;
+    }
+    .preview-content ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    .preview-content li {
+        margin: 3px 0;
+    }
+    .preview-content p {
+        margin: 0 0 10px 0;
+    }
 </style>
 {% endblock %}
 
@@ -166,17 +255,49 @@
 
                         <div class="mb-4">
                             <label for="content" class="form-label">Contenu <span class="text-danger">*</span></label>
-                            <textarea class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
+                            
+                            <!-- Barre d'outils d'édition -->
+                            <div class="editor-toolbar">
+                                <button type="button" onclick="formatText('bold')" title="Gras">
+                                    <i class="fas fa-bold"></i> Gras
+                                </button>
+                                <button type="button" onclick="formatText('italic')" title="Italique">
+                                    <i class="fas fa-italic"></i> Italique
+                                </button>
+                                <button type="button" onclick="formatText('list')" title="Liste à puces">
+                                    <i class="fas fa-list-ul"></i> Liste
+                                </button>
+                            </div>
+                            
+                            <!-- Zone d'édition du contenu -->
+                            <textarea class="content-editor {% if errors.content is defined %}is-invalid{% endif %}" 
                                       id="content" 
                                       name="content" 
                                       rows="8" 
-                                      placeholder="Que voulez-vous partager aujourd'hui ?">{{ post ? post.content : formData.content|default('') }}</textarea>
+                                      placeholder="Que voulez-vous partager aujourd'hui ?"
+                                      onkeyup="updatePreview()"
+                                      oninput="updatePreview()">{{ post ? post.content : formData.content|default('') }}</textarea>
+                            
                             {% if errors.content is defined %}
                                 <div class="invalid-feedback">{{ errors.content }}</div>
                             {% endif %}
+                            
+                            <small class="help-text">
+                                <i class="fas fa-info-circle"></i> Utilisez les boutons ci-dessus pour formater votre texte (Gras, Italique, Liste)
+                            </small>
                         </div>
 
-                        <div class="mb-4">
+                        <!-- Aperçu en direct -->
+                        <div class="preview-panel">
+                            <div class="preview-header">
+                                <i class="fas fa-eye"></i> Aperçu du résultat
+                            </div>
+                            <div class="preview-content" id="preview">
+                                {{ post ? post.content|raw : 'Le texte formaté apparaîtra ici...'|raw }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4 mt-4">
                             <label for="image" class="form-label">Image (optionnel)</label>
                             <input type="file" 
                                    class="form-control {% if errors.image is defined %}is-invalid{% endif %}" 
@@ -232,4 +353,106 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Fonctions pour formater le texte
+    function formatText(type) {
+        const textarea = document.getElementById('content');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        let formattedText = '';
+        
+        switch(type) {
+            case 'bold':
+                formattedText = selectedText ? '**' + selectedText + '**' : '**texte en gras**';
+                break;
+            case 'italic':
+                formattedText = selectedText ? '*' + selectedText + '*' : '*texte en italique*';
+                break;
+            case 'list':
+                if (selectedText) {
+                    const lines = selectedText.split('\n');
+                    formattedText = lines.map(line => '- ' + line).join('\n');
+                } else {
+                    formattedText = '\n- Élément 1\n- Élément 2\n- Élément 3';
+                }
+                break;
+            default:
+                return;
+        }
+        
+        textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+        textarea.selectionStart = start + formattedText.length;
+        textarea.selectionEnd = start + formattedText.length;
+        updatePreview();
+        textarea.focus();
+    }
+    
+    // Fonction de conversion markdown -> HTML (corrigée)
+    function markdownToHtml(text) {
+        if (!text) return '';
+        let html = text;
+        
+        // 1. Gras **texte**
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // 2. Italique *texte* (ne pas capturer les **)
+        html = html.replace(/\*(?!\*)(.*?)\*(?!\*)/g, '<em>$1</em>');
+        
+        // 3. Gérer les listes à puces : lignes commençant par "- "
+        const lines = html.split('\n');
+        let inList = false;
+        const result = [];
+        for (let line of lines) {
+            if (line.trim().match(/^- /)) {
+                if (!inList) {
+                    result.push('<ul>');
+                    inList = true;
+                }
+                const item = line.trim().replace(/^- /, '');
+                result.push('<li>' + item + '</li>');
+            } else {
+                if (inList) {
+                    result.push('</ul>');
+                    inList = false;
+                }
+                if (line.trim() !== '') {
+                    result.push(line);
+                } else {
+                    result.push('<br>');
+                }
+            }
+        }
+        if (inList) result.push('</ul>');
+        html = result.join('');
+        
+        // 4. Remplacer les retours à la ligne restants par <br>
+        html = html.replace(/\n/g, '<br>');
+        // Nettoyer les br inutiles dans les listes
+        html = html.replace(/<\/li><br><li>/g, '</li><li>');
+        html = html.replace(/<\/ul><br>/g, '</ul>');
+        html = html.replace(/<br><ul>/g, '<ul>');
+        
+        return html;
+    }
+    
+    // Mettre à jour l'aperçu en direct
+    function updatePreview() {
+        const content = document.getElementById('content').value;
+        const previewDiv = document.getElementById('preview');
+        if (!previewDiv) return;
+        
+        const html = markdownToHtml(content);
+        if (html.trim() === '' || html === '<br>') {
+            previewDiv.innerHTML = '<em class="text-muted">Le texte formaté apparaîtra ici...</em>';
+        } else {
+            previewDiv.innerHTML = html;
+        }
+    }
+    
+    // Initialiser l'aperçu au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        updatePreview();
+    });
+</script>
 {% endblock %}

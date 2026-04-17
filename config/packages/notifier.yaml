@@ -1,0 +1,12 @@
+framework:
+    notifier:
+        chatter_transports:
+            # Ajoutez vos transports (Slack, Telegram, etc.) si besoin
+        texter_transports:
+            # SMS, etc.
+        channel_policy:
+            # Ordre des canaux pour chaque type de notification
+            urgent: ['email']
+            high: ['browser']
+            medium: ['browser']
+            low: ['browser']

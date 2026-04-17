@@ -41,12 +41,23 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true, name: 'empreinte')]
     private ?string $empreinte = null;
 
-    // ✅ RELATION VERS POINTS SOLDE - Version simplifiée
+    // ✅ RELATION VERS POINTS SOLDE
     #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: Pointssolde::class, cascade: ['persist', 'remove'])]
     private ?Pointssolde $pointsSolde = null;
 
+    // ✅ NOUVELLE PROPRIÉTÉ - Permission d'épingler
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private ?bool $can_pin = false;
+
     // Propriété virtuelle pour les points
     private ?int $pointsFidelite = null;
+
+    // ========== CONSTRUCTEUR ==========
+    
+    public function __construct()
+    {
+        $this->can_pin = false; // Valeur par défaut
+    }
 
     // ========== GETTERS ET SETTERS ==========
 
@@ -174,6 +185,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPointsFidelite(?int $pointsFidelite): self
     {
         $this->pointsFidelite = $pointsFidelite;
+        return $this;
+    }
+
+    // ✅ GETTER ET SETTER POUR CAN_PIN
+    public function getCanPin(): ?bool
+    {
+        return $this->can_pin;
+    }
+
+    public function setCanPin(bool $can_pin): self
+    {
+        $this->can_pin = $can_pin;
         return $this;
     }
 

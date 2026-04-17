@@ -365,17 +365,112 @@
         color: white;
     }
     
+    .btn-stats {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-stats:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(139, 0, 0, 0.3);
+        color: white;
+    }
+
+    /* Style pour le bouton d'export CSV */
+    .btn-export {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        color: white;
+    }
+    
     .header-actions {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
     
     .header-actions h4 {
         font-size: 20px;
         font-weight: 700;
         color: var(--bordeaux);
+        margin: 0;
+    }
+    
+    .header-actions .btn-group-header {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    /* Styles pour la modale */
+    .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    .modal-header {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        border-bottom: none;
+    }
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    .modal-body {
+        padding: 25px;
+    }
+    
+    /* Style pour le badge de signalement */
+    .signalement-badge {
+        background: #6c757d;
+        color: white;
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 10px;
+    }
+    .signalement-badge.danger {
+        background: #dc3545;
+    }
+    .btn-reset-signal {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0 5px;
+        transition: 0.2s;
+    }
+    .btn-reset-signal:hover {
+        color: #a71d2a;
+        transform: scale(1.1);
     }
     
     @media (max-width: 768px) {
@@ -402,8 +497,10 @@
         }
         .header-actions {
             flex-direction: column;
-            gap: 10px;
             align-items: stretch;
+        }
+        .header-actions .btn-group-header {
+            justify-content: center;
         }
     }
 </style>
@@ -435,9 +532,19 @@
     <div class="search-bar">
         <div class="header-actions">
             <h4><i class="fas fa-newspaper"></i> Toutes les publications</h4>
-            <a href="{{ path('app_admin_post_new') }}" class="btn-new-post">
-                <i class="fas fa-plus"></i> Nouvelle publication
-            </a>
+            <div class="btn-group-header">
+                <!-- Bouton export CSV unique -->
+                <a href="{{ path('app_admin_posts_export', {search: search, sort: sort}) }}" class="btn-export">
+                    <i class="fas fa-file-csv"></i> Exporter CSV
+                </a>
+
+                <button type="button" class="btn-stats" data-bs-toggle="modal" data-bs-target="#statsModal">
+                    <i class="fas fa-chart-line"></i> Statistiques avancées
+                </button>
+                <a href="{{ path('app_admin_post_new') }}" class="btn-new-post">
+                    <i class="fas fa-plus"></i> Nouvelle publication
+                </a>
+            </div>
         </div>
         <form method="get" action="{{ path('app_admin_posts_index') }}" class="d-flex gap-2">
             <div class="flex-grow-1">
@@ -492,10 +599,22 @@
                         <small><i class="far fa-clock"></i> {{ post.createdAt|date('d/m/Y à H:i') }}</small>
                     </div>
                     
+                    <!-- Affichage du compteur de signalements -->
+                    <div class="ms-2">
+                        <span class="signalement-badge {% if post.signalementCount > 0 %}danger{% endif %}">
+                            <i class="fas fa-flag"></i> {{ post.signalementCount|default(0) }}
+                        </span>
+                        {% if post.signalementCount > 0 %}
+                            <button class="btn-reset-signal" data-post-id="{{ post.id }}" title="Réinitialiser les signalements">
+                                <i class="fas fa-undo-alt"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                    
                     <div class="ms-auto">
                         <div class="btn-group" role="group">
                             <button class="btn-pin-admin {% if post.isPinned %}pinned{% endif %}" 
-                                    onclick="togglePin({{ post.id }})"
+                                    data-post-id="{{ post.id }}"
                                     id="pin-btn-{{ post.id }}">
                                 <i class="fas fa-thumbtack"></i>
                                 <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
@@ -517,8 +636,9 @@
                 </div>
 
                 <div class="post-title">{{ post.title }}</div>
+                <!-- ✅ CORRECTION : suppression des balises HTML dans l'aperçu -->
                 <div class="post-content">
-                    {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                    {{ post.content|striptags|slice(0, 200) }}{% if post.content|striptags|length > 200 %}...{% endif %}
                 </div>
 
                 {% if post.imagePath %}
@@ -527,7 +647,7 @@
 
                 <div class="post-actions">
                     <button class="btn-like {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}" 
-                            onclick="toggleLike({{ post.id }})"
+                            data-post-id="{{ post.id }}"
                             id="like-btn-{{ post.id }}">
                         <i class="fas fa-heart"></i>
                         <span id="like-count-{{ post.id }}">{{ likesCount[post.id]|default(0) }}</span>
@@ -555,54 +675,139 @@
 
 </div>
 
-<script>
-function togglePin(postId) {
-    fetch(`/admin/posts/${postId}/pin`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Une erreur est survenue');
-        }
-    })
-    .catch(err => {
-        console.error('Erreur épinglage :', err);
-        alert('Erreur de connexion');
-    });
-}
+<!-- Modal pour les statistiques -->
+<div class="modal fade" id="statsModal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statsModalLabel"><i class="fas fa-chart-line"></i> Statistiques avancées</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <h5 class="mb-3">📊 Statistiques détaillées</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6"><canvas id="modalPostsChart" style="height: 200px;"></canvas></div>
+                        <div class="col-md-6"><canvas id="modalCommentsChart" style="height: 200px;"></canvas></div>
+                        <div class="col-md-6"><canvas id="modalLikesChart" style="height: 200px;"></canvas></div>
+                        <div class="col-md-6"><canvas id="modalTopUsersChart" style="height: 200px;"></canvas></div>
+                        <div class="col-md-6"><canvas id="modalPinnedChart" style="height: 200px;"></canvas></div>
+                        <div class="col-md-6"><canvas id="modalImageChart" style="height: 200px;"></canvas></div>
+                    </div>
+                    <div class="mt-3 text-muted small">
+                        <i class="fas fa-chart-line"></i> Évolution sur 30 jours &nbsp;|&nbsp;
+                        <i class="fas fa-trophy"></i> Top 5 utilisateurs &nbsp;|&nbsp;
+                        <i class="fas fa-thumbtack"></i> Répartition des épinglés &nbsp;|&nbsp;
+                        <i class="fas fa-image"></i> Publications avec image
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-function toggleLike(postId) {
-    fetch(`/admin/posts/${postId}/like`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type: 'like' })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            const countEl = document.getElementById('like-count-' + postId);
-            const btn = document.getElementById('like-btn-' + postId);
-            
-            if (countEl) countEl.textContent = data.count;
-            
-            if (data.liked) {
-                btn.classList.add('reacted');
-            } else {
-                btn.classList.remove('reacted');
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ========== GESTION DES ÉPINGLAGES ==========
+document.querySelectorAll('.btn-pin-admin').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const postId = this.getAttribute('data-post-id');
+        fetch(`/admin/posts/${postId}/pin`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message || 'Une erreur est survenue');
+        })
+        .catch(err => { console.error('Erreur épinglage :', err); alert('Erreur de connexion'); });
+    });
+});
+
+// ========== GESTION DES LIKES ==========
+document.querySelectorAll('.btn-like').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const postId = this.getAttribute('data-post-id');
+        fetch(`/admin/posts/${postId}/like`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'like' })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const countEl = document.getElementById(`like-count-${postId}`);
+                const btnEl = document.getElementById(`like-btn-${postId}`);
+                if (countEl) countEl.textContent = data.count;
+                if (btnEl) data.liked ? btnEl.classList.add('reacted') : btnEl.classList.remove('reacted');
             }
+        })
+        .catch(err => console.error('Erreur like:', err));
+    });
+});
+
+// ========== RÉINITIALISATION DES SIGNALEMENTS ==========
+document.querySelectorAll('.btn-reset-signal').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const postId = this.getAttribute('data-post-id');
+        if (confirm('Réinitialiser le compteur de signalements pour cette publication ?')) {
+            fetch(`/admin/posts/${postId}/reset-signals`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message || 'Erreur lors de la réinitialisation');
+            })
+            .catch(err => { console.error('Erreur réinitialisation :', err); alert('Erreur de connexion'); });
         }
-    })
-    .catch(err => console.error('Erreur like:', err));
-}
+    });
+});
+
+// ========== INITIALISATION DES GRAPHIQUES ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const postsDates = {{ postsDates|raw }};
+    const postsCounts = {{ postsCounts|raw }};
+    const commentsDates = {{ commentsDates|raw }};
+    const commentsCounts = {{ commentsCounts|raw }};
+    const likesDates = {{ likesDates|raw }};
+    const likesCounts = {{ likesCounts|raw }};
+    const topUsersNames = {{ topUsersNames|raw }};
+    const topUsersActivity = {{ topUsersActivity|raw }};
+    const pinnedPosts = {{ pinnedPosts }};
+    const unpinnedPosts = {{ unpinnedPosts }};
+    const withImage = {{ withImage }};
+    const withoutImage = {{ withoutImage }};
+
+    new Chart(document.getElementById('modalPostsChart'), {
+        type: 'line', data: { labels: postsDates, datasets: [{ label: 'Publications', data: postsCounts, borderColor: '#FF6B6B', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalCommentsChart'), {
+        type: 'line', data: { labels: commentsDates, datasets: [{ label: 'Commentaires', data: commentsCounts, borderColor: '#4CAF50', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalLikesChart'), {
+        type: 'line', data: { labels: likesDates, datasets: [{ label: 'Likes', data: likesCounts, borderColor: '#FFC107', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalTopUsersChart'), {
+        type: 'bar', data: { labels: topUsersNames, datasets: [{ label: 'Actions (posts + commentaires)', data: topUsersActivity, backgroundColor: '#8B0000' }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+    });
+    new Chart(document.getElementById('modalPinnedChart'), {
+        type: 'doughnut', data: { labels: ['Épinglés', 'Non épinglés'], datasets: [{ data: [pinnedPosts, unpinnedPosts], backgroundColor: ['#5bc0de', '#f0e6d6'] }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalImageChart'), {
+        type: 'doughnut', data: { labels: ['Avec image', 'Sans image'], datasets: [{ data: [withImage, withoutImage], backgroundColor: ['#FF8E53', '#f0e6d6'] }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+});
 </script>
 {% endblock %}

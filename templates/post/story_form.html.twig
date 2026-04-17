@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle story{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="card shadow-sm" style="max-width: 500px; margin: auto;">
+        <div class="card-header bg-white">
+            <h4>📸 Publier une story</h4>
+        </div>
+        <div class="card-body">
+            {% if errors is defined and errors|length > 0 %}
+                <div class="alert alert-danger">
+                    {% for error in errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data" action="{{ path('app_story_create') }}">
+                <div class="mb-3">
+                    <label for="media" class="form-label">Image ou vidéo (max 10 Mo)</label>
+                    <input type="file" class="form-control" id="media" name="media" accept="image/*,video/mp4" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Publier la story</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

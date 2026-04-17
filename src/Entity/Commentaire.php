@@ -1,10 +1,12 @@
 <?php
+// src/Entity/Commentaire.php
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CommentaireRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CommentaireRepository::class)]
 #[ORM\Table(name: 'commentaire')]
@@ -12,24 +14,41 @@ class Commentaire
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: 'text')]
     private ?string $content = null;
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(name: 'created_at', type: 'datetime')]
     private ?\DateTimeInterface $created_at = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'commentaires')]
+    #[ORM\Column(name: 'gif_url', length: 500, nullable: true)]
+    private ?string $gif_url = null;
+
+    // Relations
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: false)]
     private ?Post $post = null;
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUtilisateur', nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
+    private ?self $parent = null;
+
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
+    private Collection $replies;
+
+    public function __construct()
+    {
+        $this->replies = new ArrayCollection();
+    }
+
     // Getters et Setters
+
     public function getId(): ?int
     {
         return $this->id;
@@ -40,7 +59,7 @@ class Commentaire
         return $this->content;
     }
 
-    public function setContent(?string $content): self
+    public function setContent(string $content): self
     {
         $this->content = $content;
         return $this;
@@ -51,9 +70,20 @@ class Commentaire
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    public function setCreatedAt(\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
+        return $this;
+    }
+
+    public function getGifUrl(): ?string
+    {
+        return $this->gif_url;
+    }
+
+    public function setGifUrl(?string $gif_url): self
+    {
+        $this->gif_url = $gif_url;
         return $this;
     }
 
@@ -76,6 +106,41 @@ class Commentaire
     public function setUtilisateur(?Utilisateur $utilisateur): self
     {
         $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    public function getReplies(): Collection
+    {
+        return $this->replies;
+    }
+
+    public function addReply(self $reply): self
+    {
+        if (!$this->replies->contains($reply)) {
+            $this->replies[] = $reply;
+            $reply->setParent($this);
+        }
+        return $this;
+    }
+
+    public function removeReply(self $reply): self
+    {
+        if ($this->replies->removeElement($reply)) {
+            if ($reply->getParent() === $this) {
+                $reply->setParent(null);
+            }
+        }
         return $this;
     }
 }

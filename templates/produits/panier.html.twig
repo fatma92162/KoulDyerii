@@ -149,7 +149,7 @@
                             Total : {{ total|number_format(2, ',', ' ') }} €
                         </div>
                     </div>
-                    
+
                     <div class="col-md-8">
                         <div class="d-flex justify-content-end gap-2 flex-wrap">
                             <form method="post" action="{{ path('app_panier_clear') }}" onsubmit="return confirm('Voulez-vous vraiment vider votre panier ?');">
@@ -173,7 +173,7 @@
     {% endif %}
 </div>
 
-<div class="modal fade" id="commandePanierModal" tabindex="-1">
+<div class="modal fade" id="commandePanierModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
@@ -183,27 +183,49 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
-            <form method="post" action="{{ path('app_panier_commander') }}">
+            <form method="post" action="{{ path('app_panier_commander') }}" id="panierCommandeForm">
                 <div class="modal-body">
+                    <input type="hidden" name="abandoned_draft_id" id="abandoned_draft_id">
+
                     <div class="mb-3">
                         <label class="form-label">Nom complet</label>
-                        <input type="text" class="form-control" name="customer_name" value="{{ app.user ? app.user.nom : '' }}" required>
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="customer_name"
+                            id="draft_customer_name"
+                            value="{{ app.user ? app.user.nom : '' }}"
+                            required
+                        >
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" name="phone" pattern="[0-9+\-\s]+" required>
+                        <input
+                            type="tel"
+                            class="form-control"
+                            name="phone"
+                            id="draft_phone"
+                            pattern="[0-9+\-\s]+"
+                            required
+                        >
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Adresse de livraison</label>
-                        <textarea class="form-control" name="location" rows="3" required></textarea>
+                        <textarea
+                            class="form-control"
+                            name="location"
+                            id="draft_location"
+                            rows="3"
+                            required
+                        ></textarea>
                     </div>
 
                     <div class="alert alert-light">
                         <strong>Total panier :</strong> {{ total|number_format(2, ',', ' ') }} €
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
                         {% if panier|length == 1 %}
@@ -224,4 +246,86 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('commandePanierModal');
+    const customerNameInput = document.getElementById('draft_customer_name');
+    const phoneInput = document.getElementById('draft_phone');
+    const locationInput = document.getElementById('draft_location');
+    const draftIdInput = document.getElementById('abandoned_draft_id');
+
+    let saveTimeout = null;
+
+    async function saveDraft() {
+        const phone = phoneInput?.value?.trim() || '';
+        const customerName = customerNameInput?.value?.trim() || '';
+        const location = locationInput?.value?.trim() || '';
+        const draftId = draftIdInput?.value?.trim() || '';
+
+        if (phone.length < 6) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_abandoned_commandes_save') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    draft_id: draftId,
+                    source: 'panier',
+                    customer_name: customerName,
+                    phone: phone,
+                    location: location
+                })
+            });
+
+            if (!response.ok) {
+                console.error('Draft save failed:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.saved && data.draft_id) {
+                draftIdInput.value = data.draft_id;
+            }
+        } catch (e) {
+            console.error('Draft save error:', e);
+        }
+    }
+
+    function queueSaveDraft() {
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+        }
+
+        saveTimeout = setTimeout(saveDraft, 800);
+    }
+
+    if (customerNameInput) {
+        customerNameInput.addEventListener('input', queueSaveDraft);
+        customerNameInput.addEventListener('blur', saveDraft);
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', queueSaveDraft);
+        phoneInput.addEventListener('blur', saveDraft);
+    }
+
+    if (locationInput) {
+        locationInput.addEventListener('input', queueSaveDraft);
+        locationInput.addEventListener('blur', saveDraft);
+    }
+
+    if (modal) {
+        modal.addEventListener('hide.bs.modal', function () {
+            saveDraft();
+        });
+    }
+});
+</script>
 {% endblock %}

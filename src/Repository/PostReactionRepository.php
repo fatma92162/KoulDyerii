@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;   // ⚠️ Changement crucial : namespace App\Repository (pas App\Entity)
 
+use App\Entity\PostReaction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,15 @@ class PostReactionRepository extends ServiceEntityRepository
         parent::__construct($registry, PostReaction::class);
     }
 
-    //    /**
-    //     * @return PostReaction[] Returns an array of PostReaction objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?PostReaction
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // ========== MÉTHODES PERSONNALISÉES ==========
+    // Ajoutez ici vos propres méthodes, par exemple :
+    // public function countByPost(int $postId): int
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->select('COUNT(p.id)')
+    //         ->where('p.post = :postId')
+    //         ->setParameter('postId', $postId)
+    //         ->getQuery()
+    //         ->getSingleScalarResult();
+    // }
 }

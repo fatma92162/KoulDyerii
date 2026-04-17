@@ -1,588 +1,1151 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Fil d'actualité | Koul Dyeri{% endblock %}
+{% block title %}{{ 'feed_title'|trans }} | Koul Dyeri{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-    .feed-container { 
-        max-width: 700px; 
-        margin: 0 auto; 
-        padding: 20px 0; 
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
 
+    body {
+        background: #f5f4f1;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        color: #1a1a1a;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== VARIABLES ===== */
+    :root {
+        --accent: #d94f3d;
+        --accent-soft: #fdf1ef;
+        --accent-border: #f2c4be;
+        --pin: #2d6ef5;
+        --pin-soft: #eef2ff;
+        --pin-border: #c7d4fd;
+        --green: #2a7d4f;
+        --green-soft: #edf7f2;
+        --amber: #b45309;
+        --amber-soft: #fef8ed;
+        --amber-border: #fcd896;
+        --surface: #ffffff;
+        --surface-2: #f9f8f6;
+        --border: rgba(0,0,0,0.08);
+        --border-md: rgba(0,0,0,0.13);
+        --text-1: #111111;
+        --text-2: #555555;
+        --text-3: #999999;
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --radius-xl: 28px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .feed-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 4rem;
+    }
+
+    /* ===== HEADER ===== */
     .feed-header {
-        background: white; 
-        border-radius: 20px; 
-        padding: 20px 25px;
-        margin-bottom: 25px; 
-        display: flex; 
+        display: flex;
         justify-content: space-between;
-        align-items: center; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        align-items: center;
+        margin-bottom: 1.75rem;
     }
 
-    .feed-header h2 { 
-        font-size: 22px; 
-        font-weight: 700; 
-        color: #333; 
-        margin: 0; 
+    .feed-header-left h1 {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 2rem;
+        font-weight: 400;
+        color: var(--text-1);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
     }
 
-    .btn-new-post {
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-        color: white; 
-        border: none; 
-        border-radius: 50px; 
-        padding: 10px 20px;
-        font-weight: 600; 
-        text-decoration: none; 
+    .feed-header-left p {
+        font-size: 13px;
+        color: var(--text-3);
+        margin-top: 2px;
+    }
+
+    /* BOUTON ROUGE MODIFIÉ ICI */
+    .btn-new {
         display: inline-flex;
-        align-items: center; 
-        gap: 8px; 
-        transition: all 0.3s ease;
-    }
-
-    .btn-new-post:hover { 
-        transform: translateY(-2px); 
-        box-shadow: 0 8px 20px rgba(255,107,107,0.4); 
-        color: white; 
-    }
-
-    /* Barre de recherche */
-    .search-bar {
-        background: white;
-        border-radius: 60px;
-        padding: 8px 15px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-    
-    .search-bar .form-control,
-    .search-bar .form-select {
-        border-radius: 50px;
-        border: 1px solid #f0e6d6;
-        padding: 10px 18px;
-    }
-    
-    .search-bar .form-control:focus,
-    .search-bar .form-select:focus {
-        border-color: #FF6B6B;
-        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.15);
-    }
-    
-    .search-bar .btn {
-        padding: 10px 25px;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 20px;
+        background: var(--accent);  /* Couleur rouge/orangé */
+        color: #fff;
+        border: none;
+        border-radius: 99px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .15s, transform .12s;
         white-space: nowrap;
     }
 
-    .post-card {
-        background: white; 
-        border-radius: 20px; 
-        margin-bottom: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
-        overflow: hidden; 
-        transition: transform 0.3s ease;
-        position: relative;
+    .btn-new:hover {
+        background: #b83f2f;  /* Rouge plus foncé au survol */
+        transform: translateY(-1px);
+        color: #fff;
     }
 
-    .post-card:hover { 
-        transform: translateY(-3px); 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12); 
-    }
-
-    .post-card.pinned {
-        border-left: 5px solid #5bc0de;
-        background: #f8fcff;
-    }
-
-    .pin-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: #5bc0de;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        z-index: 10;
-    }
-
-    .post-author { 
-        display: flex; 
-        align-items: center; 
-        gap: 12px; 
-        margin-bottom: 15px; 
-    }
-
-    .author-avatar {
-        width: 45px; 
-        height: 45px; 
-        border-radius: 50%;
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        overflow: hidden; 
+    .btn-new svg {
         flex-shrink: 0;
     }
 
-    .author-avatar img { 
-        width: 100%; 
-        height: 100%; 
-        object-fit: cover; 
-    }
-
-    .author-avatar span { 
-        color: white; 
-        font-weight: 700; 
-        font-size: 18px; 
-    }
-
-    .author-info strong { 
-        display: block; 
-        color: #333; 
-        font-size: 15px; 
-    }
-
-    .author-info small { 
-        color: #999; 
-        font-size: 12px; 
-    }
-
-    .post-title { 
-        font-size: 18px; 
-        font-weight: 700; 
-        color: #333; 
-        margin-bottom: 10px; 
-    }
-
-    .post-content { 
-        color: #666; 
-        font-size: 14px; 
-        line-height: 1.6; 
-        margin-bottom: 15px; 
-    }
-
-    .post-image { 
-        width: 100%; 
-        max-height: 350px; 
-        object-fit: cover; 
-        border-radius: 12px; 
-        margin-bottom: 15px; 
-    }
-
-    .post-actions {
-        display: flex; 
-        align-items: center; 
-        gap: 10px;
-        padding-top: 15px; 
-        border-top: 1px solid #f0e6d6; 
+    /* ===== SEARCH ===== */
+    .search-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1.5rem;
         flex-wrap: wrap;
     }
 
-    .reaction-wrapper { 
-        position: relative; 
-        display: inline-flex; 
+    .search-bar input,
+    .search-bar select {
+        padding: 10px 14px;
+        border: 1px solid var(--border-md);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        color: var(--text-1);
+        outline: none;
+        transition: border-color .15s;
     }
 
-    .btn-reaction-main {
-        background: none; 
-        border: 2px solid #f0e6d6; 
-        border-radius: 50px;
-        padding: 7px 18px; 
-        cursor: pointer; 
-        font-size: 14px; 
-        font-weight: 600;
-        color: #999; 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 7px;
-        transition: all 0.3s ease; 
-        user-select: none;
+    .search-bar input {
+        flex: 1;
+        min-width: 0;
     }
 
-    .btn-reaction-main:hover, 
-    .btn-reaction-main.reacted { 
-        border-color: #FF6B6B; 
-        color: #FF6B6B; 
-        background: #fff0f0; 
+    .search-bar select {
+        flex: 0 0 148px;
     }
 
-    .reaction-picker {
-        position: absolute; 
-        bottom: 50px; 
-        left: 0; 
-        background: white;
-        border-radius: 50px; 
-        padding: 8px 12px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        display: none; 
-        gap: 8px; 
-        z-index: 100;
-        animation: popUp 0.2s ease;
+    .search-bar input:focus,
+    .search-bar select:focus {
+        border-color: var(--text-1);
     }
 
-    .reaction-picker.show { 
-        display: flex; 
+    .search-bar input::placeholder {
+        color: var(--text-3);
     }
 
-    @keyframes popUp {
-        from { opacity: 0; transform: translateY(10px) scale(0.8); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+   .search-bar button {
+    padding: 10px 20px;
+    background: var(--accent);  /* rouge */
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+}
+
+.search-bar button:hover {
+    background: #b83f2f;  /* rouge plus foncé au survol */
+    opacity: 1;
+}
+    /* ===== STORIES ===== */
+    .stories-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
-    .reaction-emoji {
-        font-size: 24px; 
-        cursor: pointer; 
-        transition: transform 0.2s ease;
-        border: none; 
-        background: none; 
-        padding: 2px; 
-        border-radius: 50%; 
-        position: relative;
+    .stories-wrap::-webkit-scrollbar { display: none; }
+
+    .stories-inner {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
     }
 
-    .reaction-emoji:hover { 
-        transform: scale(1.4); 
-    }
-
-    .btn-comment, 
-    .btn-read-more, 
-    .btn-pin {
-        background: none; 
-        border: 2px solid #f0e6d6; 
-        border-radius: 50px;
-        padding: 7px 18px; 
-        font-size: 14px; 
-        font-weight: 600; 
-        color: #999;
-        text-decoration: none; 
-        display: inline-flex; 
+    .story-item {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 7px; 
-        transition: all 0.3s ease;
+        gap: 5px;
         cursor: pointer;
+        flex-shrink: 0;
+        transition: transform .15s;
     }
 
-    .btn-comment:hover, 
-    .btn-read-more:hover, 
-    .btn-pin:hover { 
-        border-color: #FF6B6B; 
-        color: #FF6B6B; 
-        background: #fff0f0; 
+    .story-item:hover {
+        transform: translateY(-2px);
     }
 
-    .btn-pin {
-        color: #5bc0de;
-    }
-    
-    .btn-pin:hover {
-        border-color: #5bc0de;
-        color: #5bc0de;
-        background: #f0f8ff;
-    }
-    
-    .btn-pin.pinned {
-        border-color: #5bc0de;
-        color: white;
-        background: #5bc0de;
+    .story-ring {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        padding: 2.5px;
+        background: conic-gradient(#f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433);
     }
 
-    .empty-state {
-        background: white; 
-        border-radius: 20px; 
-        padding: 60px 30px;
-        text-align: center; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    .story-ring.add-ring {
+        background: var(--border-md);
     }
 
-    .empty-state i { 
-        font-size: 60px; 
-        color: #f0e6d6; 
-        margin-bottom: 20px; 
-        display: block; 
+    .story-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-2);
     }
-    
-    /* Styles pour les messages flash */
+
+    .story-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .story-name {
+        font-size: 11px;
+        color: var(--text-2);
+        max-width: 60px;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ===== STORY VIEWER ===== */
+    .story-viewer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.94);
+        z-index: 3000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .story-viewer-overlay.open {
+        display: flex;
+    }
+
+    .story-viewer-inner {
+        position: relative;
+        max-width: 420px;
+        width: 90%;
+    }
+
+    .story-viewer-inner img,
+    .story-viewer-inner video {
+        width: 100%;
+        border-radius: var(--radius-lg);
+    }
+
+    .story-close-btn {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .story-progress {
+        width: 100%;
+        height: 3px;
+        background: rgba(255,255,255,.25);
+        border-radius: 99px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+
+    .story-progress-fill {
+        height: 100%;
+        background: #fff;
+        width: 0%;
+        transition: width .1s linear;
+    }
+
+    .story-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,.15);
+        border: none;
+        color: #fff;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .15s;
+    }
+
+    .story-arrow:hover { background: rgba(255,255,255,.3); }
+    .story-arrow.prev { left: -50px; }
+    .story-arrow.next { right: -50px; }
+
+    /* ===== ALERTS ===== */
     .alert {
-        padding: 12px 20px;
-        border-radius: 12px;
-        margin-bottom: 15px;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        font-size: 13px;
+        font-weight: 500;
     }
+
     .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+        background: #edf7f2;
+        color: #1a5c36;
+        border-left: 3px solid #2a7d4f;
     }
+
     .alert-danger {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+        background: var(--accent-soft);
+        color: #8b2119;
+        border-left: 3px solid var(--accent);
     }
-    
-    /* ✅ Styles pour les messages d'erreur sous les champs */
-    .error-message {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
+
+    /* ===== POST CARD ===== */
+    .post-card {
+        background: var(--surface);
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--border);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+    .post-card:hover {
+        border-color: var(--border-md);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .post-card.pinned {
+        border-left: 3px solid var(--pin);
+    }
+
+    .post-body {
+        padding: 1.375rem 1.625rem;
+    }
+
+    /* Author row */
+    .author-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: #f0eee8;
+        color: var(--text-2);
+    }
+
+    .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .author-info strong {
         display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-1);
+        line-height: 1.3;
     }
-    
-    @media (max-width: 768px) {
-        .search-bar form {
-            flex-direction: column;
-        }
-        .search-bar .btn {
-            width: 100%;
-        }
+
+    .author-info time {
+        font-size: 12px;
+        color: var(--text-3);
+    }
+
+    .pin-badge {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--pin-soft);
+        color: var(--pin);
+        border: 1px solid var(--pin-border);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 99px;
+    }
+
+    /* Dot menu */
+    .dot-menu-wrap {
+        position: relative;
+        margin-left: auto;
+    }
+
+    .dot-menu-wrap.has-pin-badge {
+        margin-left: 0;
+    }
+
+    .dot-trigger {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text-3);
+        transition: background .12s;
+        line-height: 1;
+        letter-spacing: 1px;
+        font-family: sans-serif;
+    }
+
+    .dot-trigger:hover { background: var(--surface-2); }
+
+    .dot-drop {
+        position: absolute;
+        top: calc(100% + 5px);
+        right: 0;
+        background: var(--surface);
+        border: 1px solid var(--border-md);
+        border-radius: var(--radius-md);
+        min-width: 140px;
+        z-index: 200;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .dot-menu-wrap.open .dot-drop { display: block; }
+
+    .dot-drop a,
+    .dot-drop button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text-1);
+        text-decoration: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        transition: background .1s;
+    }
+
+    .dot-drop a:hover,
+    .dot-drop button:hover { background: var(--surface-2); }
+    .dot-drop .drop-del { color: var(--accent); }
+
+    /* Post content */
+    .post-title {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: var(--text-1);
+        margin-bottom: 6px;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+    }
+
+    .post-excerpt {
+        font-size: 14px;
+        color: var(--text-2);
+        line-height: 1.7;
+        margin-bottom: 1rem;
+    }
+
+    .post-excerpt strong { color: var(--text-1); font-weight: 600; }
+    .post-excerpt em { font-style: italic; }
+
+    .post-image {
+        width: 100%;
+        max-height: 360px;
+        object-fit: cover;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        cursor: pointer;
+        display: block;
+        transition: opacity .15s;
+        border: 1px solid var(--border);
+    }
+
+    .post-image:hover { opacity: .96; }
+
+    /* ===== ACTIONS ===== */
+    .post-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+
+    .act {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 99px;
+        border: 1px solid var(--border-md);
+        background: transparent;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-2);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .12s, border-color .12s, color .12s, transform .1s;
+        white-space: nowrap;
+    }
+
+    .act:hover {
+        background: var(--surface-2);
+        border-color: var(--border-md);
+        color: var(--text-1);
+        transform: translateY(-1px);
+    }
+
+    .act.active-reaction {
+        background: var(--accent-soft);
+        border-color: var(--accent-border);
+        color: var(--accent);
+    }
+
+    .act.act-comment:hover {
+        background: #f0f4ff;
+        border-color: #c7d4fd;
+        color: var(--pin);
+    }
+
+    .act.act-pin { color: var(--pin); border-color: var(--pin-border); }
+    .act.act-pin:hover, .act.act-pin.pin-on {
+        background: var(--pin-soft);
+        border-color: var(--pin);
+        color: var(--pin);
+    }
+
+    .act.act-repost { color: var(--green); border-color: #b6dfc8; }
+    .act.act-repost:hover {
+        background: var(--green-soft);
+        border-color: var(--green);
+        color: var(--green);
+    }
+
+    .act.act-fav { color: var(--amber); border-color: var(--amber-border); }
+    .act.act-fav:hover, .act.act-fav.fav-on {
+        background: var(--amber-soft);
+        border-color: var(--amber-border);
+        color: var(--amber);
+    }
+
+    .act.act-read {
+        margin-left: auto;
+        border-color: transparent;
+        color: var(--text-3);
+    }
+
+    .act.act-read:hover {
+        background: none;
+        color: var(--text-1);
+        transform: none;
+    }
+
+    /* Reaction popup */
+    .reaction-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .reaction-popup {
+        position: absolute;
+        bottom: calc(100% + 7px);
+        left: 0;
+        background: var(--surface);
+        border: 1px solid var(--border-md);
+        border-radius: 99px;
+        padding: 6px 10px;
+        display: none;
+        gap: 3px;
+        z-index: 100;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .reaction-wrap:hover .reaction-popup,
+    .reaction-popup:hover {
+        display: flex;
+    }
+
+    .emo {
+        font-size: 20px;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 50%;
+        transition: transform .1s;
+        line-height: 1;
+    }
+
+    .emo:hover { transform: scale(1.28); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: .3;
+    }
+
+    .empty-state p {
+        color: var(--text-3);
+        font-size: 14px;
+        margin-bottom: 1.25rem;
+    }
+
+    /* ===== LIGHTBOX ===== */
+    .lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.92);
+        z-index: 3000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-out;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-overlay img {
+        max-width: 90%;
+        max-height: 90vh;
+        border-radius: var(--radius-md);
+        pointer-events: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+        .feed-wrap { padding: 1.25rem 1rem 3rem; }
+        .feed-header { flex-wrap: wrap; gap: .75rem; }
+        .feed-header-left h1 { font-size: 1.6rem; }
+        .search-bar { flex-direction: column; }
+        .search-bar select { flex: 1; }
+        .post-body { padding: 1.1rem 1.2rem; }
+        .post-title { font-size: 1.05rem; }
+        .story-arrow.prev { left: -10px; }
+        .story-arrow.next { right: -10px; }
+        .post-actions { gap: 4px; }
+        .act { padding: 5px 10px; font-size: 11px; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="feed-container">
+<div class="feed-wrap">
 
+    {# ===== HEADER ===== #}
     <div class="feed-header">
-        <h2>📝 Fil d'actualité</h2>
-        <a href="{{ path('app_post_new') }}" class="btn-new-post">
-            <i class="fas fa-plus"></i> Nouvelle publication
+        <div class="feed-header-left">
+            <h1>{{ 'feed_title'|trans }}</h1>
+            <p>{{ posts|length }} publications</p>
+        </div>
+        <a href="{{ path('app_post_new') }}" class="btn-new">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            {{ 'new_post'|trans }}
         </a>
     </div>
 
-    <!-- Barre de recherche et filtres -->
+    {# ===== SEARCH ===== #}
     <div class="search-bar">
-        <form method="get" action="{{ path('app_posts_index') }}" class="d-flex gap-2">
-            <div class="flex-grow-1">
-                <input type="text" 
-                       name="search" 
-                       class="form-control" 
-                       placeholder="🔍 Rechercher un post par titre ou contenu..." 
-                       value="{{ search|default('') }}">
-            </div>
-            <div>
-                <select name="sort" class="form-select">
-                    <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>📅 Les plus récents</option>
-                    <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>📅 Les plus anciens</option>
-                    <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>🔥 Les plus populaires</option>
-                    <option value="pinned" {{ sort == 'pinned' ? 'selected' : '' }}>📌 Épinglés d'abord</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i> Chercher
+        <form method="get" action="{{ path('app_posts_index') }}" style="display:contents;">
+            <input type="text"
+                   name="search"
+                   placeholder="{{ 'search_placeholder'|trans }}"
+                   value="{{ search|default('') }}">
+            <select name="sort">
+                <option value="recent"  {{ sort == 'recent'  ? 'selected' : '' }}>{{ 'sort_recent'|trans }}</option>
+                <option value="oldest"  {{ sort == 'oldest'  ? 'selected' : '' }}>{{ 'sort_oldest'|trans }}</option>
+                <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>{{ 'sort_popular'|trans }}</option>
+                <option value="pinned"  {{ sort == 'pinned'  ? 'selected' : '' }}>{{ 'sort_pinned'|trans }}</option>
+            </select>
+            <button type="submit">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:4px">
+                    <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                {{ 'search_button'|trans }}
             </button>
         </form>
     </div>
 
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-success rounded-3 mb-3">{{ message }}</div>
-    {% endfor %}
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger rounded-3 mb-3">{{ message }}</div>
-    {% endfor %}
-
-    {% for post in posts %}
-        <div class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-card-{{ post.id }}">
-            
-            {# Badge Épinglé #}
-            {% if post.isPinned %}
-                <div class="pin-badge">
-                    <i class="fas fa-thumbtack"></i> Épinglé
-                </div>
-            {% endif %}
-            
-            <div class="post-card-body">
-
-                <div class="post-author">
-                    <div class="author-avatar">
-                        {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
-                            <img src="{{ post.utilisateur.photo }}" alt="Photo de profil">
+    {# ===== STORIES ===== #}
+    {% if stories is defined and stories|length > 0 %}
+    <div class="stories-wrap">
+        <div class="stories-inner">
+            {% for story in stories %}
+            <div class="story-item"
+                 data-story-id="{{ story.id }}"
+                 data-media-type="{{ story.mediaType }}"
+                 data-media-url="{{ story.mediaPath }}"
+                 data-user-name="{{ story.utilisateur.nom }}">
+                <div class="story-ring">
+                    <div class="story-avatar">
+                        {% if story.utilisateur.photo %}
+                            <img src="{{ story.utilisateur.photo }}" alt="">
                         {% else %}
-                            <span>{{ post.utilisateur.nom|first|upper }}</span>
+                            {{ story.utilisateur.nom|first|upper }}
                         {% endif %}
                     </div>
-                    <div class="author-info">
-                        <strong>{{ post.utilisateur.nom }}</strong>
-                        <small>{{ post.createdAt|date('d/m/Y à H:i') }}</small>
+                </div>
+                <span class="story-name">{{ story.utilisateur.nom }}</span>
+            </div>
+            {% endfor %}
+
+            {% if app.user %}
+            <div class="story-item" onclick="location.href='{{ path('app_story_new') }}'">
+                <div class="story-ring add-ring">
+                    <div class="story-avatar">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
                     </div>
-                    
-                    {# Menu Modifier / Supprimer (seulement pour l'auteur ou admin) #}
-                    {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
-                        <div class="ms-auto dropdown">
-                            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 32px; height: 32px;">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="{{ path('app_post_edit', {id: post.id}) }}">
-                                        <i class="fas fa-edit text-warning"></i> Modifier
-                                    </a>
-                                </li>
-                                <li>
-                                    <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer cette publication ?')">
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
+                </div>
+                <span class="story-name">Ajouter</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ===== FLASH MESSAGES ===== #}
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success">{{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+        <div class="alert alert-danger">{{ msg }}</div>
+    {% endfor %}
+
+    {# ===== POSTS ===== #}
+    {% for post in posts %}
+    <article class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-{{ post.id }}">
+        <div class="post-body">
+
+            {# Author row #}
+            <div class="author-row">
+                <div class="author-avatar">
+                    {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
+                        <img src="{{ post.utilisateur.photo }}" alt="">
+                    {% else %}
+                        {{ post.utilisateur.nom|first|upper }}
                     {% endif %}
                 </div>
-
-                <div class="post-title">{{ post.title }}</div>
-                <div class="post-content">
-                    {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                <div class="author-info">
+                    <strong>{{ post.utilisateur.nom }}</strong>
+                    <time>{{ post.createdAt|date('d/m/Y à H:i') }}</time>
                 </div>
 
-                {% if post.imagePath %}
-                    <img src="{{ post.imagePath }}" class="post-image" alt="Image du post" loading="lazy">
+                {% if post.isPinned %}
+                    <div class="pin-badge">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                            <path d="M5 1l1 2.5h2.5L6.5 5l.9 2.5L5 6 2.6 7.5l.9-2.5L1.5 3.5H4z" fill="currentColor"/>
+                        </svg>
+                        {{ 'post_pinned'|trans }}
+                    </div>
                 {% endif %}
 
-                <div class="post-actions">
-                    {# Réactions #}
-                    <div class="reaction-wrapper" id="wrapper-{{ post.id }}"
-                         onmouseenter="showPicker({{ post.id }})"
-                         onmouseleave="hidePicker({{ post.id }})">
-
-                        <button class="btn-reaction-main {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}"
-                                onclick="sendReaction({{ post.id }}, 'like', '👍')"
-                                id="btn-{{ post.id }}">
-                            <span id="current-emoji-{{ post.id }}">
-                                {% if userLikes[post.id] is defined and userLikes[post.id] %}❤️{% else %}👍{% endif %}
-                            </span>
-                            <span id="like-count-{{ post.id }}">{{ likesCount[post.id] ?? 0 }}</span>
-                        </button>
-
-                        <div class="reaction-picker" id="picker-{{ post.id }}">
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="like" data-emoji="👍">👍 <span class="tooltip-label">J'aime</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="love" data-emoji="❤️">❤️ <span class="tooltip-label">J'adore</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="haha" data-emoji="😂">😂 <span class="tooltip-label">Haha</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="triste" data-emoji="😢">😢 <span class="tooltip-label">Triste</span></button>
-                            <button class="reaction-emoji" data-post-id="{{ post.id }}" data-type="grr" data-emoji="😡">😡 <span class="tooltip-label">Grr</span></button>
-                        </div>
+                {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                <div class="dot-menu-wrap {% if post.isPinned %}has-pin-badge{% endif %}" id="menu-{{ post.id }}">
+                    <button class="dot-trigger" onclick="toggleDotMenu('{{ post.id }}')">···</button>
+                    <div class="dot-drop">
+                        <a href="{{ path('app_post_edit', {id: post.id}) }}">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M8.5 1.5l2 2L4 10H2V8L8.5 1.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+                            </svg>
+                            {{ 'post_edit'|trans }}
+                        </a>
+                        <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}"
+                              onsubmit="return confirm('{{ 'post_delete_confirm'|trans }}')">
+                            <button type="submit" class="drop-del">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M2 3h8M5 3V2h2v1M4 3v6.5h4V3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                {{ 'post_delete'|trans }}
+                            </button>
+                        </form>
                     </div>
+                </div>
+                {% endif %}
+            </div>
 
-                    <a href="{{ path('app_post_show', {id: post.id}) }}" class="btn-comment">
-                        <i class="fas fa-comment"></i> Commenter
-                    </a>
+            {# Title & excerpt #}
+            <div class="post-title">{{ post.title|censor }}</div>
+            <div class="post-excerpt markdown-content"
+                 data-markdown="{{ post.content|censor|escape('html_attr') }}">
+                {{ post.content|censor|slice(0, 250)|escape }}…
+            </div>
 
-                    {# Bouton Épingler / Désépingler → Visible pour TOUS les utilisateurs connectés #}
-                    {% if app.user %}
-                        <button class="btn-pin {% if post.isPinned %}pinned{% endif %}" 
-                                id="pin-btn-{{ post.id }}"
-                                onclick="togglePin({{ post.id }})">
-                            <i class="fas fa-thumbtack"></i>
-                            <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
-                        </button>
-                    {% endif %}
+            {# Image #}
+            {% if post.imagePath %}
+                <img src="{{ post.imagePath }}"
+                     class="post-image"
+                     alt="Image du post"
+                     loading="lazy"
+                     onclick="openLightbox('{{ post.imagePath }}')">
+            {% endif %}
 
-                    <a href="{{ path('app_post_show', {id: post.id}) }}" class="btn-read-more">
-                        Lire la suite <i class="fas fa-arrow-right"></i>
-                    </a>
+            {# Actions #}
+            <div class="post-actions">
+
+                {# Reactions #}
+                <div class="reaction-wrap">
+                    <button class="act {% if userReactions[post.id] is defined and userReactions[post.id] %}active-reaction{% endif %}"
+                            id="r-btn-{{ post.id }}">
+                        {% set ur = userReactions[post.id]|default(null) %}
+                        {% if ur == 'love' %}❤️
+                        {% elseif ur == 'haha' %}😂
+                        {% elseif ur == 'sad' %}😢
+                        {% elseif ur == 'angry' %}😠
+                        {% else %}👍{% endif %}
+                        <span id="r-count-{{ post.id }}">{{
+                            (reactionsCount[post.id].like ?? 0) +
+                            (reactionsCount[post.id].love ?? 0) +
+                            (reactionsCount[post.id].haha ?? 0) +
+                            (reactionsCount[post.id].sad ?? 0) +
+                            (reactionsCount[post.id].angry ?? 0)
+                        }}</span>
+                    </button>
+                    <div class="reaction-popup">
+                        <span class="emo" onclick="sendReaction({{ post.id }}, 'like')">👍</span>
+                        <span class="emo" onclick="sendReaction({{ post.id }}, 'love')">❤️</span>
+                        <span class="emo" onclick="sendReaction({{ post.id }}, 'haha')">😂</span>
+                        <span class="emo" onclick="sendReaction({{ post.id }}, 'sad')">😢</span>
+                        <span class="emo" onclick="sendReaction({{ post.id }}, 'angry')">😠</span>
+                    </div>
                 </div>
 
+                {# Comment #}
+                <a href="{{ path('app_post_show', {id: post.id}) }}" class="act act-comment">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <path d="M11 2H2v7h2.5l2 2 2-2H11V2z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>
+                    </svg>
+                    {{ 'post_comment'|trans }}
+                </a>
+
+                {# Pin #}
+                {% if app.user %}
+                <button class="act act-pin {% if post.isPinned %}pin-on{% endif %}"
+                        id="pin-{{ post.id }}"
+                        onclick="togglePin({{ post.id }})">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M5 1l.8 2.4H8L6.1 5l.7 2.4L5 6l-1.8 1.4.7-2.4L2 3.4h2.2z"
+                              stroke="currentColor"
+                              fill="{% if post.isPinned %}currentColor{% else %}none{% endif %}"
+                              stroke-width="1"/>
+                    </svg>
+                    <span id="pin-lbl-{{ post.id }}">{{ post.isPinned ? 'post_unpin'|trans : 'post_pin'|trans }}</span>
+                </button>
+                {% endif %}
+
+                {# Repost #}
+                {% if app.user %}
+                <form method="post"
+                      action="{{ path('app_post_repost', {id: post.id}) }}"
+                      onsubmit="return confirm('{{ 'repost_confirm'|trans }}')"
+                      style="display:contents;">
+                    <button type="submit" class="act act-repost">
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                            <path d="M3 5l-2 2 2 2M11 5l2 2-2 2M1 7h6a3 3 0 000-6H6M8 13H2a3 3 0 000-6H3" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        {{ 'post_repost'|trans }}
+                    </button>
+                </form>
+                {% endif %}
+
+                {# Favori #}
+                {% if app.user %}
+                <button class="act act-fav {% if post.id in userFavoris %}fav-on{% endif %}"
+                        id="fav-{{ post.id }}"
+                        onclick="toggleFavori({{ post.id }})">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M6 1l1.2 3.6H11L8.1 6.9l1.1 3.6L6 8.5l-3.2 2 1.1-3.6L1 4.6h3.8z"
+                              stroke="currentColor"
+                              fill="{% if post.id in userFavoris %}currentColor{% else %}none{% endif %}"
+                              stroke-width="1"/>
+                    </svg>
+                    <span id="fav-lbl-{{ post.id }}">{{ post.id in userFavoris ? 'Retirer' : 'Favori' }}</span>
+                </button>
+                {% endif %}
+
+                {# Read more #}
+                <a href="{{ path('app_post_show', {id: post.id}) }}" class="act act-read">
+                    {{ 'post_read_more'|trans }}
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                        <path d="M2 5.5h7M6 2.5l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
         </div>
+    </article>
+
     {% else %}
-        <div class="empty-state">
-            <i class="fas fa-newspaper"></i>
-            <p>Aucune publication pour le moment.</p>
-            <a href="{{ path('app_post_new') }}" class="btn-new-post">
-                Soyez le premier à publier !
-            </a>
-        </div>
+    <div class="empty-state">
+        <div class="empty-icon">📰</div>
+        <p>{{ 'no_posts'|trans }}</p>
+        <a href="{{ path('app_post_new') }}" class="btn-new" style="display:inline-flex;">
+            {{ 'be_first'|trans }}
+        </a>
+    </div>
     {% endfor %}
 
 </div>
 
+{# ===== STORY VIEWER ===== #}
+<div id="story-viewer" class="story-viewer-overlay">
+    <div class="story-viewer-inner">
+        <button class="story-close-btn" onclick="closeStoryViewer()">×</button>
+        <img id="sv-img" src="" alt="" style="display:none;">
+        <video id="sv-video" controls autoplay style="display:none;"></video>
+        <div class="story-progress"><div class="story-progress-fill" id="sv-fill"></div></div>
+        <button class="story-arrow prev" onclick="prevStory()">‹</button>
+        <button class="story-arrow next" onclick="nextStory()">›</button>
+    </div>
+</div>
+
+{# ===== LIGHTBOX ===== #}
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <img id="lb-img" src="" alt="">
+</div>
+
 <script>
-let hideTimeout = {};
-
-function showPicker(postId) {
-    clearTimeout(hideTimeout[postId]);
-    document.querySelectorAll('.reaction-picker').forEach(p => {
-        if (p.id !== 'picker-' + postId) p.classList.remove('show');
-    });
-    const picker = document.getElementById('picker-' + postId);
-    if (picker) picker.classList.add('show');
-}
-
-function hidePicker(postId) {
-    hideTimeout[postId] = setTimeout(() => {
-        const picker = document.getElementById('picker-' + postId);
-        if (picker) picker.classList.remove('show');
-    }, 300);
-}
-
-// Fonction améliorée pour gérer tous les emojis
-function sendReaction(postId, type, emoji) {
-    const picker = document.getElementById('picker-' + postId);
-    if (picker) picker.classList.remove('show');
-
-    fetch(`/posts/${postId}/like`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type: type })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            const countEl = document.getElementById('like-count-' + postId);
-            const emojiEl = document.getElementById('current-emoji-' + postId);
-            const btn = document.getElementById('btn-' + postId);
-            
-            if (countEl) countEl.textContent = data.count;
-            
-            if (data.liked) {
-                if (emojiEl) emojiEl.textContent = emoji;
-                if (btn) btn.classList.add('reacted');
-            } else {
-                if (emojiEl) emojiEl.textContent = '👍';
-                if (btn) btn.classList.remove('reacted');
-            }
+/* ===== MARKDOWN ===== */
+function mdToHtml(text) {
+    if (!text) return '';
+    let h = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    const lines = h.split('\n');
+    let inList = false, out = [];
+    for (let line of lines) {
+        if (line.trim().startsWith('- ')) {
+            if (!inList) { out.push('<ul>'); inList = true; }
+            out.push('<li>' + line.trim().slice(2) + '</li>');
+        } else {
+            if (inList) { out.push('</ul>'); inList = false; }
+            out.push(line.trim() ? line : '<br>');
         }
-    })
-    .catch(err => console.error('Erreur réaction :', err));
+    }
+    if (inList) out.push('</ul>');
+    return out.join('').replace(/\n/g,'<br>').replace(/<\/ul><br>/g,'</ul>').replace(/<br><ul>/g,'<ul>');
 }
 
-// Attacher les événements aux boutons d'emoji après chargement
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.reaction-emoji').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            const type = this.getAttribute('data-type');
-            const emoji = this.getAttribute('data-emoji');
-            sendReaction(postId, type, emoji);
-        });
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.markdown-content').forEach(el => {
+        const raw = el.dataset.markdown;
+        if (!raw) return;
+        let short = raw.length > 250 ? raw.slice(0, 250).replace(/\*\*[^*]*$/, '').replace(/\*[^*]*$/, '') + '…' : raw;
+        el.innerHTML = mdToHtml(short);
+    });
+    initStories();
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.dot-menu-wrap')) {
+            document.querySelectorAll('.dot-menu-wrap.open').forEach(m => m.classList.remove('open'));
+        }
     });
 });
 
-// Fonction pour épingler / désépingler (accessible à tous les utilisateurs connectés)
-function togglePin(postId) {
-    fetch(`/posts/${postId}/pin`, {
+/* ===== DOT MENU ===== */
+function toggleDotMenu(id) {
+    const el = document.getElementById('menu-' + id);
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.dot-menu-wrap.open').forEach(m => m.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+}
+
+/* ===== REACTIONS ===== */
+function sendReaction(postId, type) {
+    fetch('/posts/' + postId + '/react', {
         method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: type })
     })
-    .then(res => res.json())
+    .then(r => r.json())
     .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Une erreur est survenue');
+        if (!data.success) return;
+        const total = (data.counts.like||0) + (data.counts.love||0) + (data.counts.haha||0) + (data.counts.sad||0) + (data.counts.angry||0);
+        const countEl = document.getElementById('r-count-' + postId);
+        if (countEl) countEl.textContent = total;
+        const btn = document.getElementById('r-btn-' + postId);
+        if (btn) {
+            const emoMap = { like:'👍', love:'❤️', haha:'😂', sad:'😢', angry:'😠' };
+            const emoji = emoMap[data.userReaction] || '👍';
+            btn.childNodes[0].textContent = emoji;
+            btn.classList.toggle('active-reaction', !!data.userReaction);
         }
     })
-    .catch(err => {
-        console.error('Erreur épinglage :', err);
-        alert('Erreur de connexion');
+    .catch(console.error);
+}
+
+/* ===== PIN ===== */
+function togglePin(postId) {
+    fetch('/posts/' + postId + '/pin', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else alert(data.message || 'Erreur');
+    })
+    .catch(() => alert('Erreur de connexion'));
+}
+
+/* ===== FAVORIS ===== */
+function toggleFavori(postId) {
+    fetch('/posts/' + postId + '/favori', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else alert(data.message || 'Erreur');
+    })
+    .catch(() => alert('Erreur de connexion'));
+}
+
+/* ===== LIGHTBOX ===== */
+function openLightbox(src) {
+    document.getElementById('lb-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+}
+
+/* ===== STORIES ===== */
+let storiesList = [], storyIdx = 0, storyTimer = null;
+
+function initStories() {
+    storiesList = [];
+    document.querySelectorAll('.story-item[data-story-id]').forEach(el => {
+        storiesList.push({
+            id: el.dataset.storyId,
+            type: el.dataset.mediaType,
+            url: el.dataset.mediaUrl,
+            name: el.dataset.userName || ''
+        });
+        el.addEventListener('click', function () {
+            storyIdx = storiesList.findIndex(s => s.id == this.dataset.storyId);
+            if (storyIdx !== -1) openStory(storyIdx);
+        });
     });
 }
+
+function openStory(idx) {
+    if (idx < 0 || idx >= storiesList.length) return;
+    const s = storiesList[idx];
+    const img = document.getElementById('sv-img');
+    const video = document.getElementById('sv-video');
+    if (s.type === 'image') {
+        img.src = s.url; img.style.display = 'block';
+        video.style.display = 'none'; video.pause();
+        startStoryTimer(5000);
+    } else {
+        img.style.display = 'none';
+        video.src = s.url; video.style.display = 'block';
+        video.load(); video.play();
+        video.onloadedmetadata = () => startStoryTimer(video.duration * 1000);
+    }
+    document.getElementById('story-viewer').classList.add('open');
+}
+
+function startStoryTimer(dur) {
+    if (storyTimer) clearInterval(storyTimer);
+    const fill = document.getElementById('sv-fill');
+    fill.style.width = '0%';
+    const t0 = Date.now();
+    storyTimer = setInterval(() => {
+        const pct = Math.min(((Date.now() - t0) / dur) * 100, 100);
+        fill.style.width = pct + '%';
+        if (pct >= 100) { clearInterval(storyTimer); nextStory(); }
+    }, 100);
+}
+
+function nextStory() {
+    if (storyIdx + 1 < storiesList.length) { storyIdx++; openStory(storyIdx); }
+    else closeStoryViewer();
+}
+
+function prevStory() {
+    if (storyIdx > 0) { storyIdx--; openStory(storyIdx); }
+}
+
+function closeStoryViewer() {
+    document.getElementById('story-viewer').classList.remove('open');
+    if (storyTimer) clearInterval(storyTimer);
+    const video = document.getElementById('sv-video');
+    video.pause(); video.src = '';
+}
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeLightbox(); closeStoryViewer(); }
+    if (e.key === 'ArrowRight') nextStory();
+    if (e.key === 'ArrowLeft') prevStory();
+});
 </script>
 {% endblock %}

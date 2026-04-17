@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;   // ⚠️ Changement crucial : namespace App\Repository (pas App\Entity)
 
+use App\Entity\Pointfidelite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,14 @@ class PointfideliteRepository extends ServiceEntityRepository
         parent::__construct($registry, Pointfidelite::class);
     }
 
-    //    /**
-    //     * @return Pointfidelite[] Returns an array of Pointfidelite objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Pointfidelite
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // ========== MÉTHODES PERSONNALISÉES ==========
+    // Ajoutez ici vos propres méthodes, par exemple :
+    // public function findByUtilisateur(int $userId): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->andWhere('p.utilisateur = :userId')
+    //         ->setParameter('userId', $userId)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }

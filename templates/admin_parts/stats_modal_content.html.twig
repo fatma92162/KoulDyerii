@@ -1,0 +1,80 @@
+<div>
+    <h5 class="mb-3">📊 Statistiques détaillées</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <canvas id="modalPostsChart" style="height: 200px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="modalCommentsChart" style="height: 200px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="modalLikesChart" style="height: 200px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="modalTopUsersChart" style="height: 200px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="modalPinnedChart" style="height: 200px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="modalImageChart" style="height: 200px;"></canvas>
+        </div>
+    </div>
+    <div class="mt-3 text-muted small">
+        <i class="fas fa-chart-line"></i> Évolution sur 30 jours &nbsp;|&nbsp;
+        <i class="fas fa-trophy"></i> Top 5 utilisateurs &nbsp;|&nbsp;
+        <i class="fas fa-thumbtack"></i> Répartition des épinglés &nbsp;|&nbsp;
+        <i class="fas fa-image"></i> Publications avec image
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Attendre un court instant pour que les canvas soient dans le DOM
+setTimeout(() => {
+    // Données injectées par Twig
+    const postsDates = {{ postsDates|raw }};
+    const postsCounts = {{ postsCounts|raw }};
+    const commentsDates = {{ commentsDates|raw }};
+    const commentsCounts = {{ commentsCounts|raw }};
+    const likesDates = {{ likesDates|raw }};
+    const likesCounts = {{ likesCounts|raw }};
+    const topUsersNames = {{ topUsersNames|raw }};
+    const topUsersActivity = {{ topUsersActivity|raw }};
+    const pinnedPosts = {{ pinnedPosts }};
+    const unpinnedPosts = {{ unpinnedPosts }};
+    const withImage = {{ withImage }};
+    const withoutImage = {{ withoutImage }};
+
+    new Chart(document.getElementById('modalPostsChart'), {
+        type: 'line',
+        data: { labels: postsDates, datasets: [{ label: 'Publications', data: postsCounts, borderColor: '#FF6B6B', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalCommentsChart'), {
+        type: 'line',
+        data: { labels: commentsDates, datasets: [{ label: 'Commentaires', data: commentsCounts, borderColor: '#4CAF50', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalLikesChart'), {
+        type: 'line',
+        data: { labels: likesDates, datasets: [{ label: 'Likes', data: likesCounts, borderColor: '#FFC107', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalTopUsersChart'), {
+        type: 'bar',
+        data: { labels: topUsersNames, datasets: [{ label: 'Actions (posts + commentaires)', data: topUsersActivity, backgroundColor: '#8B0000' }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
+    });
+    new Chart(document.getElementById('modalPinnedChart'), {
+        type: 'doughnut',
+        data: { labels: ['Épinglés', 'Non épinglés'], datasets: [{ data: [pinnedPosts, unpinnedPosts], backgroundColor: ['#5bc0de', '#f0e6d6'] }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    new Chart(document.getElementById('modalImageChart'), {
+        type: 'doughnut',
+        data: { labels: ['Avec image', 'Sans image'], datasets: [{ data: [withImage, withoutImage], backgroundColor: ['#FF8E53', '#f0e6d6'] }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+}, 100);
+</script>
