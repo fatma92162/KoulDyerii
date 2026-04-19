@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail partenaire{% endblock %}
+
+{% block body %}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h1 class="h3 mb-0">{{ partenaire.nom ?: 'Partenaire' }}</h1>
+            <span class="badge {{ partenaire.statut == 'actif' ? 'bg-success' : 'bg-secondary' }}">{{ partenaire.statut ?: 'inactif' }}</span>
+        </div>
+        <div class="text-muted mb-3">{{ partenaire.type ?: 'Type inconnu' }}</div>
+        <p class="mb-1"><strong>Téléphone:</strong> {{ partenaire.telephone ?: '-' }}</p>
+        <p class="mb-4"><strong>Adresse:</strong> {{ partenaire.adresse ?: '-' }}</p>
+
+        <h2 class="h5">Produits</h2>
+        <div class="list-group mb-4">
+            {% for plat in plats %}
+                <a href="{{ path('app_produit_detail', {id: plat.id}) }}" class="list-group-item list-group-item-action d-flex justify-content-between">
+                    <span>{{ plat.nom ?: 'Produit' }}</span>
+                    <strong>{{ plat.prix ?: '-' }} TND</strong>
+                </a>
+            {% else %}
+                <div class="list-group-item text-muted">Aucun produit.</div>
+            {% endfor %}
+        </div>
+        <a href="{{ path('app_partenaires_liste') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+</div>
+{% endblock %}

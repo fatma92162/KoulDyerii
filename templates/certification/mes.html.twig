@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes certifications{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .cert-hero { background: linear-gradient(135deg, #fff 0%, #f2f8ff 100%); border-radius: 18px; box-shadow: 0 10px 24px rgba(0,0,0,.08); padding: 22px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="cert-hero d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Mes certifications</h1>
+        <a href="{{ path('app_mon_profil') }}" class="btn btn-outline-secondary">Retour profil</a>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} mb-3">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if certifications is empty %}
+        <div class="alert alert-info mb-0">
+            Vous n'avez pas encore de certification disponible.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID certificat</th>
+                        <th>Formation</th>
+                        <th>Score quiz</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for certification in certifications %}
+                        <tr>
+                            <td><strong>{{ certification.certificateId }}</strong></td>
+                            <td>{{ certification.formationTitre }}</td>
+                            <td>
+                                {% if certification.score is null %}
+                                    <span class="badge bg-secondary">Non évalué</span>
+                                {% elseif certification.eligible %}
+                                    <span class="badge bg-success">{{ certification.score }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ certification.score }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ certification.dateInscription ? certification.dateInscription|date('d/m/Y') : '-' }}</td>
+                            <td class="text-end">
+                                {% if certification.eligible %}
+                                    <a href="{{ path('app_certification_qr', {id: certification.inscriptionId}) }}" class="btn btn-sm btn-primary">
+                                        QR Code
+                                    </a>
+                                    <a href="{{ path('app_certification_pdf_private', {id: certification.inscriptionId}) }}" class="btn btn-sm btn-dark" target="_blank" rel="noopener">
+                                        Exporter PDF
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('app_quiz_index') }}" class="btn btn-sm btn-outline-secondary">
+                                        Atteindre 80%
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

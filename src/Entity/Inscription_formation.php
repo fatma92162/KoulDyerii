@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\Repository\Inscription_formationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Utilisateur;
 use App\Entity\Formation;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: Inscription_formationRepository::class)]
+#[ORM\Table(name: 'inscription_formation')]
 class Inscription_formation
 {
     #[ORM\Id]
@@ -30,6 +32,7 @@ class Inscription_formation
     public function setIdClient($value)
     {
         $this->idClient = $value;
+        return $this;
     }
 
     public function getIdFormation()
@@ -40,6 +43,7 @@ class Inscription_formation
     public function setIdFormation($value)
     {
         $this->idFormation = $value;
+        return $this;
     }
 
     public function getDateInscription()
@@ -50,5 +54,6 @@ class Inscription_formation
     public function setDateInscription($value)
     {
         $this->dateInscription = $value;
+        return $this;
     }
 }

@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formations{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .module-hero { background: linear-gradient(135deg, #ffffff 0%, #fff4eb 100%); border-radius: 18px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .formation-card { border: 0; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,.08); transition: .25s ease; }
+    .formation-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,.12); }
+    .badge-status { background: #ffe3d0; color: #9b4517; border-radius: 999px; padding: 6px 12px; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="module-hero mb-4">
+    <h1 class="h3 mb-2">Formations</h1>
+    <p class="mb-0 text-muted">Suivez vos formations, passez un quiz et débloquez votre certification.</p>
+</div>
+
+<div class="row g-4">
+    {% for formation in formations %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card formation-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h2 class="h5 mb-0">{{ formation.titre ?: 'Formation' }}</h2>
+                        <span class="badge-status">{{ formation.statut ?: 'disponible' }}</span>
+                    </div>
+                    <p class="text-muted">{{ formation.description ?: 'Aucune description.' }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3 d-flex justify-content-between">
+                    <strong>{{ formation.prix is not null ? formation.prix ~ ' TND' : 'Gratuit' }}</strong>
+                    <a href="{{ path('app_formations_show', {id: formation.idFormation}) }}" class="btn btn-sm btn-dark">Voir</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12"><div class="alert alert-info mb-0">Aucune formation disponible.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

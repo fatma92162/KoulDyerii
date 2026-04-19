@@ -1,0 +1,37 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Formations{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .admin-hero { border: 0; border-radius: 16px; padding: 18px; background: linear-gradient(135deg, #fff7f2 0%, #fff 100%); box-shadow: 0 10px 24px rgba(90, 40, 40, .08); margin-bottom: 14px; }
+    .admin-module-card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.08); transition: transform .2s ease, box-shadow .2s ease; }
+    .admin-module-card:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(90, 40, 40, .14); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-hero">
+    <strong>Catalogue formations</strong>
+    <div class="text-muted small">Gestion visuelle des formations avec statut et description.</div>
+</div>
+<div class="admin-card">
+    <h3 class="mb-3">Gestion des formations</h3>
+    <div class="row g-3">
+        {% for formation in formations %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card admin-module-card h-100">
+                    <div class="card-body">
+                        <h4 class="h6">{{ formation.titre ?: 'Formation' }}</h4>
+                        <p class="text-muted small">{{ formation.description ?: 'Aucune description.' }}</p>
+                        <span class="badge bg-warning text-dark">{{ formation.statut ?: 'disponible' }}</span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12"><div class="alert alert-info mb-0">Aucune formation disponible.</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

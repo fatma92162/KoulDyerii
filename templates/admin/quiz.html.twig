@@ -1,0 +1,48 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Quiz{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .quiz-kpi { border: 0; border-radius: 16px; padding: 18px; background: linear-gradient(135deg, #fff8f5 0%, #fff 100%); box-shadow: 0 10px 24px rgba(90, 40, 40, .08); }
+    .quiz-card { border: 0; border-radius: 16px; box-shadow: 0 10px 24px rgba(90, 40, 40, .08); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row mb-3">
+    <div class="col-md-6"><div class="quiz-kpi"><strong>{{ total }}</strong> quiz suivis</div></div>
+    <div class="col-md-6"><div class="quiz-kpi"><strong>{{ nbEligibles }}</strong> >= 80% (certifiables)</div></div>
+</div>
+
+<div class="quiz-card p-3">
+    <h3 class="mb-3">Résultats quiz</h3>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Inscription</th><th>Utilisateur</th><th>Formation</th><th>Score</th><th>Statut</th></tr></thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>#{{ item.inscriptionId }}</td>
+                    <td>{{ item.utilisateur }}</td>
+                    <td>{{ item.formation }}</td>
+                    <td>{{ item.score is null ? '-' : item.score ~ '%' }}</td>
+                    <td>
+                        {% if item.score is null %}
+                            <span class="badge bg-secondary">Non évalué</span>
+                        {% elseif item.eligible %}
+                            <span class="badge bg-success">Certifiable</span>
+                        {% else %}
+                            <span class="badge bg-danger">Insuffisant</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="text-center text-muted">Aucun résultat.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

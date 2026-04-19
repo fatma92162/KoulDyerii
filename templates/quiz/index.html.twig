@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quiz{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .quiz-panel { background: #fff; border-radius: 18px; box-shadow: 0 10px 24px rgba(0,0,0,.08); padding: 24px; }
+    .quiz-card { border: 1px solid #f0e6d6; border-radius: 14px; }
+    .score-badge { border-radius: 999px; font-weight: 700; padding: 6px 10px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="quiz-panel">
+    <h1 class="h3 mb-2">Quiz des formations</h1>
+    <p class="text-muted mb-4">Un score minimum de <strong>80%</strong> débloque le QR code et le certificat PDF.</p>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }} mb-3">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3">
+        {% for item in quizItems %}
+            <div class="col-12">
+                <div class="quiz-card p-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <div>
+                            <div class="fw-semibold">{{ item.formationTitre }}</div>
+                            <small class="text-muted">Inscription #{{ item.inscriptionId }}</small>
+                        </div>
+                        {% if item.score is null %}
+                            <span class="score-badge bg-secondary-subtle text-secondary">Pas encore noté</span>
+                        {% elseif item.eligible %}
+                            <span class="score-badge bg-success-subtle text-success">{{ item.score }}% - Certifié</span>
+                        {% else %}
+                            <span class="score-badge bg-danger-subtle text-danger">{{ item.score }}% - Insuffisant</span>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" action="{{ path('app_quiz_submit', {id: item.inscriptionId}) }}" class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <input type="number" min="0" max="100" name="score" value="{{ item.score is not null ? item.score : '' }}" class="form-control" placeholder="Entrer un score (0-100)" required>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-dark" type="submit">Valider le score</button>
+                        </div>
+                        {% if item.eligible %}
+                            <div class="col-auto">
+                                <a href="{{ path('app_certification_qr', {id: item.inscriptionId}) }}" class="btn btn-primary">Voir QR</a>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info mb-0">Aucune inscription formation trouvée pour votre compte.</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

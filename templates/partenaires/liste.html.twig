@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Partenariats{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .module-hero { background: linear-gradient(135deg, #fff 0%, #eef7ff 100%); border-radius: 18px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .partner-card { border: 0; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    .product-list { border-top: 1px dashed #e6e6e6; margin-top: 10px; padding-top: 10px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="module-hero mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Partenariats & Produits</h1>
+            <p class="text-muted mb-0">Actualisez via API et activez les collaborations.</p>
+        </div>
+        <button id="refresh-api-btn" class="btn btn-dark">Actualiser via API</button>
+    </div>
+</div>
+
+<div id="api-message"></div>
+<div class="row g-4" id="partner-grid">
+    {% for partenaire in partenaires %}
+        <div class="col-md-6 col-lg-4 partner-col">
+            <div class="card partner-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h2 class="h5">{{ partenaire.nom ?: 'Partenaire' }}</h2>
+                        <span class="badge {{ partenaire.statut == 'actif' ? 'bg-success' : 'bg-secondary' }}">{{ partenaire.statut ?: 'inactif' }}</span>
+                    </div>
+                    <div class="text-muted small mb-2">{{ partenaire.type ?: 'Type inconnu' }}</div>
+                    <div class="small mb-1"><strong>Téléphone:</strong> {{ partenaire.telephone ?: '-' }}</div>
+                    <div class="small"><strong>Adresse:</strong> {{ partenaire.adresse ?: '-' }}</div>
+                    <div class="product-list mt-3">
+                        {% set hasProducts = false %}
+                        {% for plat in plats if plat.idPartenaire == partenaire.id %}
+                            {% set hasProducts = true %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ plat.nom ?: 'Produit' }}</span>
+                                <a class="btn btn-sm btn-outline-dark" href="{{ path('app_produit_detail', {id: plat.id}) }}">Voir</a>
+                            </div>
+                        {% endfor %}
+                        {% if not hasProducts %}
+                            <small class="text-muted">Aucun produit lié.</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                    <a href="{{ path('app_partenaire_detail', {id: partenaire.id}) }}" class="btn btn-sm btn-primary">Détails</a>
+                    <button type="button" class="btn btn-sm btn-dark btn-collab" data-id="{{ partenaire.id }}">Activer collaboration</button>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12"><div class="alert alert-info mb-0">Aucun partenaire trouvé.</div></div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const refreshBtn = document.getElementById('refresh-api-btn');
+    const message = document.getElementById('api-message');
+    const partnerGrid = document.getElementById('partner-grid');
+
+    function flash(kind, text) {
+        message.innerHTML = `<div class="alert alert-${kind}">${text}</div>`;
+    }
+
+    function renderFromApi(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            partnerGrid.innerHTML = '<div class="col-12"><div class="alert alert-info mb-0">Aucune donnée API.</div></div>';
+            return;
+        }
+        partnerGrid.innerHTML = items.map((p) => {
+            const recos = Array.isArray(p.recommendations) ? p.recommendations : [];
+            const productsHtml = recos.length
+                ? recos.map((r) => `<div class="d-flex justify-content-between align-items-center mb-2"><span>${r.nom ?? 'Produit'}</span><span class="fw-semibold">${r.prix ?? '-'} TND</span></div>`).join('')
+                : '<small class="text-muted">Aucun produit lié.</small>';
+            const statusClass = (p.statut === 'actif') ? 'bg-success' : 'bg-secondary';
+            return `<div class="col-md-6 col-lg-4"><div class="card partner-card h-100"><div class="card-body"><div class="d-flex justify-content-between"><h2 class="h5">${p.partenaire ?? 'Partenaire'}</h2><span class="badge ${statusClass}">${p.statut ?? 'inactif'}</span></div><div class="text-muted small mb-2">${p.type ?? 'Type inconnu'}</div><div class="small mb-1"><strong>Téléphone:</strong> ${p.telephone ?? '-'}</div><div class="small"><strong>Adresse:</strong> ${p.adresse ?? '-'}</div><div class="product-list mt-3">${productsHtml}</div></div><div class="card-footer bg-transparent border-0 d-flex gap-2"><a href="/partenaires/${p.id}" class="btn btn-sm btn-primary">Détails</a><button type="button" class="btn btn-sm btn-dark btn-collab" data-id="${p.id}">Activer collaboration</button></div></div></div>`;
+        }).join('');
+    }
+
+    refreshBtn?.addEventListener('click', async function () {
+        try {
+            const response = await fetch('/api/partenaires/refresh', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur API');
+            }
+            renderFromApi(data.data);
+            flash('success', data.message || 'Actualisation terminée.');
+        } catch (e) {
+            flash('danger', e.message || 'Erreur durant l’actualisation.');
+        }
+    });
+
+    document.addEventListener('click', async function (event) {
+        const target = event.target;
+        if (!target.classList.contains('btn-collab')) return;
+        const id = target.dataset.id;
+        try {
+            const response = await fetch(`/partenaires/${id}/activer-collaboration`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Activation impossible');
+            }
+            flash('success', data.message || 'Collaboration activée.');
+            target.disabled = true;
+        } catch (e) {
+            flash('danger', e.message || 'Erreur collaboration.');
+        }
+    });
+});
+</script>
+{% endblock %}
