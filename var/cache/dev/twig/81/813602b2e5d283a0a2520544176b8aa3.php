@@ -1,0 +1,1737 @@
+<?php
+
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Extension\CoreExtension;
+use Twig\Extension\SandboxExtension;
+use Twig\Markup;
+use Twig\Sandbox\SecurityError;
+use Twig\Sandbox\SecurityNotAllowedTagError;
+use Twig\Sandbox\SecurityNotAllowedFilterError;
+use Twig\Sandbox\SecurityNotAllowedFunctionError;
+use Twig\Source;
+use Twig\Template;
+use Twig\TemplateWrapper;
+
+/* commandes/index.html.twig */
+class __TwigTemplate_c564363c41f5e2b91a7eaca01d9978ac extends Template
+{
+    private Source $source;
+    /**
+     * @var array<string, Template>
+     */
+    private array $macros = [];
+
+    public function __construct(Environment $env)
+    {
+        parent::__construct($env);
+
+        $this->source = $this->getSourceContext();
+
+        $this->blocks = [
+            'title' => [$this, 'block_title'],
+            'stylesheets' => [$this, 'block_stylesheets'],
+            'body' => [$this, 'block_body'],
+        ];
+    }
+
+    protected function doGetParent(array $context): bool|string|Template|TemplateWrapper
+    {
+        // line 1
+        return "base.html.twig";
+    }
+
+    protected function doDisplay(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "commandes/index.html.twig"));
+
+        $this->parent = $this->load("base.html.twig", 1);
+        yield from $this->parent->unwrap()->yield($context, array_merge($this->blocks, $blocks));
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+    }
+
+    // line 3
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_title(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "title"));
+
+        yield "Mes commandes";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        yield from [];
+    }
+
+    // line 5
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_stylesheets(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "stylesheets"));
+
+        // line 6
+        yield "    ";
+        yield from $this->yieldParentBlock("stylesheets", $context, $blocks);
+        yield "
+    <style>
+        .orders-hero {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            padding: 55px 0;
+            margin-bottom: 35px;
+            color: #fff;
+            text-align: center;
+            border-radius: 0 0 28px 28px;
+            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.15);
+        }
+
+        .orders-hero h1 {
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .orders-hero p {
+            margin: 0;
+            opacity: 0.92;
+        }
+
+        .orders-wrapper {
+            margin-bottom: 50px;
+        }
+
+        .orders-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .orders-topbar h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #5C4033;
+            margin: 0;
+        }
+
+        .orders-count {
+            background: #fff5ef;
+            border: 1px solid #f0d8cd;
+            color: #8B0000;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr auto;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .product-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f8f1ed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #f0dfd8;
+        }
+
+        .product-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-fallback {
+            font-size: 32px;
+            color: #a98779;
+        }
+
+        .order-main h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #3f2b25;
+        }
+
+        .order-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .meta-pill {
+            background: #f9f3f0;
+            border: 1px solid #eddcd5;
+            color: #6e4d43;
+            border-radius: 999px;
+            padding: 6px 11px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .order-address {
+            color: #7b635b;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .order-price {
+            font-size: 22px;
+            font-weight: 900;
+            color: #8B0000;
+        }
+
+        .order-items-note {
+            margin-top: 8px;
+            color: #7b635b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .btn-order {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.2s ease;
+        }
+
+        .btn-details {
+            background: #8B0000;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background: #6f0000;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #fff3f3;
+            color: #b42318;
+            border: 1px solid #f3c7c7;
+        }
+
+        .btn-cancel:hover {
+            background: #ffe7e7;
+            color: #8f1b12;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .status-en_attente {
+            background: #fff1bf;
+            color: #8a6d00;
+        }
+
+        .status-acceptee {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-refusee {
+            background: #ffe1e1;
+            color: #b42318;
+        }
+
+        .status-annulee {
+            background: #ececec;
+            color: #666;
+        }
+
+        .empty-orders {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 22px;
+            text-align: center;
+            padding: 60px 25px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+        }
+
+        .empty-orders .icon {
+            font-size: 52px;
+            margin-bottom: 15px;
+        }
+
+        .empty-orders h3 {
+            font-weight: 800;
+            color: #4b342d;
+            margin-bottom: 10px;
+        }
+
+        .empty-orders p {
+            color: #7a655d;
+            margin-bottom: 20px;
+        }
+
+        .btn-shop {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .btn-shop:hover {
+            color: white;
+            opacity: 0.95;
+        }
+
+        .flash-box {
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+
+        .details-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.25s ease;
+        }
+
+        .details-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .details-panel {
+            position: fixed;
+            top: 0;
+            right: -760px;
+            width: 760px;
+            max-width: 100%;
+            height: 100vh;
+            background: #fff7f2;
+            box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+            z-index: 9999;
+            transition: 0.32s ease;
+            overflow-y: auto;
+            border-left: 1px solid #ead9d2;
+        }
+
+        .details-panel.open {
+            right: 0;
+        }
+
+        .details-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #ead9d2;
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .details-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .details-close {
+            background: #fff;
+            color: #8B0000;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .details-body {
+            padding: 24px;
+        }
+
+        .details-section {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .details-section-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0dfd8;
+            font-size: 20px;
+            font-weight: 800;
+            color: #5C4033;
+        }
+
+        .details-section-content {
+            padding: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .details-box {
+            background: #fff7f2;
+            border: 1px solid #ead9d2;
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .details-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: #8B0000;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .details-value {
+            font-size: 15px;
+            color: #3f2b25;
+            font-weight: 700;
+        }
+
+        .details-items {
+            display: grid;
+            gap: 12px;
+        }
+
+        .details-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: #fff7f2;
+            border: 1px solid #ead9d2;
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .details-item img {
+            width: 62px;
+            height: 62px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #ead9d2;
+            background: white;
+        }
+
+        .details-item-fallback {
+            width: 62px;
+            height: 62px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1e2da;
+            color: #8B0000;
+            font-size: 24px;
+        }
+
+        .details-item-name {
+            font-weight: 800;
+            color: #3f2b25;
+            margin-bottom: 4px;
+        }
+
+        .details-item-meta {
+            font-size: 14px;
+            color: #7b635b;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 991px) {
+            .order-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .order-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+                min-width: unset;
+            }
+
+            .product-box {
+                width: 90px;
+                height: 90px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .details-panel {
+                width: 100%;
+            }
+        }
+    </style>
+";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        yield from [];
+    }
+
+    // line 451
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_body(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "body"));
+
+        // line 452
+        yield "    <div class=\"orders-hero\">
+        <div class=\"container\">
+            <h1><i class=\"fas fa-box-open\"></i> Mes commandes</h1>
+            <p>Suivez facilement vos commandes et leur statut</p>
+        </div>
+    </div>
+
+    <div class=\"container orders-wrapper\">
+        ";
+        // line 460
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 460, $this->source); })()), "flashes", ["success"], "method", false, false, false, 460));
+        foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
+            // line 461
+            yield "            <div class=\"alert alert-success flash-box\">";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
+            yield "</div>
+        ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
+        // line 463
+        yield "
+        ";
+        // line 464
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 464, $this->source); })()), "flashes", ["error"], "method", false, false, false, 464));
+        foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
+            // line 465
+            yield "            <div class=\"alert alert-danger flash-box\">";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
+            yield "</div>
+        ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
+        // line 467
+        yield "
+        <div class=\"orders-topbar\">
+            <h2>Historique</h2>
+            <div class=\"orders-count\">
+                ";
+        // line 471
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["commandes"]) || array_key_exists("commandes", $context) ? $context["commandes"] : (function () { throw new RuntimeError('Variable "commandes" does not exist.', 471, $this->source); })())), "html", null, true);
+        yield " commande";
+        if ((Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["commandes"]) || array_key_exists("commandes", $context) ? $context["commandes"] : (function () { throw new RuntimeError('Variable "commandes" does not exist.', 471, $this->source); })())) > 1)) {
+            yield "s";
+        }
+        // line 472
+        yield "            </div>
+        </div>
+
+        ";
+        // line 475
+        if (Twig\Extension\CoreExtension::testEmpty((isset($context["commandes"]) || array_key_exists("commandes", $context) ? $context["commandes"] : (function () { throw new RuntimeError('Variable "commandes" does not exist.', 475, $this->source); })()))) {
+            // line 476
+            yield "            <div class=\"empty-orders\">
+                <div class=\"icon\">📦</div>
+                <h3>Aucune commande pour le moment</h3>
+                <p>Vous n’avez pas encore passé de commande.</p>
+                <a href=\"";
+            // line 480
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_produits_index");
+            yield "\" class=\"btn-shop\">
+                    <i class=\"fas fa-store\"></i> Voir les produits
+                </a>
+            </div>
+        ";
+        } else {
+            // line 485
+            yield "            ";
+            $context['_parent'] = $context;
+            $context['_seq'] = CoreExtension::ensureTraversable((isset($context["commandes"]) || array_key_exists("commandes", $context) ? $context["commandes"] : (function () { throw new RuntimeError('Variable "commandes" does not exist.', 485, $this->source); })()));
+            foreach ($context['_seq'] as $context["_key"] => $context["commande"]) {
+                // line 486
+                yield "                ";
+                $context["firstItem"] = Twig\Extension\CoreExtension::first($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 486), "items", [], "any", false, false, false, 486));
+                // line 487
+                yield "                <div class=\"order-card\">
+                    <div class=\"order-grid\">
+                        <div class=\"product-box\">
+                            ";
+                // line 490
+                if (((isset($context["firstItem"]) || array_key_exists("firstItem", $context) ? $context["firstItem"] : (function () { throw new RuntimeError('Variable "firstItem" does not exist.', 490, $this->source); })()) && CoreExtension::getAttribute($this->env, $this->source, (isset($context["firstItem"]) || array_key_exists("firstItem", $context) ? $context["firstItem"] : (function () { throw new RuntimeError('Variable "firstItem" does not exist.', 490, $this->source); })()), "photo", [], "any", false, false, false, 490))) {
+                    // line 491
+                    yield "                                <img src=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["firstItem"]) || array_key_exists("firstItem", $context) ? $context["firstItem"] : (function () { throw new RuntimeError('Variable "firstItem" does not exist.', 491, $this->source); })()), "photo", [], "any", false, false, false, 491), "html", null, true);
+                    yield "\" alt=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["firstItem"]) || array_key_exists("firstItem", $context) ? $context["firstItem"] : (function () { throw new RuntimeError('Variable "firstItem" does not exist.', 491, $this->source); })()), "nom", [], "any", false, false, false, 491), "html", null, true);
+                    yield "\">
+                            ";
+                } else {
+                    // line 493
+                    yield "                                <div class=\"product-fallback\">📦</div>
+                            ";
+                }
+                // line 495
+                yield "                        </div>
+
+                        <div class=\"order-main\">
+                            <h3>
+                                ";
+                // line 499
+                if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 499), "isPanier", [], "any", false, false, false, 499)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 500
+                    yield "                                    Commande panier
+                                ";
+                } else {
+                    // line 502
+                    yield "                                    ";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["firstItem"] ?? null), "nom", [], "any", true, true, false, 502)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["firstItem"]) || array_key_exists("firstItem", $context) ? $context["firstItem"] : (function () { throw new RuntimeError('Variable "firstItem" does not exist.', 502, $this->source); })()), "nom", [], "any", false, false, false, 502), "Produit")) : ("Produit")), "html", null, true);
+                    yield "
+                                ";
+                }
+                // line 504
+                yield "                            </h3>
+
+                            <div class=\"order-meta\">
+                                <span class=\"meta-pill\">#";
+                // line 507
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "id", [], "any", false, false, false, 507), "html", null, true);
+                yield "</span>
+                                <span class=\"meta-pill\">";
+                // line 508
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "createdAt", [], "any", false, false, false, 508), "d/m/Y H:i"), "html", null, true);
+                yield "</span>
+                                <span class=\"meta-pill\">";
+                // line 509
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 509), "quantity", [], "any", false, false, false, 509), "html", null, true);
+                yield " article(s)</span>
+                                <span class=\"status-pill status-";
+                // line 510
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 510), "html", null, true);
+                yield "\">
+                                    ";
+                // line 511
+                if ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 511) == "en_attente")) {
+                    // line 512
+                    yield "                                        En attente
+                                    ";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source,                 // line 513
+$context["commande"], "status", [], "any", false, false, false, 513) == "acceptee")) {
+                    // line 514
+                    yield "                                        Acceptée
+                                    ";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source,                 // line 515
+$context["commande"], "status", [], "any", false, false, false, 515) == "refusee")) {
+                    // line 516
+                    yield "                                        Refusée
+                                    ";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source,                 // line 517
+$context["commande"], "status", [], "any", false, false, false, 517) == "annulee")) {
+                    // line 518
+                    yield "                                        Annulée
+                                    ";
+                } else {
+                    // line 520
+                    yield "                                        ";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 520), "html", null, true);
+                    yield "
+                                    ";
+                }
+                // line 522
+                yield "                                </span>
+                            </div>
+
+                            <div class=\"order-address\">
+                                <i class=\"fas fa-map-marker-alt\"></i> ";
+                // line 526
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "location", [], "any", false, false, false, 526), "html", null, true);
+                yield "
+                            </div>
+
+                            <div class=\"order-price\">
+                                ";
+                // line 530
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 530), "total", [], "any", false, false, false, 530), 2, ",", " "), "html", null, true);
+                yield " TND
+                            </div>
+
+                            <div class=\"order-items-note\">
+                                ";
+                // line 534
+                if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 534), "isPanier", [], "any", false, false, false, 534)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 535
+                    yield "                                    ";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 535), "items", [], "any", false, false, false, 535)), "html", null, true);
+                    yield " produit(s) dans cette commande
+                                ";
+                } else {
+                    // line 537
+                    yield "                                    Produit simple
+                                ";
+                }
+                // line 539
+                yield "                            </div>
+                        </div>
+
+                        <div class=\"order-actions\">
+                            <button
+                                type=\"button\"
+                                class=\"btn-order btn-details\"
+                                onclick=\"openOrderDetails(this)\"
+                                data-id=\"";
+                // line 547
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "id", [], "any", false, false, false, 547), "html", null, true);
+                yield "\"
+                                data-date=\"";
+                // line 548
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "createdAt", [], "any", false, false, false, 548), "d/m/Y H:i"), "html", null, true);
+                yield "\"
+                                data-status=\"";
+                // line 549
+                if ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 549) == "en_attente")) {
+                    yield "En attente";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 549) == "acceptee")) {
+                    yield "Acceptée";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 549) == "refusee")) {
+                    yield "Refusée";
+                } elseif ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 549) == "annulee")) {
+                    yield "Annulée";
+                } else {
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 549), "html", null, true);
+                }
+                yield "\"
+                                data-status-class=\"status-";
+                // line 550
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 550), "html", null, true);
+                yield "\"
+                                data-location=\"";
+                // line 551
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "location", [], "any", false, false, false, 551), "html_attr");
+                yield "\"
+                                data-phone=\"";
+                // line 552
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "phone", [], "any", true, true, false, 552)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "phone", [], "any", false, false, false, 552), "")) : ("")), "html_attr");
+                yield "\"
+                                data-name=\"";
+                // line 553
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "customerName", [], "any", true, true, false, 553)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "customerName", [], "any", false, false, false, 553), "")) : ("")), "html_attr");
+                yield "\"
+                                data-total=\"";
+                // line 554
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 554), "total", [], "any", false, false, false, 554), 2, ",", " "), "html", null, true);
+                yield " TND\"
+                                data-quantity=\"";
+                // line 555
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 555), "quantity", [], "any", false, false, false, 555), "html", null, true);
+                yield "\"
+                                data-items='";
+                // line 556
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(json_encode(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "cartSummary", [], "any", false, false, false, 556), "items", [], "any", false, false, false, 556)), "html_attr");
+                yield "'
+                            >
+                                <i class=\"fas fa-eye\"></i> Détails
+                            </button>
+
+                            ";
+                // line 561
+                if ((CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "status", [], "any", false, false, false, 561) == "en_attente")) {
+                    // line 562
+                    yield "                                <form method=\"post\" action=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_mes_commandes_annuler", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["commande"], "id", [], "any", false, false, false, 562)]), "html", null, true);
+                    yield "\" onsubmit=\"return confirm('Annuler cette commande ?');\">
+                                    <button type=\"submit\" class=\"btn-order btn-cancel w-100\">
+                                        <i class=\"fas fa-times\"></i> Annuler
+                                    </button>
+                                </form>
+                            ";
+                }
+                // line 568
+                yield "                        </div>
+                    </div>
+                </div>
+            ";
+            }
+            $_parent = $context['_parent'];
+            unset($context['_seq'], $context['_key'], $context['commande'], $context['_parent']);
+            $context = array_intersect_key($context, $_parent) + $_parent;
+            // line 572
+            yield "        ";
+        }
+        // line 573
+        yield "    </div>
+
+    <div id=\"orderDetailsOverlay\" class=\"details-overlay\" onclick=\"closeOrderDetails()\"></div>
+
+    <div id=\"orderDetailsPanel\" class=\"details-panel\">
+        <div class=\"details-header\">
+            <h3 class=\"details-title\">Détails de la commande</h3>
+            <button type=\"button\" class=\"details-close\" onclick=\"closeOrderDetails()\">✕</button>
+        </div>
+
+        <div class=\"details-body\">
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Informations générales</div>
+                <div class=\"details-section-content\">
+                    <div class=\"details-grid\">
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Commande</div>
+                            <div class=\"details-value\" id=\"details-order-id\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Date</div>
+                            <div class=\"details-value\" id=\"details-order-date\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Statut</div>
+                            <div class=\"details-value\">
+                                <span id=\"details-order-status\" class=\"status-pill\">-</span>
+                            </div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Total</div>
+                            <div class=\"details-value\" id=\"details-order-total\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Quantité totale</div>
+                            <div class=\"details-value\" id=\"details-order-quantity\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Adresse</div>
+                            <div class=\"details-value\" id=\"details-order-location\">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Client</div>
+                <div class=\"details-section-content\">
+                    <div class=\"details-grid\">
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Nom</div>
+                            <div class=\"details-value\" id=\"details-order-name\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Téléphone</div>
+                            <div class=\"details-value\" id=\"details-order-phone\">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Produits</div>
+                <div class=\"details-section-content\">
+                    <div id=\"details-items\" class=\"details-items\"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openOrderDetails(button) {
+            const id = button.dataset.id || '-';
+            const date = button.dataset.date || '-';
+            const status = button.dataset.status || '-';
+            const statusClass = button.dataset.statusClass || '';
+            const location = button.dataset.location || '-';
+            const phone = button.dataset.phone || '-';
+            const name = button.dataset.name || '-';
+            const total = button.dataset.total || '-';
+            const quantity = button.dataset.quantity || '-';
+            let items = [];
+
+            try {
+                items = JSON.parse(button.dataset.items || '[]');
+            } catch (e) {
+                items = [];
+            }
+
+            document.getElementById('details-order-id').textContent = '#' + id;
+            document.getElementById('details-order-date').textContent = date;
+            document.getElementById('details-order-location').textContent = location;
+            document.getElementById('details-order-phone').textContent = phone || '-';
+            document.getElementById('details-order-name').textContent = name || '-';
+            document.getElementById('details-order-total').textContent = total;
+            document.getElementById('details-order-quantity').textContent = quantity + ' article(s)';
+
+            const statusEl = document.getElementById('details-order-status');
+            statusEl.textContent = status;
+            statusEl.className = 'status-pill ' + statusClass;
+
+            const itemsContainer = document.getElementById('details-items');
+
+            if (!items.length) {
+                itemsContainer.innerHTML = '<div class=\"details-item\"><div class=\"details-item-fallback\">📦</div><div><div class=\"details-item-name\">Aucun produit</div></div></div>';
+            } else {
+                itemsContainer.innerHTML = items.map(item => `
+                    <div class=\"details-item\">
+                        \${
+                            item.photo
+                                ? `<img src=\"\${item.photo}\" alt=\"\${item.nom}\">`
+                                : `<div class=\"details-item-fallback\">📦</div>`
+                        }
+                        <div>
+                            <div class=\"details-item-name\">\${item.nom}</div>
+                            <div class=\"details-item-meta\">
+                                Quantité: \${item.quantite}<br>
+                                Prix unitaire: \${Number(item.prix).toFixed(2)} TND<br>
+                                Sous-total: \${Number(item.sous_total).toFixed(2)} TND
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('orderDetailsPanel').classList.add('open');
+            document.getElementById('orderDetailsOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOrderDetails() {
+            document.getElementById('orderDetailsPanel').classList.remove('open');
+            document.getElementById('orderDetailsOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeOrderDetails();
+            }
+        });
+    </script>
+";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        yield from [];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function getTemplateName(): string
+    {
+        return "commandes/index.html.twig";
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function isTraitable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function getDebugInfo(): array
+    {
+        return array (  834 => 573,  831 => 572,  822 => 568,  812 => 562,  810 => 561,  802 => 556,  798 => 555,  794 => 554,  790 => 553,  786 => 552,  782 => 551,  778 => 550,  764 => 549,  760 => 548,  756 => 547,  746 => 539,  742 => 537,  736 => 535,  734 => 534,  727 => 530,  720 => 526,  714 => 522,  708 => 520,  704 => 518,  702 => 517,  699 => 516,  697 => 515,  694 => 514,  692 => 513,  689 => 512,  687 => 511,  683 => 510,  679 => 509,  675 => 508,  671 => 507,  666 => 504,  660 => 502,  656 => 500,  654 => 499,  648 => 495,  644 => 493,  636 => 491,  634 => 490,  629 => 487,  626 => 486,  621 => 485,  613 => 480,  607 => 476,  605 => 475,  600 => 472,  594 => 471,  588 => 467,  579 => 465,  575 => 464,  572 => 463,  563 => 461,  559 => 460,  549 => 452,  539 => 451,  86 => 6,  76 => 5,  59 => 3,  42 => 1,);
+    }
+
+    public function getSourceContext(): Source
+    {
+        return new Source("{% extends 'base.html.twig' %}
+
+{% block title %}Mes commandes{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .orders-hero {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            padding: 55px 0;
+            margin-bottom: 35px;
+            color: #fff;
+            text-align: center;
+            border-radius: 0 0 28px 28px;
+            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.15);
+        }
+
+        .orders-hero h1 {
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .orders-hero p {
+            margin: 0;
+            opacity: 0.92;
+        }
+
+        .orders-wrapper {
+            margin-bottom: 50px;
+        }
+
+        .orders-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .orders-topbar h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #5C4033;
+            margin: 0;
+        }
+
+        .orders-count {
+            background: #fff5ef;
+            border: 1px solid #f0d8cd;
+            color: #8B0000;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr auto;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .product-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f8f1ed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #f0dfd8;
+        }
+
+        .product-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-fallback {
+            font-size: 32px;
+            color: #a98779;
+        }
+
+        .order-main h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #3f2b25;
+        }
+
+        .order-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .meta-pill {
+            background: #f9f3f0;
+            border: 1px solid #eddcd5;
+            color: #6e4d43;
+            border-radius: 999px;
+            padding: 6px 11px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .order-address {
+            color: #7b635b;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .order-price {
+            font-size: 22px;
+            font-weight: 900;
+            color: #8B0000;
+        }
+
+        .order-items-note {
+            margin-top: 8px;
+            color: #7b635b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .btn-order {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.2s ease;
+        }
+
+        .btn-details {
+            background: #8B0000;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background: #6f0000;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #fff3f3;
+            color: #b42318;
+            border: 1px solid #f3c7c7;
+        }
+
+        .btn-cancel:hover {
+            background: #ffe7e7;
+            color: #8f1b12;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .status-en_attente {
+            background: #fff1bf;
+            color: #8a6d00;
+        }
+
+        .status-acceptee {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-refusee {
+            background: #ffe1e1;
+            color: #b42318;
+        }
+
+        .status-annulee {
+            background: #ececec;
+            color: #666;
+        }
+
+        .empty-orders {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 22px;
+            text-align: center;
+            padding: 60px 25px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+        }
+
+        .empty-orders .icon {
+            font-size: 52px;
+            margin-bottom: 15px;
+        }
+
+        .empty-orders h3 {
+            font-weight: 800;
+            color: #4b342d;
+            margin-bottom: 10px;
+        }
+
+        .empty-orders p {
+            color: #7a655d;
+            margin-bottom: 20px;
+        }
+
+        .btn-shop {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .btn-shop:hover {
+            color: white;
+            opacity: 0.95;
+        }
+
+        .flash-box {
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+
+        .details-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.25s ease;
+        }
+
+        .details-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .details-panel {
+            position: fixed;
+            top: 0;
+            right: -760px;
+            width: 760px;
+            max-width: 100%;
+            height: 100vh;
+            background: #fff7f2;
+            box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+            z-index: 9999;
+            transition: 0.32s ease;
+            overflow-y: auto;
+            border-left: 1px solid #ead9d2;
+        }
+
+        .details-panel.open {
+            right: 0;
+        }
+
+        .details-header {
+            padding: 22px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #ead9d2;
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .details-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .details-close {
+            background: #fff;
+            color: #8B0000;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .details-body {
+            padding: 24px;
+        }
+
+        .details-section {
+            background: #fff;
+            border: 1px solid #ead9d2;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .details-section-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0dfd8;
+            font-size: 20px;
+            font-weight: 800;
+            color: #5C4033;
+        }
+
+        .details-section-content {
+            padding: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .details-box {
+            background: #fff7f2;
+            border: 1px solid #ead9d2;
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .details-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: #8B0000;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .details-value {
+            font-size: 15px;
+            color: #3f2b25;
+            font-weight: 700;
+        }
+
+        .details-items {
+            display: grid;
+            gap: 12px;
+        }
+
+        .details-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: #fff7f2;
+            border: 1px solid #ead9d2;
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .details-item img {
+            width: 62px;
+            height: 62px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #ead9d2;
+            background: white;
+        }
+
+        .details-item-fallback {
+            width: 62px;
+            height: 62px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1e2da;
+            color: #8B0000;
+            font-size: 24px;
+        }
+
+        .details-item-name {
+            font-weight: 800;
+            color: #3f2b25;
+            margin-bottom: 4px;
+        }
+
+        .details-item-meta {
+            font-size: 14px;
+            color: #7b635b;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 991px) {
+            .order-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .order-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+                min-width: unset;
+            }
+
+            .product-box {
+                width: 90px;
+                height: 90px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .details-panel {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class=\"orders-hero\">
+        <div class=\"container\">
+            <h1><i class=\"fas fa-box-open\"></i> Mes commandes</h1>
+            <p>Suivez facilement vos commandes et leur statut</p>
+        </div>
+    </div>
+
+    <div class=\"container orders-wrapper\">
+        {% for message in app.flashes('success') %}
+            <div class=\"alert alert-success flash-box\">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class=\"alert alert-danger flash-box\">{{ message }}</div>
+        {% endfor %}
+
+        <div class=\"orders-topbar\">
+            <h2>Historique</h2>
+            <div class=\"orders-count\">
+                {{ commandes|length }} commande{% if commandes|length > 1 %}s{% endif %}
+            </div>
+        </div>
+
+        {% if commandes is empty %}
+            <div class=\"empty-orders\">
+                <div class=\"icon\">📦</div>
+                <h3>Aucune commande pour le moment</h3>
+                <p>Vous n’avez pas encore passé de commande.</p>
+                <a href=\"{{ path('app_produits_index') }}\" class=\"btn-shop\">
+                    <i class=\"fas fa-store\"></i> Voir les produits
+                </a>
+            </div>
+        {% else %}
+            {% for commande in commandes %}
+                {% set firstItem = commande.cartSummary.items|first %}
+                <div class=\"order-card\">
+                    <div class=\"order-grid\">
+                        <div class=\"product-box\">
+                            {% if firstItem and firstItem.photo %}
+                                <img src=\"{{ firstItem.photo }}\" alt=\"{{ firstItem.nom }}\">
+                            {% else %}
+                                <div class=\"product-fallback\">📦</div>
+                            {% endif %}
+                        </div>
+
+                        <div class=\"order-main\">
+                            <h3>
+                                {% if commande.cartSummary.isPanier %}
+                                    Commande panier
+                                {% else %}
+                                    {{ firstItem.nom|default('Produit') }}
+                                {% endif %}
+                            </h3>
+
+                            <div class=\"order-meta\">
+                                <span class=\"meta-pill\">#{{ commande.id }}</span>
+                                <span class=\"meta-pill\">{{ commande.createdAt|date('d/m/Y H:i') }}</span>
+                                <span class=\"meta-pill\">{{ commande.cartSummary.quantity }} article(s)</span>
+                                <span class=\"status-pill status-{{ commande.status }}\">
+                                    {% if commande.status == 'en_attente' %}
+                                        En attente
+                                    {% elseif commande.status == 'acceptee' %}
+                                        Acceptée
+                                    {% elseif commande.status == 'refusee' %}
+                                        Refusée
+                                    {% elseif commande.status == 'annulee' %}
+                                        Annulée
+                                    {% else %}
+                                        {{ commande.status }}
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class=\"order-address\">
+                                <i class=\"fas fa-map-marker-alt\"></i> {{ commande.location }}
+                            </div>
+
+                            <div class=\"order-price\">
+                                {{ commande.cartSummary.total|number_format(2, ',', ' ') }} TND
+                            </div>
+
+                            <div class=\"order-items-note\">
+                                {% if commande.cartSummary.isPanier %}
+                                    {{ commande.cartSummary.items|length }} produit(s) dans cette commande
+                                {% else %}
+                                    Produit simple
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class=\"order-actions\">
+                            <button
+                                type=\"button\"
+                                class=\"btn-order btn-details\"
+                                onclick=\"openOrderDetails(this)\"
+                                data-id=\"{{ commande.id }}\"
+                                data-date=\"{{ commande.createdAt|date('d/m/Y H:i') }}\"
+                                data-status=\"{% if commande.status == 'en_attente' %}En attente{% elseif commande.status == 'acceptee' %}Acceptée{% elseif commande.status == 'refusee' %}Refusée{% elseif commande.status == 'annulee' %}Annulée{% else %}{{ commande.status }}{% endif %}\"
+                                data-status-class=\"status-{{ commande.status }}\"
+                                data-location=\"{{ commande.location|e('html_attr') }}\"
+                                data-phone=\"{{ commande.phone|default('')|e('html_attr') }}\"
+                                data-name=\"{{ commande.customerName|default('')|e('html_attr') }}\"
+                                data-total=\"{{ commande.cartSummary.total|number_format(2, ',', ' ') }} TND\"
+                                data-quantity=\"{{ commande.cartSummary.quantity }}\"
+                                data-items='{{ commande.cartSummary.items|json_encode|e('html_attr') }}'
+                            >
+                                <i class=\"fas fa-eye\"></i> Détails
+                            </button>
+
+                            {% if commande.status == 'en_attente' %}
+                                <form method=\"post\" action=\"{{ path('app_mes_commandes_annuler', {id: commande.id}) }}\" onsubmit=\"return confirm('Annuler cette commande ?');\">
+                                    <button type=\"submit\" class=\"btn-order btn-cancel w-100\">
+                                        <i class=\"fas fa-times\"></i> Annuler
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div id=\"orderDetailsOverlay\" class=\"details-overlay\" onclick=\"closeOrderDetails()\"></div>
+
+    <div id=\"orderDetailsPanel\" class=\"details-panel\">
+        <div class=\"details-header\">
+            <h3 class=\"details-title\">Détails de la commande</h3>
+            <button type=\"button\" class=\"details-close\" onclick=\"closeOrderDetails()\">✕</button>
+        </div>
+
+        <div class=\"details-body\">
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Informations générales</div>
+                <div class=\"details-section-content\">
+                    <div class=\"details-grid\">
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Commande</div>
+                            <div class=\"details-value\" id=\"details-order-id\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Date</div>
+                            <div class=\"details-value\" id=\"details-order-date\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Statut</div>
+                            <div class=\"details-value\">
+                                <span id=\"details-order-status\" class=\"status-pill\">-</span>
+                            </div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Total</div>
+                            <div class=\"details-value\" id=\"details-order-total\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Quantité totale</div>
+                            <div class=\"details-value\" id=\"details-order-quantity\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Adresse</div>
+                            <div class=\"details-value\" id=\"details-order-location\">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Client</div>
+                <div class=\"details-section-content\">
+                    <div class=\"details-grid\">
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Nom</div>
+                            <div class=\"details-value\" id=\"details-order-name\">-</div>
+                        </div>
+
+                        <div class=\"details-box\">
+                            <div class=\"details-label\">Téléphone</div>
+                            <div class=\"details-value\" id=\"details-order-phone\">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class=\"details-section\">
+                <div class=\"details-section-head\">Produits</div>
+                <div class=\"details-section-content\">
+                    <div id=\"details-items\" class=\"details-items\"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openOrderDetails(button) {
+            const id = button.dataset.id || '-';
+            const date = button.dataset.date || '-';
+            const status = button.dataset.status || '-';
+            const statusClass = button.dataset.statusClass || '';
+            const location = button.dataset.location || '-';
+            const phone = button.dataset.phone || '-';
+            const name = button.dataset.name || '-';
+            const total = button.dataset.total || '-';
+            const quantity = button.dataset.quantity || '-';
+            let items = [];
+
+            try {
+                items = JSON.parse(button.dataset.items || '[]');
+            } catch (e) {
+                items = [];
+            }
+
+            document.getElementById('details-order-id').textContent = '#' + id;
+            document.getElementById('details-order-date').textContent = date;
+            document.getElementById('details-order-location').textContent = location;
+            document.getElementById('details-order-phone').textContent = phone || '-';
+            document.getElementById('details-order-name').textContent = name || '-';
+            document.getElementById('details-order-total').textContent = total;
+            document.getElementById('details-order-quantity').textContent = quantity + ' article(s)';
+
+            const statusEl = document.getElementById('details-order-status');
+            statusEl.textContent = status;
+            statusEl.className = 'status-pill ' + statusClass;
+
+            const itemsContainer = document.getElementById('details-items');
+
+            if (!items.length) {
+                itemsContainer.innerHTML = '<div class=\"details-item\"><div class=\"details-item-fallback\">📦</div><div><div class=\"details-item-name\">Aucun produit</div></div></div>';
+            } else {
+                itemsContainer.innerHTML = items.map(item => `
+                    <div class=\"details-item\">
+                        \${
+                            item.photo
+                                ? `<img src=\"\${item.photo}\" alt=\"\${item.nom}\">`
+                                : `<div class=\"details-item-fallback\">📦</div>`
+                        }
+                        <div>
+                            <div class=\"details-item-name\">\${item.nom}</div>
+                            <div class=\"details-item-meta\">
+                                Quantité: \${item.quantite}<br>
+                                Prix unitaire: \${Number(item.prix).toFixed(2)} TND<br>
+                                Sous-total: \${Number(item.sous_total).toFixed(2)} TND
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('orderDetailsPanel').classList.add('open');
+            document.getElementById('orderDetailsOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOrderDetails() {
+            document.getElementById('orderDetailsPanel').classList.remove('open');
+            document.getElementById('orderDetailsOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeOrderDetails();
+            }
+        });
+    </script>
+{% endblock %}", "commandes/index.html.twig", "C:\\Users\\benot\\Desktop\\ReverseEngineering 2 (2)\\ReverseEngineering\\templates\\commandes\\index.html.twig");
+    }
+}
