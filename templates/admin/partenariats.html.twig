@@ -1,0 +1,43 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Partenariats{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .kpi-box { background: linear-gradient(135deg, #fff 0%, #f7fbff 100%); border-radius: 14px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    .partner-admin-card { border: 0; border-radius: 16px; box-shadow: 0 10px 24px rgba(90, 40, 40, .08); }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row mb-3">
+    <div class="col-md-6"><div class="kpi-box"><strong>{{ partenaires|length }}</strong> partenaires</div></div>
+    <div class="col-md-6"><div class="kpi-box"><strong>{{ totalActifs }}</strong> collaborations actives</div></div>
+</div>
+
+<div class="partner-admin-card p-3">
+    <h3 class="mb-3">Liste des partenaires</h3>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Nom</th><th>Type</th><th>Statut</th><th>Produits</th></tr></thead>
+            <tbody>
+            {% for partenaire in partenaires %}
+                <tr>
+                    <td>{{ partenaire.nom ?: '-' }}</td>
+                    <td>{{ partenaire.type ?: '-' }}</td>
+                    <td><span class="badge {{ partenaire.statut == 'actif' ? 'bg-success' : 'bg-secondary' }}">{{ partenaire.statut ?: 'inactif' }}</span></td>
+                    <td>
+                        {% set count = 0 %}
+                        {% for plat in plats if plat.idPartenaire == partenaire.id %}{% set count = count + 1 %}{% endfor %}
+                        {{ count }}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="text-center text-muted">Aucune donnée.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\PlatRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -54,27 +55,16 @@ class Plat
     }
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $id_partenaire = null;
-
-    public function getId_partenaire(): ?int
-    {
-        return $this->id_partenaire;
-    }
-
-    public function setId_partenaire(?int $id_partenaire): self
-    {
-        $this->id_partenaire = $id_partenaire;
-        return $this;
-    }
+    private ?int $idPartenaire = null;
 
     public function getIdPartenaire(): ?int
     {
-        return $this->id_partenaire;
+        return $this->idPartenaire;
     }
 
-    public function setIdPartenaire(?int $id_partenaire): static
+    public function setIdPartenaire(?int $idPartenaire): static
     {
-        $this->id_partenaire = $id_partenaire;
+        $this->idPartenaire = $idPartenaire;
 
         return $this;
     }

@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail formation{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .formation-wrap { background: #fff; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.08); padding: 28px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="formation-wrap">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <h1 class="h3 mb-0">{{ formation.titre ?: 'Formation' }}</h1>
+        <span class="badge bg-warning text-dark">{{ formation.statut ?: 'disponible' }}</span>
+    </div>
+    <p class="text-muted">{{ formation.description ?: 'Aucune description disponible.' }}</p>
+    <div class="mb-4"><strong>Prix:</strong> {{ formation.prix is not null ? formation.prix ~ ' TND' : 'Gratuit' }}</div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_quiz_index') }}" class="btn btn-dark">Passer le quiz</a>
+        <a href="{{ path('app_formations_index') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+</div>
+{% endblock %}

@@ -237,11 +237,23 @@
         border: none;
     }
     
-    .btn-rewards:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
-        color: #333;
-    }
+     .btn-rewards:hover {
+         transform: translateY(-3px);
+         box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+         color: #333;
+     }
+
+     .btn-certification {
+         background: linear-gradient(135deg, #5d9cec 0%, #4a89dc 100%);
+         color: white;
+         border: none;
+     }
+
+     .btn-certification:hover {
+         transform: translateY(-3px);
+         box-shadow: 0 10px 25px rgba(74, 137, 220, 0.4);
+         color: white;
+     }
     
     /* Modal styles */
     .modal-points {
@@ -344,17 +356,20 @@
                 </div>
             </div>
             
-            <div class="actions-section">
-                <a href="{{ path('app_utilisateur_editer', {id: utilisateur.idUtilisateur}) }}" class="btn-action btn-edit">
-                    ✏️ Modifier mon profil
-                </a>
-                <a href="{{ path('app_recompenses_index') }}" class="btn-action btn-rewards">
-                    🎁 Voir les récompenses
-                </a>
-                <a href="{{ path('app_logout') }}" class="btn-action btn-logout">
-                    🔓 Déconnexion
-                </a>
-            </div>
+             <div class="actions-section">
+                 <a href="{{ path('app_utilisateur_editer', {id: utilisateur.idUtilisateur}) }}" class="btn-action btn-edit">
+                     ✏️ Modifier mon profil
+                 </a>
+                 <a href="{{ path('app_recompenses_index') }}" class="btn-action btn-rewards">
+                     🎁 Voir les récompenses
+                 </a>
+                 <a href="{{ path('app_certification_mes') }}" class="btn-action btn-certification">
+                     📄 Mes certifications
+                 </a>
+                 <a href="{{ path('app_logout') }}" class="btn-action btn-logout">
+                     🔓 Déconnexion
+                 </a>
+             </div>
         </div>
     </div>
 </div>

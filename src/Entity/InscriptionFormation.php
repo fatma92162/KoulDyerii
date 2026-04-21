@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\InscriptionFormationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -12,6 +13,20 @@ class InscriptionFormation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'integer', nullable: false)]
     private ?int $idClient = null;
 
     public function getIdClient(): ?int
@@ -50,6 +65,20 @@ class InscriptionFormation
     public function setDateInscription(?\DateTimeInterface $dateInscription): self
     {
         $this->dateInscription = $dateInscription;
+        return $this;
+    }
+
+    #[ORM\Column(name: 'quiz_score', type: 'integer', nullable: true)]
+    private ?int $quizScore = null;
+
+    public function getQuizScore(): ?int
+    {
+        return $this->quizScore;
+    }
+
+    public function setQuizScore(?int $quizScore): self
+    {
+        $this->quizScore = $quizScore;
         return $this;
     }
 
