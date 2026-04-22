@@ -1,0 +1,645 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes amis{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* ===== STYLE MODERNE MÊME QUE LA PAGE D'AJOUT D'AMIS ===== */
+    :root {
+        --bordeaux: #8B0000;
+        --bordeaux-clair: #A52A2A;
+        --bordeaux-fonce: #5C0000;
+        --bordeaux-light: #D32F2F;
+        --beige: #FFF8F0;
+        --gold: #FFD700;
+    }
+
+    body {
+        background: linear-gradient(135deg, #FFF8F0 0%, #F5E6D3 100%);
+    }
+
+    .friends-container {
+        max-width: 800px;  /* AGRANDI de 500px à 800px */
+        margin: 0 auto;
+        padding: 30px;  /* AUGMENTÉ le padding */
+        background: transparent;
+    }
+
+    /* Header */
+    .friends-header {
+        margin-bottom: 35px;
+        padding: 0 15px;
+    }
+
+    .friends-header h1 {
+        font-size: 42px;  /* AGRANDI */
+        font-weight: 800;
+        color: var(--bordeaux);
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+    }
+
+    .friends-header p {
+        font-size: 16px;  /* AGRANDI */
+        color: #888;
+    }
+
+    /* Compteur d'amis */
+    .friends-count {
+        background: white;
+        border-radius: 25px;
+        padding: 20px 25px;  /* AUGMENTÉ */
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid rgba(139,0,0,0.1);
+    }
+
+    .friends-count span:first-child {
+        font-weight: 700;
+        font-size: 18px;  /* AGRANDI */
+        color: #666;
+    }
+
+    .friends-count span:last-child {
+        font-size: 36px;  /* AGRANDI */
+        font-weight: 800;
+        color: var(--bordeaux);
+    }
+
+    /* Liste des amis */
+    .friends-list {
+        background: white;
+        border-radius: 25px;
+        overflow: hidden;
+        margin-bottom: 35px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .friend-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 25px;  /* AUGMENTÉ */
+        border-bottom: 1px solid #f0e6d6;
+        transition: all 0.3s;
+    }
+
+    .friend-item:last-child {
+        border-bottom: none;
+    }
+
+    .friend-item:hover {
+        background: #fef5f5;
+        transform: translateX(8px);
+    }
+
+    .friend-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;  /* AUGMENTÉ */
+        flex: 1;
+    }
+
+    .friend-avatar {
+        width: 70px;  /* AGRANDI de 55px à 70px */
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--bordeaux-light);
+    }
+
+    .avatar-placeholder {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;  /* AGRANDI */
+        font-weight: bold;
+        border: 3px solid var(--gold);
+    }
+
+    .friend-details {
+        flex: 1;
+    }
+
+    .friend-name {
+        font-weight: 800;
+        font-size: 20px;  /* AGRANDI */
+        color: #1a1a2e;
+        margin-bottom: 5px;
+    }
+
+    .friend-username {
+        font-size: 14px;  /* AGRANDI */
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    .friend-region {
+        display: inline-block;
+        font-size: 12px;  /* AGRANDI */
+        padding: 5px 12px;
+        border-radius: 50px;
+        background: #f0f0f0;
+        color: var(--bordeaux);
+        font-weight: 600;
+    }
+
+    .friend-region i {
+        margin-right: 5px;
+        font-size: 11px;
+    }
+
+    .friend-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        padding: 10px 24px;  /* AUGMENTÉ */
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 14px;  /* AGRANDI */
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-view:hover {
+        transform: scale(1.03);
+        box-shadow: 0 6px 18px rgba(139,0,0,0.35);
+        color: white;
+    }
+
+    .btn-message {
+        background: transparent;
+        border: 1.5px solid #e0e0e0;
+        color: #666;
+        padding: 10px 18px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-message:hover {
+        background: #f5f5f5;
+        color: var(--bordeaux);
+        border-color: var(--bordeaux-light);
+    }
+
+    /* Bouton Retirer */
+    .btn-remove {
+        background: transparent;
+        border: 1.5px solid #ff4444;
+        color: #ff4444;
+        padding: 10px 18px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-remove:hover {
+        background: #ff4444;
+        color: white;
+        border-color: #ff4444;
+        transform: scale(1.02);
+    }
+
+    /* Footer */
+    .friends-footer {
+        background: white;
+        border-radius: 25px;
+        padding: 20px 25px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .btn-requests {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-requests:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(139,0,0,0.35);
+        color: white;
+    }
+
+    /* Modal de confirmation */
+    .modal-remove-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-remove-overlay.open {
+        display: flex;
+    }
+
+    .modal-remove-content {
+        background: white;
+        border-radius: 28px;
+        width: 90%;
+        max-width: 420px;
+        text-align: center;
+        padding: 35px;
+        animation: fadeInUp 0.3s ease;
+    }
+
+    .modal-remove-content i {
+        font-size: 70px;
+        color: #ff4444;
+        margin-bottom: 20px;
+    }
+
+    .modal-remove-content h3 {
+        color: var(--bordeaux);
+        margin-bottom: 15px;
+        font-size: 24px;
+    }
+
+    .modal-remove-content p {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 16px;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .modal-buttons button {
+        padding: 12px 25px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-confirm-remove {
+        background: #ff4444;
+        color: white;
+        border: none;
+    }
+
+    .btn-confirm-remove:hover {
+        background: #cc0000;
+        transform: scale(1.02);
+    }
+
+    .btn-cancel-remove {
+        background: transparent;
+        border: 1.5px solid #ccc;
+        color: #666;
+    }
+
+    .btn-cancel-remove:hover {
+        background: #f5f5f5;
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .friend-item {
+        animation: fadeInUp 0.3s ease-out forwards;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 80px 30px;
+        background: white;
+        border-radius: 25px;
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: var(--bordeaux-light);
+        opacity: 0.5;
+        margin-bottom: 25px;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        color: var(--bordeaux);
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+        color: #888;
+        margin-bottom: 25px;
+    }
+
+    .btn-empty {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        padding: 14px 35px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 16px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-empty:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(139,0,0,0.35);
+        color: white;
+    }
+
+    /* Notification */
+    .notification-success, .notification-error {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: fadeInUp 0.3s ease;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .notification-success {
+        background: #4CAF50;
+    }
+
+    .notification-error {
+        background: #ff4444;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .friends-container {
+            max-width: 95%;
+            padding: 15px;
+        }
+        .friend-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        .friend-info {
+            flex-direction: column;
+        }
+        .friend-actions {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-view, .btn-message, .btn-remove {
+            flex: 1;
+            justify-content: center;
+        }
+        .friends-header h1 {
+            font-size: 32px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="friends-container">
+    <!-- Header -->
+    <div class="friends-header">
+        <h1><i class="fas fa-user-friends"></i> Mes amis</h1>
+        <p>Retrouvez tous vos contacts culinaires</p>
+    </div>
+
+    <!-- Compteur d'amis -->
+    <div class="friends-count">
+        <span><i class="fas fa-users"></i> Amis</span>
+        <span id="friendsCount">{{ friends|length }}</span>
+    </div>
+
+    <!-- Liste des amis -->
+    {% if friends|length > 0 %}
+        <div class="friends-list" id="friendsList">
+            {% for friend in friends %}
+                {% set friendUser = friend.sender.idUtilisateur == app.user.idUtilisateur ? friend.receiver : friend.sender %}
+                <div class="friend-item" data-friend-id="{{ friendUser.idUtilisateur }}" data-friendship-id="{{ friend.id }}">
+                    <div class="friend-info">
+                        {% if friendUser.photo %}
+                            <img src="{{ friendUser.photo }}" class="friend-avatar" alt="{{ friendUser.nom }}">
+                        {% else %}
+                            <div class="avatar-placeholder">
+                                {{ friendUser.nom|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="friend-details">
+                            <div class="friend-name">{{ friendUser.nom }}</div>
+                            <div class="friend-username">@{{ friendUser.email|split('@')|first }}</div>
+                            <span class="friend-region">
+                                <i class="fas fa-map-marker-alt"></i> {{ friendUser.region ?: 'Non renseignée' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <a href="{{ path('app_friend_profile', {id: friendUser.idUtilisateur}) }}" class="btn-view">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="{{ path('app_messages_inbox', {id: friendUser.idUtilisateur}) }}" class="btn-message">
+                            <i class="fas fa-comment"></i> Message
+                        </a>
+                        <button class="btn-remove" onclick="showRemoveModal({{ friendUser.idUtilisateur }}, '{{ friendUser.nom|e('js') }}')">
+                            <i class="fas fa-user-minus"></i> Retirer
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-friends"></i>
+            <h3>Aucun ami pour le moment</h3>
+            <p>Connectez-vous avec d'autres membres pour découvrir des recettes et partager vos créations</p>
+            <a href="{{ path('app_notif_requests_list') }}" class="btn-empty">
+                <i class="fas fa-user-plus"></i> Ajouter des amis
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="friends-footer">
+        <a href="{{ path('app_notif_requests_list') }}" class="btn-requests">
+            <i class="fas fa-user-plus"></i> Voir les demandes de connexion
+        </a>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour retirer un ami -->
+<div id="removeModal" class="modal-remove-overlay">
+    <div class="modal-remove-content">
+        <i class="fas fa-user-minus"></i>
+        <h3>Retirer un ami</h3>
+        <p>Êtes-vous sûr de vouloir retirer <strong id="friendNameToRemove"></strong> de vos amis ?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel-remove" onclick="closeRemoveModal()">Annuler</button>
+            <button class="btn-confirm-remove" onclick="confirmRemoveFriend()">Retirer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let friendToRemoveId = null;
+
+function showRemoveModal(friendUserId, friendName) {
+    friendToRemoveId = friendUserId;
+    document.getElementById('friendNameToRemove').textContent = friendName;
+    document.getElementById('removeModal').classList.add('open');
+}
+
+function closeRemoveModal() {
+    document.getElementById('removeModal').classList.remove('open');
+    friendToRemoveId = null;
+}
+
+function confirmRemoveFriend() {
+    if (!friendToRemoveId) {
+        console.error('Aucun ID d\'utilisateur spécifié');
+        closeRemoveModal();
+        return;
+    }
+
+    fetch('/friend/remove/' + friendToRemoveId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Supprimer l'élément de la liste
+            const friendElement = document.querySelector(`.friend-item[data-friend-id="${friendToRemoveId}"]`);
+            if (friendElement) {
+                friendElement.remove();
+            }
+            
+            // Mettre à jour le compteur
+            const friendsCountSpan = document.getElementById('friendsCount');
+            if (friendsCountSpan) {
+                const currentCount = parseInt(friendsCountSpan.textContent);
+                friendsCountSpan.textContent = currentCount - 1;
+            }
+            
+            // Vérifier si la liste est vide
+            const friendsList = document.getElementById('friendsList');
+            if (friendsList && friendsList.children.length === 0) {
+                location.reload();
+            }
+            
+            showNotification('Ami retiré avec succès', 'success');
+        } else {
+            showNotification(data.message || 'Erreur lors du retrait de l\'ami', 'error');
+        }
+        closeRemoveModal();
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Erreur lors du retrait de l\'ami', 'error');
+        closeRemoveModal();
+    });
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Fermer le modal en cliquant en dehors
+document.getElementById('removeModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRemoveModal();
+    }
+});
+
+// Fermer avec la touche Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRemoveModal();
+    }
+});
+</script>
+{% endblock %}

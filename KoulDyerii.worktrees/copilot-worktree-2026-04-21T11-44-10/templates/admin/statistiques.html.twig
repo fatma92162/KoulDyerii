@@ -1,0 +1,541 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Tableau de bord - Statistiques{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" rel="stylesheet">
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-icon {
+        font-size: 45px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-number {
+        font-size: 36px;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stat-percent {
+        font-size: 14px;
+        margin-top: 10px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    
+    .percent-admin {
+        background: #FF6B6B20;
+        color: #FF6B6B;
+    }
+    
+    .percent-client {
+        background: #4CAF5020;
+        color: #4CAF50;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0e6d6;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .chart-title i {
+        color: #FF6B6B;
+        font-size: 22px;
+    }
+    
+    .chart-wrapper {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+    }
+    
+    canvas {
+        max-height: 300px;
+        width: 100%;
+    }
+    
+    .stats-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 15px;
+        justify-content: center;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #666;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+    
+    .user-avatar-sm {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .badge-role {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .badge-admin {
+        background: #FF6B6B20;
+        color: #FF6B6B;
+    }
+    
+    .badge-user {
+        background: #4CAF5020;
+        color: #4CAF50;
+    }
+    
+    .region-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0e6d6;
+        transition: all 0.3s ease;
+    }
+    
+    .region-item:hover {
+        background: #fefcf8;
+        transform: translateX(5px);
+    }
+    
+    .region-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .region-count {
+        background: #FF6B6B;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        background: #f0e6d6;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        border-radius: 10px;
+        transition: width 1s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-wrapper {
+            height: 250px;
+        }
+        .stat-number {
+            font-size: 28px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <h2 class="mb-4">📊 Tableau de bord statistique</h2>
+    
+    <!-- Cartes statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number">{{ totalUsers }}</div>
+                <div class="stat-label">Total utilisateurs</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">👑</div>
+                <div class="stat-number">{{ totalAdmins }}</div>
+                <div class="stat-label">Administrateurs</div>
+                <div class="stat-percent percent-admin">{{ pourcentageAdmin }}%</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-number">{{ totalClients }}</div>
+                <div class="stat-label">Clients</div>
+                <div class="stat-percent percent-client">{{ pourcentageClient }}%</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Graphique Camembert - Répartition Admin/User -->
+        <div class="col-md-6 mb-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Répartition des rôles</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="roleChart" width="400" height="300"></canvas>
+                </div>
+                <div class="stats-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FF6B6B;"></div>
+                        <span>Administrateurs ({{ totalAdmins }})</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4CAF50;"></div>
+                        <span>Clients ({{ totalClients }})</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Graphique Barres - Top 10 Régions -->
+        <div class="col-md-6 mb-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Top 10 des régions</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="regionChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Graphique Ligne - Évolution des inscriptions -->
+        <div class="col-12 mb-4">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Évolution des inscriptions (6 derniers mois)</span>
+                </div>
+                <div class="chart-wrapper" style="height: 350px;">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Derniers utilisateurs inscrits -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Derniers utilisateurs inscrits</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Région</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in derniersUsers %}
+                            <tr>
+                                <td>{{ user.idUtilisateur }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar-sm">
+                                            {{ user.nom|first|upper }}
+                                        </div>
+                                        {{ user.nom }}
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge-role {{ user.role == 'admin' ? 'badge-admin' : 'badge-user' }}">
+                                        {{ user.role == 'admin' ? '👑 Admin' : '👤 User' }}
+                                    </span>
+                                </td>
+                                <td>{{ user.region ?: '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bouton retour -->
+    <div class="text-center mt-4">
+        <a href="{{ path('app_utilisateur_liste') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste des utilisateurs
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Graphique Camembert - Répartition des rôles
+        const ctxPie = document.getElementById('roleChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Administrateurs', 'Clients'],
+                datasets: [{
+                    data: [{{ totalAdmins }}, {{ totalClients }}],
+                    backgroundColor: ['#FF6B6B', '#4CAF50'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percent}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+        
+        // Préparer les données pour les régions
+        const regionData = [
+            {% for region, count in statsRegions %}
+                { nom: '{{ region }}', count: {{ count }} },
+            {% endfor %}
+        ];
+        
+        // Trier par nombre décroissant et prendre top 10
+        regionData.sort((a, b) => b.count - a.count);
+        const topRegions = regionData.slice(0, 10);
+        const regionsLabels = topRegions.map(r => r.nom);
+        const regionsCounts = topRegions.map(r => r.count);
+        
+        // Graphique Barres - Top régions
+        const ctxBar = document.getElementById('regionChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: regionsLabels,
+                datasets: [{
+                    label: 'Nombre d\'utilisateurs',
+                    data: regionsCounts,
+                    backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                    borderRadius: 8,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Utilisateurs: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f0e6d6'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Nombre d\'utilisateurs'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            rotation: 45,
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Graphique Ligne - Évolution des inscriptions
+        const ctxLine = document.getElementById('evolutionChart').getContext('2d');
+        const evolutionData = {{ evolution|json_encode|raw }};
+        const mois = evolutionData.map(item => item.mois);
+        const inscriptions = evolutionData.map(item => item.inscriptions);
+        
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: mois,
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: inscriptions,
+                    borderColor: '#FF6B6B',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#FF6B6B',
+                    pointBorderColor: 'white',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Inscriptions: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f0e6d6'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Nombre d\'inscriptions'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Animation des barres de progression
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 200);
+        });
+    });
+</script>
+{% endblock %}

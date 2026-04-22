@@ -17,7 +17,7 @@ class SecurityController extends AbstractController
     ) {}
 
     #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if ($this->getUser()) {
             $user = $this->getUser();
@@ -30,9 +30,16 @@ class SecurityController extends AbstractController
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
+        // Génération du CAPTCHA Mathématique
+        $num1 = random_int(1, 10);
+        $num2 = random_int(1, 10);
+        $request->getSession()->set('math_captcha_result', $num1 + $num2);
+
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
-            'error' => $error
+            'error' => $error,
+            'captcha_num1' => $num1,
+            'captcha_num2' => $num2
         ]);
     }
 

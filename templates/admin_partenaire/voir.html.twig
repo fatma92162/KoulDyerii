@@ -1,148 +1,622 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block admin_title %}Détails partenaire - {{ partenaire.nom }}{% endblock %}
+{% block admin_title %}Détails partenaire — {{ partenaire.nom }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .partner-page .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.5rem 0.9rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .partner-page .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.14);
+    }
+    .partner-page .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    .partner-page .btn-sm {
+        padding: 0.35rem 0.7rem;
+        border-radius: 10px;
+    }
+    .partner-page .btn-icon {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .partner-page .btn-outline-danger {
+        background: #fff;
+    }
+    .partner-page .btn-outline-danger:hover {
+        background: #dc3545;
+        color: #fff;
+        border-color: #dc3545;
+    }
+    .partner-page .btn-outline-light {
+        border-color: rgba(255,255,255,0.8);
+        color: #fff;
+    }
+    .partner-page .btn-outline-light:hover {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+    }
+    .partner-page .table .btn {
+        box-shadow: none;
+    }
+    .partner-page .table .btn:hover {
+        box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    }
+    .partner-page .page-header {
+        background: #ffffff;
+        border: 1px solid #f0e6d6;
+        border-radius: 16px;
+        padding: 12px 16px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .partner-page .card {
+        border-radius: 16px;
+        border: 1px solid #f0e6d6;
+        overflow: hidden;
+    }
+    .partner-page .card-header {
+        padding: 0.9rem 1.1rem;
+        border-bottom: 0;
+    }
+    .partner-page .card-body {
+        padding: 1.1rem 1.2rem;
+    }
+    .partner-page .info-grid .col-sm-4 {
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.4px;
+    }
+    .partner-page .info-grid .col-sm-8 {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .partner-page .badge.fs-6 {
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+    }
+    .partner-page .table thead th {
+        background: #f8f5f0;
+        border-bottom: 1px solid #f0e6d6;
+    }
+    .partner-page .table tbody td {
+        vertical-align: middle;
+    }
+    .partner-page .card-footer {
+        background: #fffaf3;
+        border-top: 1px solid #f0e6d6;
+    }
+    .partner-page .action-card .card-body {
+        background: linear-gradient(180deg, #fffaf3, #ffffff);
+    }
+</style>
+{% endblock %}
 
 {% block admin_content %}
-<div class="admin-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>🤝 Détails du partenaire</h3>
-        <a href="{{ path('app_admin_partenaires_index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
+
+<div class="partner-page">
+{# ── Messages Flash ── #}
+{% for msg in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show mb-3">
+        <i class="fas fa-check-circle me-2"></i>{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show mb-3">
+        <i class="fas fa-exclamation-circle me-2"></i>{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+{% for msg in app.flashes('info') %}
+    <div class="alert alert-info alert-dismissible fade show mb-3">
+        <i class="fas fa-info-circle me-2"></i>{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">🤝 Détails du partenaire</h3>
+    <a href="{{ path('app_admin_partenaires_index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<div class="row g-4">
+
+    {# ── Colonne principale ── #}
+    <div class="col-md-8">
+
+        {# Infos générales #}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations générales</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 info-grid">
+                    <div class="col-sm-4 fw-bold">Nom :</div>
+                    <div class="col-sm-8">{{ partenaire.nom }}</div>
+                    <div class="col-sm-4 fw-bold">Type :</div>
+                    <div class="col-sm-8">{{ partenaire.type }}</div>
+                    <div class="col-sm-4 fw-bold">Téléphone :</div>
+                    <div class="col-sm-8">{{ partenaire.telephone }}</div>
+                    <div class="col-sm-4 fw-bold">Adresse :</div>
+                    <div class="col-sm-8">{{ partenaire.adresse }}</div>
+                    <div class="col-sm-4 fw-bold">Statut :</div>
+                    <div class="col-sm-8">
+                        <span class="badge {% if partenaire.statut == 'accepte' %}bg-success{% elseif partenaire.statut == 'refuse' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6">
+                            {% if partenaire.statut == 'accepte' %}✅ Accepté
+                            {% elseif partenaire.statut == 'refuse' %}❌ Refusé
+                            {% else %}⏳ En attente{% endif %}
+                        </span>
+                    </div>
+                    <div class="col-sm-4 fw-bold">Date demande :</div>
+                    <div class="col-sm-8">{{ partenaire.dateDemande ? partenaire.dateDemande|date('d/m/Y H:i') : '—' }}</div>
+                    {% if partenaire.dateValidation %}
+                        <div class="col-sm-4 fw-bold">Date validation :</div>
+                        <div class="col-sm-8">{{ partenaire.dateValidation|date('d/m/Y H:i') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if partenaire.description %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-align-left me-2"></i>Description</h5>
+            </div>
+            <div class="card-body">{{ partenaire.description }}</div>
+        </div>
+        {% endif %}
+
+        {# ── Plats proposés ── #}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0"><i class="fas fa-utensils me-2"></i>Plats proposés</h5>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="{{ path('app_admin_plats_pending') }}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-tasks me-1"></i> File d’attente plats
+                    </a>
+                    <span class="badge bg-light text-dark">
+                    {{ platStats.total }} plat{{ platStats.total > 1 ? 's' : '' }}
+                    &nbsp;·&nbsp; ✅ {{ platStats.accepte }}
+                    &nbsp;·&nbsp; ⏳ {{ platStats.en_attente }}
+                    &nbsp;·&nbsp; ❌ {{ platStats.refuse }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if plats|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix</th>
+                                    <th>Statut</th>
+                                    <th>Description</th>
+                                    <th class="text-center" style="min-width: 200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for plat in plats %}
+                                <tr>
+                                    <td class="fw-semibold">
+                                        {% if plat.image %}
+                                            <img src="{{ plat.image }}" alt="{{ plat.nom }}"
+                                                 class="rounded me-2"
+                                                 style="width:36px;height:36px;object-fit:cover;">
+                                        {% else %}
+                                            <span class="me-2">🍽️</span>
+                                        {% endif %}
+                                        {{ plat.nom }}
+                                    </td>
+                                    <td><span class="badge bg-secondary">{{ plat.categorie ?: '—' }}</span></td>
+                                    <td class="fw-bold text-danger">{{ plat.prix|number_format(2, ',', ' ') }} €</td>
+                                    <td>
+                                        <span class="badge {% if plat.statut == 'accepte' %}bg-success{% elseif plat.statut == 'refuse' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                            {% if plat.statut == 'accepte' %}✅ Accepté
+                                            {% elseif plat.statut == 'refuse' %}❌ Refusé
+                                            {% else %}⏳ En attente{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">{{ plat.description ? plat.description|slice(0, 60) ~ '…' : '—' }}</td>
+                                    <td class="text-center align-middle">
+                                        {% if plat.statut == 'en_attente' %}
+                                            <form action="{{ path('app_admin_plat_approve', {id: plat.id}) }}"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Approuver « {{ plat.nom|e('js') }} » ?');">
+                                                <input type="hidden" name="redirect_route" value="app_admin_partenaire_voir">
+                                                <input type="hidden" name="redirect_id" value="{{ partenaire.id }}">
+                                                <button type="submit" class="btn btn-success btn-sm btn-icon" title="Approuver le plat">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form action="{{ path('app_admin_plat_reject', {id: plat.id}) }}"
+                                                  method="post" class="d-inline-block align-top ms-1 text-start"
+                                                  style="max-width: 170px;"
+                                                  onsubmit="return confirm('Rejeter « {{ plat.nom|e('js') }} » ?');">
+                                                <input type="hidden" name="redirect_route" value="app_admin_partenaire_voir">
+                                                <input type="hidden" name="redirect_id" value="{{ partenaire.id }}">
+                                                <input type="text" name="reject_comment" class="form-control form-control-sm mb-1"
+                                                       placeholder="Motif (optionnel)" autocomplete="off">
+                                                <button type="submit" class="btn btn-danger btn-sm w-100" title="Refuser le plat">
+                                                    <i class="fas fa-times"></i> Refuser
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-plate-wheat fa-2x mb-2"></i><br>
+                        Aucun plat proposé pour l'instant.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Recommandations Produits (après acceptation) ── #}
+        {% if partenaire.statut == 'accepte' %}
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background:linear-gradient(135deg,#8B0000,#A52A2A);">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Produits recommandés pour ce partenaire
+                    <small class="opacity-75 ms-2 fs-6">(basé sur ses plats)</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recommendations|length > 0 %}
+                    <div class="row g-3">
+                        {% for produit in recommendations %}
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
+                                {% if produit.photo %}
+                                    <img src="{{ produit.photo }}" alt="{{ produit.nom }}"
+                                         class="card-img-top" style="height:120px;object-fit:cover;">
+                                {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center"
+                                         style="height:120px;font-size:40px;">🛍️</div>
+                                {% endif %}
+                                <div class="card-body p-3">
+                                    <h6 class="card-title fw-bold mb-1">{{ produit.nom }}</h6>
+                                    <p class="card-text text-muted small mb-2">
+                                        {{ produit.description ? produit.description|slice(0,60) ~ '…' : '' }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-danger">{{ produit.prix|number_format(2, ',', ' ') }} €</span>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-shopping-cart me-1"></i>{{ produit.quantite }} ventes
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-box-open fa-2x mb-2"></i><br>
+                        Aucun produit disponible pour la recommandation.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# ── Collaborations produits ── #}
+        {% if collaborations|length > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background:linear-gradient(135deg,#2e7d32,#388e3c);">
+                <h5 class="mb-0">
+                    <i class="fas fa-link me-2"></i>
+                    Collaborations de ce partenaire
+                    <span class="badge bg-light text-dark ms-2">{{ collaborations|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="collab-validee-tab" data-bs-toggle="tab" 
+                                data-bs-target="#collab-validee-pane" type="button" role="tab">
+                            <i class="fas fa-check-circle"></i> Validée(s) 
+                            <span class="badge bg-success">{{ collaborationsParStatut['validee']|default([])|length }}</span>
+                        </button>
+                    </li>
+                    {% if collaborationsParStatut['refusee']|default([])|length > 0 %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="collab-refusee-tab" data-bs-toggle="tab" 
+                                data-bs-target="#collab-refusee-pane" type="button" role="tab">
+                            <i class="fas fa-times-circle"></i> Refusée(s) 
+                            <span class="badge bg-danger">{{ collaborationsParStatut['refusee']|default([])|length }}</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                    {% if collaborationsParStatut['annulee']|default([])|length > 0 %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="collab-annulee-tab" data-bs-toggle="tab" 
+                                data-bs-target="#collab-annulee-pane" type="button" role="tab">
+                            <i class="fas fa-ban"></i> Annulée(s) 
+                            <span class="badge bg-secondary">{{ collaborationsParStatut['annulee']|default([])|length }}</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <div class="tab-content">
+                    {# TAB: Validée #}
+                    <div class="tab-pane fade show active" id="collab-validee-pane" role="tabpanel">
+                        {% if collaborationsParStatut['validee']|default([])|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produit</th>
+                                            <th>Prix</th>
+                                            <th>Depuis</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for collab in collaborationsParStatut['validee'] %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ collab.produit.nom }}</strong>
+                                                {% if collab.produit.description %}
+                                                <br><small class="text-muted">{{ collab.produit.description|slice(0, 50) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td><strong class="text-success">{{ collab.produit.prix|number_format(2, ',', ' ') }} €</strong></td>
+                                            <td><small class="text-muted">{{ collab.createdAt|date('d/m/Y') }}</small></td>
+                                            <td>
+                                                <form action="{{ path('app_admin_collaboration_refuser', {collaborationId: collab.id}) }}" 
+                                                      method="post" style="display:inline;" 
+                                                      onsubmit="return confirm('Refuser cette collaboration ?');">
+                                                    <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Refuser">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-check-circle fa-2x mb-2 opacity-50"></i><br>
+                                Aucune collaboration validée
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# TAB: Refusée #}
+                    <div class="tab-pane fade" id="collab-refusee-pane" role="tabpanel">
+                        {% if collaborationsParStatut['refusee']|default([])|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produit</th>
+                                            <th>Prix</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for collab in collaborationsParStatut['refusee'] %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ collab.produit.nom }}</strong>
+                                                {% if collab.produit.description %}
+                                                <br><small class="text-muted">{{ collab.produit.description|slice(0, 50) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td><strong class="text-danger">{{ collab.produit.prix|number_format(2, ',', ' ') }} €</strong></td>
+                                            <td><small class="text-muted">{{ collab.createdAt|date('d/m/Y') }}</small></td>
+                                            <td>
+                                                <form action="{{ path('app_admin_collaboration_valider', {collaborationId: collab.id}) }}" 
+                                                      method="post" style="display:inline;" 
+                                                      onsubmit="return confirm('Valider cette collaboration ?');">
+                                                    <button type="submit" class="btn btn-success btn-sm btn-icon" title="Valider">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-times-circle fa-2x mb-2 opacity-50"></i><br>
+                                Aucune collaboration refusée
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# TAB: Annulée #}
+                    <div class="tab-pane fade" id="collab-annulee-pane" role="tabpanel">
+                        {% if collaborationsParStatut['annulee']|default([])|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produit</th>
+                                            <th>Prix</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for collab in collaborationsParStatut['annulee'] %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ collab.produit.nom }}</strong>
+                                                {% if collab.produit.description %}
+                                                <br><small class="text-muted">{{ collab.produit.description|slice(0, 50) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td><strong>{{ collab.produit.prix|number_format(2, ',', ' ') }} €</strong></td>
+                                            <td><small class="text-muted">{{ collab.createdAt|date('d/m/Y') }}</small></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-ban fa-2x mb-2 opacity-50"></i><br>
+                                Aucune collaboration annulée
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informations générales</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Nom:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.nom }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Type:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.type }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Téléphone:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.telephone }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Adresse:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.adresse }}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Statut:</strong></div>
-                        <div class="col-sm-8">
-                            <span class="status-badge status-{{ partenaire.statut }}">
-                                {% if partenaire.statut == 'en_attente' %}⏳ En attente
-                                {% elseif partenaire.statut == 'accepte' %}✅ Accepté
-                                {% else %}❌ Refusé{% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Date demande:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.dateDemande ? partenaire.dateDemande|date('d/m/Y H:i') : '-' }}</div>
-                    </div>
-                    {% if partenaire.dateValidation %}
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Date validation:</strong></div>
-                        <div class="col-sm-8">{{ partenaire.dateValidation|date('d/m/Y H:i') }}</div>
-                    </div>
-                    {% endif %}
-                </div>
+    {# ── Colonne actions ── #}
+    <div class="col-md-4">
+
+        {% if partenaire.logo %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header bg-secondary text-white"><h5 class="mb-0">Logo</h5></div>
+            <div class="card-body text-center">
+                <img src="{{ partenaire.logo }}" class="img-fluid rounded" style="max-height:200px;">
             </div>
-            
-            {% if partenaire.description %}
-            <div class="card mb-3">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Description</h5>
-                </div>
-                <div class="card-body">
-                    <p>{{ partenaire.description }}</p>
-                </div>
-            </div>
-            {% endif %}
         </div>
-        
-        <div class="col-md-4">
-            {% if partenaire.logo %}
-            <div class="card mb-3">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Logo</h5>
-                </div>
-                <div class="card-body text-center">
-                    <img src="{{ partenaire.logo }}" class="img-fluid rounded" style="max-height: 200px;">
-                </div>
+        {% endif %}
+
+        <div class="card shadow-sm action-card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Actions</h5>
             </div>
-            {% endif %}
-            
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0">Actions</h5>
-                </div>
-                <div class="card-body">
-                    {% if partenaire.statut == 'en_attente' %}
-                        <form action="{{ path('app_admin_partenaire_accepter', {id: partenaire.id}) }}" method="post" class="mb-2">
-                            <button type="submit" class="btn btn-success w-100" onclick="return confirm('Accepter ce partenaire ?')">
-                                <i class="fas fa-check"></i> Accepter
-                            </button>
-                        </form>
-                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#refuseModal">
-                            <i class="fas fa-times"></i> Refuser
+            <div class="card-body d-grid gap-2">
+                {% if partenaire.statut == 'en_attente' %}
+                    <form action="{{ path('app_admin_partenaire_accepter', {id: partenaire.id}) }}" method="post">
+                        <button type="submit" class="btn btn-success w-100"
+                                onclick="return confirm('Accepter ce partenaire ?')">
+                            <i class="fas fa-check me-1"></i> Accepter
                         </button>
-                    {% endif %}
+                    </form>
+                    <button type="button" class="btn btn-danger w-100"
+                            data-bs-toggle="modal" data-bs-target="#refuseModal">
+                        <i class="fas fa-times me-1"></i> Refuser
+                    </button>
+                {% elseif partenaire.statut == 'accepte' %}
+                    <div class="alert alert-success mb-0 text-center">
+                        <i class="fas fa-handshake me-1"></i><strong>Partenaire actif</strong>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                            data-bs-toggle="modal" data-bs-target="#refuseModal">
+                        <i class="fas fa-ban me-1"></i> Révoquer
+                    </button>
+                {% else %}
+                    <div class="alert alert-danger mb-0 text-center">
+                        <i class="fas fa-times-circle me-1"></i><strong>Partenaire refusé</strong>
+                    </div>
+                {% endif %}
+
+                <hr>
+                <form action="{{ path('app_admin_partenaire_supprimer', {id: partenaire.id}) }}"
+                      method="post"
+                      onsubmit="return confirm('Supprimer définitivement ce partenaire ?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="fas fa-trash me-1"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {# Résumé statistiques plats #}
+        <div class="card mt-3 shadow-sm">
+            <div class="card-header bg-light"><h6 class="mb-0">📊 Statistiques plats</h6></div>
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Total :</span><strong>{{ platStats.total }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-success">Acceptés :</span><strong class="text-success">{{ platStats.accepte }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-warning">En attente :</span><strong class="text-warning">{{ platStats.en_attente }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-danger">Refusés :</span><strong class="text-danger">{{ platStats.refuse }}</strong>
                 </div>
             </div>
         </div>
+
+        {# Résumé statistiques collaborations #}
+        {% if collaborationStats.total > 0 %}
+        <div class="card mt-3 shadow-sm">
+            <div class="card-header bg-light"><h6 class="mb-0">🔗 Statistiques collaborations</h6></div>
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Total :</span><strong>{{ collaborationStats.total }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-success">Validée(s) :</span><strong class="text-success">{{ collaborationStats.validee }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-danger">Refusée(s) :</span><strong class="text-danger">{{ collaborationStats.refusee }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary">Annulée(s) :</span><strong class="text-secondary">{{ collaborationStats.annulee }}</strong>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Modal Refuser -->
+{# ── Modal Refuser ── #}
 <div class="modal fade" id="refuseModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="{{ path('app_admin_partenaire_refuser', {id: partenaire.id}) }}" method="post">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Refuser le partenaire</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        {% if partenaire.statut == 'accepte' %}Révoquer{% else %}Refuser{% endif %}
+                        le partenaire
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <label for="motif" class="form-label">Motif du refus (optionnel)</label>
-                    <textarea name="motif" id="motif" class="form-control" rows="3" placeholder="Expliquez la raison du refus..."></textarea>
+                    <label for="motif" class="form-label">Motif <small class="text-muted">(optionnel)</small></label>
+                    <textarea name="motif" id="motif" class="form-control" rows="3"
+                              placeholder="Expliquez la raison…"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger">Confirmer le refus</button>
+                    <button type="submit" class="btn btn-danger">Confirmer</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<style>
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
-    }
-    .status-en_attente {
-        background: #FF9800;
-        color: white;
-    }
-    .status-accepte {
-        background: #4CAF50;
-        color: white;
-    }
-    .status-refuse {
-        background: #f44336;
-        color: white;
-    }
-</style>
+</div>
 {% endblock %}

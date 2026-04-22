@@ -5,6 +5,131 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+.pagination-wrap{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    margin-bottom:20px;
+}
+
+.page-btn{
+    min-width:42px;
+    height:42px;
+    border-radius:10px;
+    border:1px solid #e3cfc7;
+    background:#fff;
+    color:#7b1e2b;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+}
+
+.page-btn:hover{
+    background:#f7ece7;
+    color:#7b1e2b;
+}
+
+.page-btn.active{
+    background:#7b1e2b;
+    color:#fff;
+    border-color:#7b1e2b;
+}
+.first-delivery-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(520px, calc(100vw - 30px));
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translate(-50%, -50%) scale(0.96);
+    background: #fff7f2;
+    border: 1px solid #ead9d2;
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+.first-delivery-modal.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.fdg-confirm-btn,
+.fdg-cancel-btn {
+    min-height: 52px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 900;
+    flex: 1 1 0;
+}
+
+.fdg-confirm-btn {
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    color: #fff;
+}
+
+.fdg-confirm-btn:hover {
+    transform: translateY(-1px);
+}
+
+.fdg-cancel-btn {
+    background: #f3dfd7;
+    color: #8B0000;
+    border: 1px solid #e3cfc7;
+}
+
+.fdg-cancel-btn:hover {
+    background: #ead2c7;
+}
+.fdg-btn {
+    background: linear-gradient(135deg, #8B0000, #B22222);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 18px rgba(139, 0, 0, 0.25);
+}
+.fdg-confirm-btn,
+.fdg-cancel-btn {
+    min-height: 52px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 900;
+    flex: 1 1 0;
+}
+
+.fdg-confirm-btn {
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    color: #fff;
+}
+
+.fdg-confirm-btn:hover {
+    transform: translateY(-1px);
+}
+
+.fdg-cancel-btn {
+    background: #f3dfd7;
+    color: #8B0000;
+    border: 1px solid #e3cfc7;
+}
+
+.fdg-cancel-btn:hover {
+    background: #ead2c7;
+}
+
+.fdg-btn:hover {
+    background: linear-gradient(135deg, #a00000, #d12f2f);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 0, 0, 0.35);
+}
 .reco-badge {
     display: inline-block;
     padding: 6px 10px;
@@ -317,6 +442,164 @@
     justify-content: center;
     text-decoration: none;
 }
+.commande-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s ease;
+}
+
+.commande-panel-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.commande-panel {
+    position: fixed;
+    top: 0;
+    right: -760px;
+    width: 760px;
+    max-width: 100%;
+    height: 100vh;
+    background: #fff7f2;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+    z-index: 9999;
+    transition: 0.32s ease;
+    overflow-y: auto;
+    border-left: 1px solid #ead9d2;
+}
+
+.commande-panel.open {
+    right: 0;
+}
+
+.commande-panel-header {
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #ead9d2;
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.commande-panel-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.commande-panel-close {
+    background: #fff;
+    color: #8B0000;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.commande-panel-body {
+    padding: 24px;
+}
+
+.commande-section {
+    background: #fff;
+    border: 1px solid #ead9d2;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.commande-section-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0dfd8;
+    font-size: 22px;
+    font-weight: 800;
+    color: #5C4033;
+}
+
+.commande-section-content {
+    padding: 20px;
+}
+
+.commande-panel label {
+    display: block;
+    font-weight: 800;
+    color: #5C4033;
+    margin-bottom: 8px;
+}
+
+.commande-panel .form-control,
+.commande-panel .form-select {
+    border-radius: 14px;
+    border: 1px solid #e3cfc7;
+    background: #fff;
+    color: #2c1a1d;
+    min-height: 48px;
+}
+
+.commande-panel .form-control::placeholder {
+    color: #9a7f75;
+}
+
+.commande-items-list {
+    display: grid;
+    gap: 12px;
+}
+
+.commande-item-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #ead9d2;
+    border-radius: 14px;
+    background: #fff7f2;
+    padding: 12px;
+}
+
+.commande-item-box img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.commande-item-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: #f0dfd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-commande-btn {
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    color: #fff;
+    border: none;
+    width: 100%;
+    min-height: 52px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.commande-panel-alert {
+    display: none;
+    margin-bottom: 16px;
+    border-radius: 14px;
+}
 
 .table-card {
     background: #110015;
@@ -373,6 +656,102 @@
     background: #24102d;
     color: #ddd;
     font-size: 14px;
+}
+
+.customer-history-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: linear-gradient(135deg, #8b0000 0%, #a52a2a 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    cursor: pointer;
+}
+
+.history-icon-btn:hover,
+.history-icon-btn:focus {
+    background: linear-gradient(135deg, #a52a2a 0%, #8b0000 100%);
+    color: #fff;
+}
+
+.history-icon-btn i {
+    font-size: 12px;
+}
+
+.history-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #f3c9cf;
+    color: #7b1e2b;
+    border: 1px solid rgba(123, 30, 43, 0.45);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.16);
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+}
+
+#commande-history-tooltip {
+    background: linear-gradient(180deg, #7b1e2b 0%, #5f1020 100%) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+
+.history-card-item {
+    display: block;
+    width: 100%;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 10px 11px;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.history-card-item:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.10);
+    border-color: rgba(255,255,255,0.16);
+}
+
+.history-card-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+}
+
+.history-card-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.history-card-link {
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
 }
 
 .btn-calculator {
@@ -503,6 +882,10 @@
         <button type="button" class="btn btn-calculator" data-bs-toggle="modal" data-bs-target="#advancedStatsModal">
             <i class="fas fa-chart-line"></i> Stat avancée
         </button>
+        <button type="button" class="btn btn-calculator" data-bs-toggle="modal" data-bs-target="#importTxtModal">
+    <i class="fas fa-file-import"></i> Import TXT
+</button>
+
 
         <a href="{{ path('app_admin_commandes_export_lookalike') }}" class="btn btn-calculator">
             <i class="fas fa-file-excel"></i> Create Lookalike
@@ -662,25 +1045,58 @@
                             <td><strong>{{ commande.id }}</strong></td>
 
                             <td>
-                                <div class="product-cell">
-                                    {% if commande.produit and commande.produit.photo is defined and commande.produit.photo %}
-                                        <img src="/uploads/produits/{{ commande.produit.photo }}" alt="{{ commande.produit.nom }}" class="product-thumb">
-                                    {% else %}
-                                        <span class="product-fallback">📦</span>
+    {% if commande.cartSummary.isPanier %}
+        <div class="product-cell">
+            {% set firstItem = commande.cartSummary.items|first %}
+            {% if firstItem and firstItem.photo %}
+                <img src="{{ firstItem.photo }}" alt="{{ firstItem.nom }}" class="product-thumb">
+            {% else %}
+                <span class="product-fallback">🛒</span>
+            {% endif %}
+            <div>
+                <div>Commande panier</div>
+                <small class="text-secondary">{{ commande.cartSummary.quantity }} article(s)</small>
+            </div>
+        </div>
+    {% else %}
+        <div class="product-cell">
+            {% if commande.produit and commande.produit.photo is defined and commande.produit.photo %}
+                <img src="{{ commande.produit.photo }}" alt="{{ commande.produit.nom }}" class="product-thumb">
+            {% else %}
+                <span class="product-fallback">📦</span>
+            {% endif %}
+            <div>
+                <div>{{ commande.produit.nom|default('Produit') }}</div>
+                <small class="text-secondary">x{{ commande.cartSummary.quantity }}</small>
+            </div>
+        </div>
+        
+    {% endif %}
+</td>
+
+                            <td>
+                                <div class="customer-history-cell">
+                                    <span>{{ commande.customerName }}</span>
+                                    {% if commandeHistoryCounts[commande.id]|default(0) > 0 %}
+                                        <button
+                                            type="button"
+                                            class="history-icon-btn js-command-history-btn"
+                                            title="Historique client"
+                                            aria-label="Historique client"
+                                            data-history-url="{{ path('app_admin_commandes_history', {id: commande.id}) }}"
+                                        >
+                                            <i class="fas fa-clock-rotate-left"></i>
+                                            <span class="history-badge">{{ commandeHistoryCounts[commande.id] }}</span>
+                                        </button>
                                     {% endif %}
-                                    <div>
-                                        <div>{{ commande.produit.nom|default('Produit') }}</div>
-                                        <small class="text-secondary">x1</small>
-                                    </div>
                                 </div>
                             </td>
-
-                            <td>{{ commande.customerName }}</td>
                             <td>{{ commande.createdAt|date('d M Y, H:i') }}</td>
                             <td>{{ commande.location }}</td>
 
                             <td>
-                                <span class="status-pill status-{{ commande.status }}">
+    <span id="fdg-status-{{ commande.id }}"
+          class="status-pill status-{{ commande.status }}">
                                     {% if commande.status == 'en_attente' %}
                                         Pending
                                     {% elseif commande.status == 'acceptee' %}
@@ -693,16 +1109,17 @@
                                 </span>
                             </td>
 
-                            <td>
-                                {% if commande.produit %}
-                                    {{ commande.produit.prix|number_format(2, ',', ' ') }} TND
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
+                           <td>
+    {{ commande.cartSummary.total|number_format(2, ',', ' ') }} TND
+</td>
 
                             <td>
                                 <div class="actions-cell">
+                                <button type="button"
+    class="icon-btn fdg-btn"
+    onclick="openFirstDeliveryModal({{ commande.id }})">
+    <i class="fas fa-paper-plane"></i>
+</button>
                                     {% if commande.status == 'en_attente' %}
                                         <form action="{{ path('app_admin_commandes_accepter', {id: commande.id}) }}" method="post" class="inline-form">
                                             <input type="hidden" name="status" value="{{ status }}">
@@ -723,9 +1140,14 @@
                                         </form>
                                     {% endif %}
 
-                                    <a href="{{ path('app_admin_commandes_edit', {id: commande.id, status: status, search: search, sort: sort}) }}" class="icon-btn" title="Modifier">
-                                        <i class="fas fa-pen"></i>
-                                    </a>
+                                    <button
+    type="button"
+    class="icon-btn"
+    title="Modifier"
+    onclick="openCommandeEditPanel({{ commande.id }})"
+>
+    <i class="fas fa-pen"></i>
+</button>
 
                                     <form action="{{ path('app_admin_commandes_delete', {id: commande.id}) }}" method="post" class="inline-form" onsubmit="return confirm('Supprimer cette commande ?');">
                                         <input type="hidden" name="status" value="{{ status }}">
@@ -747,12 +1169,28 @@
             </table>
         </div>
     </div>
+    {% if totalPages > 1 %}
+    <div class="pagination-wrap">
+        {% for p in 1..totalPages %}
+            <a href="{{ path('app_admin_commandes_index', {
+                page: p,
+                abandonedPage: abandonedPage,
+                search: search,
+                status: status,
+                sort: sort
+            }) }}"
+               class="page-btn {% if p == page %}active{% endif %}">
+                {{ p }}
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <div class="top-actions-bar" style="margin-top: 30px;">
         <h3>📞 Commandes abandonnées</h3>
         <div class="top-actions-buttons">
             <span class="btn btn-calculator" style="pointer-events:none;">
-                <span id="abandoned-count">{{ abandonedCommandes|length }}</span> lead(s)
+                <span id="abandoned-count">{{ totalAbandonedCount }}</span> lead(s)
             </span>
         </div>
     </div>
@@ -853,6 +1291,7 @@
             </table>
         </div>
     </div>
+    
 </div>
 
 <div class="modal fade" id="advancedStatsModal" tabindex="-1" aria-labelledby="advancedStatsModalLabel" aria-hidden="true">
@@ -1005,6 +1444,73 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="table-card" style="padding:20px; background:#fff7f0; color:#2c1a1d; margin-top:24px;">
+    <h4 style="font-weight:800; color:#7b1e2b; margin-bottom:18px;">
+        📈 Conversion & Sources
+    </h4>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="advanced-stat-card">
+                <span class="advanced-stat-label">Visiteurs produits (24h)</span>
+                <div class="advanced-stat-value" id="visitors24hValue">{{ visitors24h|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="advanced-stat-card">
+                <span class="advanced-stat-label">Commandes acceptées (24h)</span>
+                <div class="advanced-stat-value" id="accepted24hValue">{{ accepted24h|default(0) }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="advanced-stat-card">
+                <span class="advanced-stat-label">Conversion rate</span>
+                <div class="advanced-stat-value" id="conversionRateValue">{{ conversionRate|default(0)|number_format(2, ',', ' ') }}%</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+    <div class="advanced-stat-card">
+        <span class="advanced-stat-label">AOV (24h)</span>
+        <div class="advanced-stat-value" id="aov24hValue">{{ aov24h|default(0)|number_format(2, ',', ' ') }}</div>
+        <small>TND</small>
+    </div>
+</div>
+    </div>
+
+    <div class="advanced-stat-card" style="text-align:left;">
+        <span class="advanced-stat-label">Plateformes source</span>
+
+        <div id="sourceStatsWrap">
+    {% if sourceStats is defined and sourceStats is not empty %}
+        <div class="row g-3">
+            {% for source in sourceStats %}
+                <div class="col-md-4">
+                    <div style="background:#fff; border:1px solid #ead9d2; border-radius:14px; padding:14px;">
+                        
+                        <strong style="color:#8B0000; text-transform:capitalize;">
+                            {{ source.platform }}
+                        </strong>
+
+                        <div style="font-size:22px; font-weight:800; margin-top:6px;">
+                            {{ source.total }}
+                        </div>
+
+                        <small class="text-muted">visite(s)</small>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-muted">
+            Aucune donnée source disponible pour le moment.
+        </div>
+    {% endif %}
+</div>
     </div>
 </div>
 
@@ -1305,6 +1811,11 @@ function saveCurrentCampaignComparison() {
 
 document.addEventListener('DOMContentLoaded', function () {
     const counter = document.getElementById('online-visitors-count');
+    const visitors24hCounter = document.getElementById('visitors24hValue');
+const accepted24hCounter = document.getElementById('accepted24hValue');
+const conversionRateCounter = document.getElementById('conversionRateValue');
+const sourceStatsWrap = document.getElementById('sourceStatsWrap');
+const aov24hCounter = document.getElementById('aov24hValue');
     const advancedModalEl = document.getElementById('advancedStatsModal');
     const calculateBtn = document.getElementById('calculateAdvancedStatsBtn');
     const periodEl = document.getElementById('advanced-period');
@@ -1326,6 +1837,42 @@ document.addEventListener('DOMContentLoaded', function () {
             if (typeof data.onlineVisitors !== 'undefined') {
                 counter.textContent = data.onlineVisitors;
             }
+            if (typeof data.visitors24h !== 'undefined' && visitors24hCounter) {
+    visitors24hCounter.textContent = data.visitors24h;
+}
+
+if (typeof data.accepted24h !== 'undefined' && accepted24hCounter) {
+    accepted24hCounter.textContent = data.accepted24h;
+}
+
+if (typeof data.conversionRate !== 'undefined' && conversionRateCounter) {
+    conversionRateCounter.textContent = Number(data.conversionRate).toFixed(2).replace('.', ',') + '%';
+}
+if (typeof data.aov24h !== 'undefined' && aov24hCounter) {
+    aov24hCounter.textContent = Number(data.aov24h).toFixed(2).replace('.', ',');
+}
+
+if (sourceStatsWrap && Array.isArray(data.sourceStats)) {
+    if (data.sourceStats.length > 0) {
+        sourceStatsWrap.innerHTML = `
+            <div class="row g-3">
+                ${data.sourceStats.map(source => `
+                    <div class="col-md-4">
+                        <div style="background:#fff; border:1px solid #ead9d2; border-radius:14px; padding:14px;">
+                            <strong style="color:#8B0000; text-transform:capitalize;">
+                                ${source.platform}
+                            </strong>
+                            <div style="font-size:22px; font-weight:800; margin-top:6px;">
+                                ${source.total}
+                            </div>
+                            <small class="text-muted">visite(s)</small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+}
         } catch (error) {
             console.error('Erreur compteur visiteurs:', error);
         }
@@ -1533,6 +2080,245 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 4000);
     }
 
+    const historyCache = new Map();
+    let historyTooltip = null;
+    let historyHideTimer = null;
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getHistoryStatusLabel(status) {
+        switch (status) {
+            case 'en_attente':
+                return 'Pending';
+            case 'acceptee':
+                return 'Accepted';
+            case 'refusee':
+                return 'Rejected';
+            case 'annulee':
+                return 'Cancelled';
+            default:
+                return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+        }
+    }
+
+    function getHistoryStatusColor(status) {
+        switch (status) {
+            case 'en_attente':
+                return { bg: '#ffe6a7', fg: '#8a6d00' };
+            case 'acceptee':
+                return { bg: '#d4f4dd', fg: '#1c7c3c' };
+            case 'refusee':
+                return { bg: '#ffd6d6', fg: '#a11c1c' };
+            case 'annulee':
+                return { bg: '#e7e7e7', fg: '#666666' };
+            default:
+                return { bg: '#f4e8ff', fg: '#6b3fa0' };
+        }
+    }
+
+    function ensureHistoryTooltip() {
+        if (historyTooltip) {
+            return historyTooltip;
+        }
+
+        historyTooltip = document.createElement('div');
+        historyTooltip.id = 'commande-history-tooltip';
+        historyTooltip.style.position = 'fixed';
+        historyTooltip.style.zIndex = '100000';
+        historyTooltip.style.width = '320px';
+        historyTooltip.style.maxWidth = 'calc(100vw - 24px)';
+        historyTooltip.style.borderRadius = '16px';
+        historyTooltip.style.boxShadow = '0 18px 42px rgba(0,0,0,0.32)';
+        historyTooltip.style.padding = '12px';
+        historyTooltip.style.opacity = '0';
+        historyTooltip.style.transform = 'translateY(8px)';
+        historyTooltip.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+        historyTooltip.style.pointerEvents = 'auto';
+        historyTooltip.style.display = 'none';
+        historyTooltip.addEventListener('mouseenter', () => {
+            if (historyHideTimer) {
+                clearTimeout(historyHideTimer);
+                historyHideTimer = null;
+            }
+        });
+        historyTooltip.addEventListener('mouseleave', scheduleHideHistoryTooltip);
+        historyTooltip.addEventListener('mousemove', () => {
+            if (historyHideTimer) {
+                clearTimeout(historyHideTimer);
+                historyHideTimer = null;
+            }
+        });
+        document.body.appendChild(historyTooltip);
+        return historyTooltip;
+    }
+
+    function positionHistoryTooltip(anchor) {
+        if (!historyTooltip || !anchor) return;
+
+        const rect = anchor.getBoundingClientRect();
+        const tooltipWidth = 320;
+        const left = Math.min(window.innerWidth - tooltipWidth - 12, Math.max(12, rect.right - tooltipWidth + 20));
+        const top = Math.min(window.innerHeight - 20, rect.bottom + 10);
+
+        historyTooltip.style.left = `${left}px`;
+        historyTooltip.style.top = `${top}px`;
+    }
+
+    function renderHistoryTooltip(data) {
+        const items = Array.isArray(data?.history) ? data.history : [];
+        const customerName = data?.customerName || 'Client';
+
+        if (!items.length) {
+            return `
+                <div style="font-size:12px;font-weight:800;color:#ffd7dc;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">
+                    Historique client
+                </div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#fff;">${escapeHtml(customerName)}</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.78);">Aucune commande antérieure trouvée.</div>
+            `;
+        }
+
+        const rows = items.map((item) => {
+            const colors = getHistoryStatusColor(item.status);
+            return `
+                <button type="button" class="history-card-item" data-order-id="${escapeHtml(item.id)}" onclick="openCommandeEditPanel(${escapeHtml(item.id)})">
+                    <div class="history-card-title">
+                        <div style="font-weight:800;color:#fff;">#${escapeHtml(item.id)}</div>
+                        <span style="display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:${colors.bg};color:${colors.fg};font-size:11px;font-weight:800;">
+                            ${escapeHtml(getHistoryStatusLabel(item.status))}
+                        </span>
+                    </div>
+                    <div class="history-card-meta" style="margin-bottom:3px;">
+                        ${escapeHtml(item.createdAt || '-')}
+                    </div>
+                    <div class="history-card-meta" style="margin-bottom:3px;">
+                        ${escapeHtml(item.location || '-')}
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                        <div style="font-size:12px;color:#fff;font-weight:700;">${escapeHtml(item.total || '-')}</div>
+                        <span class="history-card-link">Ouvrir</span>
+                    </div>
+                </button>
+            `;
+        }).join('');
+
+        return `
+            <div style="font-size:12px;font-weight:800;color:#ffd7dc;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">
+                Historique client
+            </div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#fff;">${escapeHtml(customerName)}</div>
+            <div style="max-height:260px;overflow:auto;padding-right:4px;">
+                ${rows}
+            </div>
+        `;
+    }
+
+    function hideHistoryTooltip() {
+        if (!historyTooltip) return;
+
+        historyTooltip.style.opacity = '0';
+        historyTooltip.style.transform = 'translateY(8px)';
+        historyTooltip.style.display = 'none';
+        historyTooltip.innerHTML = '';
+    }
+
+    function scheduleHideHistoryTooltip() {
+        if (historyHideTimer) {
+            clearTimeout(historyHideTimer);
+        }
+
+        historyHideTimer = setTimeout(() => {
+            const tooltip = document.getElementById('commande-history-tooltip');
+            const activeElement = document.activeElement;
+
+            if (tooltip && (tooltip.matches(':hover') || (activeElement && activeElement.closest && activeElement.closest('.js-command-history-btn')))) {
+                return;
+            }
+
+            hideHistoryTooltip();
+        }, 400);
+    }
+
+    async function showHistoryTooltip(button) {
+        if (!button) return;
+
+        const url = button.dataset.historyUrl;
+        if (!url) return;
+
+        const tooltip = ensureHistoryTooltip();
+        tooltip.dataset.url = url;
+        tooltip.innerHTML = `
+            <div style="font-size:12px;font-weight:800;color:#ffd7dc;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">
+                Historique client
+            </div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.78);">Chargement...</div>
+        `;
+        positionHistoryTooltip(button);
+        tooltip.style.display = 'block';
+        tooltip.style.opacity = '1';
+        tooltip.style.transform = 'translateY(0)';
+
+        if (historyHideTimer) {
+            clearTimeout(historyHideTimer);
+            historyHideTimer = null;
+        }
+
+        let data = historyCache.get(url);
+
+        if (!data) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                data = await response.json();
+                historyCache.set(url, data);
+            } catch (error) {
+                if (tooltip.dataset.url === url) {
+                    tooltip.innerHTML = `
+                        <div style="font-size:12px;font-weight:800;color:#ffd7dc;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">
+                            Historique client
+                        </div>
+                        <div style="font-size:13px;color:rgba(255,255,255,0.78);">Impossible de charger l'historique.</div>
+                    `;
+                }
+                return;
+            }
+        }
+
+        if (tooltip.dataset.url === url) {
+            tooltip.innerHTML = renderHistoryTooltip(data);
+            positionHistoryTooltip(button);
+        }
+    }
+
+    function bindHistoryButtons(root = document) {
+        root.querySelectorAll('.js-command-history-btn').forEach((button) => {
+            if (button.dataset.historyBound === '1') {
+                return;
+            }
+
+            button.dataset.historyBound = '1';
+            button.addEventListener('mouseenter', () => showHistoryTooltip(button));
+            button.addEventListener('focus', () => showHistoryTooltip(button));
+            button.addEventListener('mouseleave', scheduleHideHistoryTooltip);
+            button.addEventListener('blur', scheduleHideHistoryTooltip);
+        });
+    }
+
     async function refreshOrdersLive() {
         try {
             const params = new URLSearchParams(window.location.search);
@@ -1548,6 +2334,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (normalTbody && typeof data.normalRows !== 'undefined') {
                 normalTbody.innerHTML = data.normalRows;
+                bindHistoryButtons(normalTbody);
             }
 
             if (abandonedTbody && typeof data.abandonedRows !== 'undefined') {
@@ -1579,7 +2366,340 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    bindHistoryButtons();
     setInterval(refreshOrdersLive, 7000);
 });
+</script>
+<div class="modal fade" id="importTxtModal" tabindex="-1" aria-labelledby="importTxtModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header advanced-modal-header">
+                <h5 class="modal-title" id="importTxtModalLabel">
+                    <i class="fas fa-file-import"></i> Importer des commandes TXT
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post" action="{{ path('app_admin_commandes_import_txt') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Format obligatoire du fichier TXT :</strong><br><br>
+                        <code>customer_name|phone|location|product_id|status</code><br><br>
+                        <strong>Exemple :</strong><br>
+                        <code>Ali Ben Salah|22123456|Tunis|5|en_attente</code><br>
+                        <code>Sarra Trabelsi|55111222|Sfax|3|acceptee</code>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <strong>Statuts autorisés :</strong>
+                        <code>en_attente</code>,
+                        <code>acceptee</code>,
+                        <code>refusee</code>,
+                        <code>annulee</code>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fichier TXT</label>
+                        <input type="file" name="txt_file" class="form-control" accept=".txt" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-calculator">
+                        <i class="fas fa-upload"></i> Importer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="commandePanelOverlay" class="commande-panel-overlay" onclick="closeCommandeEditPanel()"></div>
+
+<div id="commandePanel" class="commande-panel">
+    <div class="commande-panel-header">
+        <h3 class="commande-panel-title">Modifier commande</h3>
+        <button type="button" class="commande-panel-close" onclick="closeCommandeEditPanel()">✕</button>
+    </div>
+
+    <div class="commande-panel-body">
+        <div id="commandePanelAlert" class="alert commande-panel-alert"></div>
+
+        <form id="commandeEditForm">
+            <input type="hidden" id="commandeEditId" name="id">
+
+            <div class="commande-section">
+                <div class="commande-section-head">Commande</div>
+                <div class="commande-section-content">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label>Statut</label>
+                            <select id="commandeStatus" name="status_commande" class="form-select">
+                                <option value="en_attente">En attente</option>
+                                <option value="acceptee">Acceptée</option>
+                                <option value="refusee">Refusée</option>
+                                <option value="annulee">Annulée</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Date</label>
+                            <input type="text" id="commandeCreatedAt" class="form-control" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Produit principal</label>
+                            <input type="number" id="commandeProductId" name="productId" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Quantité</label>
+                            <input type="number" min="1" id="commandeQuantite" name="quantite" class="form-control" value="1">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Total</label>
+                            <input type="text" id="commandeTotal" class="form-control" readonly>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Articles</label>
+                            <div id="commandeItemsList" class="commande-items-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="commande-section">
+                <div class="commande-section-head">Client</div>
+                <div class="commande-section-content">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label>Nom</label>
+                            <input type="text" id="commandeCustomerName" name="customerName" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Téléphone</label>
+                            <input type="text" id="commandePhone" name="phone" class="form-control">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label>Adresse</label>
+                            <input type="text" id="commandeLocation" name="location" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="save-commande-btn">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+        </form>
+    </div>
+</div>
+<div id="firstDeliveryOverlay" class="commande-panel-overlay" onclick="closeFirstDeliveryModal()"></div>
+
+<div id="firstDeliveryModal" class="first-delivery-modal">
+    <div class="commande-panel-header">
+        <h3 class="commande-panel-title">Envoyer à First Delivery</h3>
+        <button type="button" class="commande-panel-close" onclick="closeFirstDeliveryModal()">✕</button>
+    </div>
+
+    <div class="commande-panel-body">
+        <div id="firstDeliveryModalAlert" class="alert commande-panel-alert"></div>
+
+        <input type="hidden" id="firstDeliveryCommandeId">
+
+        <div class="commande-section">
+            <div class="commande-section-head">Confirmation</div>
+            <div class="commande-section-content">
+                <p style="margin-bottom: 10px; color:#5C4033; font-weight:800; font-size:16px;">
+    Envoyer cette commande à First Delivery ?
+</p>
+
+<p style="margin-bottom: 18px; color:#7a5a4a; font-weight:600; line-height:1.6;">
+    Clique sur <strong>Accepter</strong> pour envoyer la commande, ou sur <strong>Annuler</strong> pour fermer cette fenêtre.
+</p>
+
+                <div class="d-flex gap-2 flex-wrap">
+    <button type="button"
+            id="firstDeliveryConfirmBtn"
+            class="fdg-confirm-btn"
+            onclick="confirmSendToFirstDelivery()">
+        <i class="fas fa-check"></i> Accepter
+    </button>
+
+    <button type="button"
+            class="fdg-cancel-btn"
+            onclick="closeFirstDeliveryModal()">
+        <i class="fas fa-times"></i> Annuler
+    </button>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function openCommandeEditPanel(id) {
+    fetch(`/admin/commandes/${id}/edit-data`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.message || 'Erreur');
+                return;
+            }
+
+            const c = data.commande;
+
+            document.getElementById('commandeEditId').value = c.id;
+            document.getElementById('commandeCustomerName').value = c.customerName || '';
+            document.getElementById('commandePhone').value = c.phone || '';
+            document.getElementById('commandeLocation').value = c.location || '';
+            document.getElementById('commandeStatus').value = c.status || 'en_attente';
+            document.getElementById('commandeProductId').value = c.productId || '';
+            document.getElementById('commandeCreatedAt').value = c.createdAt || '';
+            document.getElementById('commandeTotal').value = c.total || '';
+            document.getElementById('commandeQuantite').value = c.quantity || 1;
+
+            const itemsList = document.getElementById('commandeItemsList');
+
+            if (c.items && c.items.length) {
+                itemsList.innerHTML = c.items.map(item => `
+                    <div class="commande-item-box">
+                        ${item.photo ? `<img src="${item.photo}" alt="${item.nom}">` : `<div class="commande-item-fallback">📦</div>`}
+                        <div>
+                            <div><strong>${item.nom}</strong></div>
+                            <div>${item.quantite} × ${Number(item.prix).toFixed(2)} TND</div>
+                            <small>${Number(item.sous_total).toFixed(2)} TND</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                itemsList.innerHTML = '<div class="commande-item-box"><div class="commande-item-fallback">📦</div><div>Commande simple</div></div>';
+            }
+
+            document.getElementById('commandePanel').classList.add('open');
+            document.getElementById('commandePanelOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+}
+
+function closeCommandeEditPanel() {
+    document.getElementById('commandePanel').classList.remove('open');
+    document.getElementById('commandePanelOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('commandeEditForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const id = document.getElementById('commandeEditId').value;
+    const formData = new FormData(this);
+    const alertBox = document.getElementById('commandePanelAlert');
+
+    alertBox.style.display = 'none';
+    alertBox.className = 'alert commande-panel-alert';
+
+    try {
+        const response = await fetch(`/admin/commandes/${id}/update-ajax`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alertBox.style.display = 'block';
+            alertBox.classList.add('alert-danger');
+            alertBox.textContent = data.message || 'Erreur.';
+            return;
+        }
+
+        alertBox.style.display = 'block';
+        alertBox.classList.add('alert-success');
+        alertBox.textContent = data.message || 'Commande mise à jour.';
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 700);
+    } catch (error) {
+        alertBox.style.display = 'block';
+        alertBox.classList.add('alert-danger');
+        alertBox.textContent = 'Erreur réseau ou serveur.';
+    }
+});
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        closeCommandeEditPanel();
+    }
+});
+function openFirstDeliveryModal(id) {
+    document.getElementById('firstDeliveryCommandeId').value = id;
+    document.getElementById('firstDeliveryModal').classList.add('open');
+    document.getElementById('firstDeliveryOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeFirstDeliveryModal() {
+    document.getElementById('firstDeliveryModal').classList.remove('open');
+    document.getElementById('firstDeliveryOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+async function confirmSendToFirstDelivery() {
+    const id = document.getElementById('firstDeliveryCommandeId').value;
+    const confirmBtn = document.getElementById('firstDeliveryConfirmBtn');
+    const alertBox = document.getElementById('firstDeliveryModalAlert');
+
+    alertBox.style.display = 'none';
+    alertBox.className = 'alert commande-panel-alert';
+
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+
+    try {
+        const response = await fetch(`/admin/livraisons/send-first-delivery/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alertBox.style.display = 'block';
+            alertBox.classList.add('alert-danger');
+            alertBox.textContent = data.message || 'Erreur envoi.';
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Confirmer l’envoi';
+            return;
+        }
+
+        // change status in table after successful send
+        const statusEl = document.getElementById(`fdg-status-${id}`);
+        if (statusEl) {
+            statusEl.className = 'status-pill status-acceptee';
+            statusEl.textContent = 'Accepted';
+        }
+
+        alertBox.style.display = 'block';
+        alertBox.classList.add('alert-success');
+        alertBox.textContent = data.message || 'Commande envoyée à First Delivery avec succès.';
+
+        setTimeout(() => {
+            closeFirstDeliveryModal();
+        }, 900);
+
+    } catch (error) {
+        alertBox.style.display = 'block';
+        alertBox.classList.add('alert-danger');
+        alertBox.textContent = 'Erreur réseau ou serveur.';
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Confirmer l’envoi';
+    }
+}
 </script>
 {% endblock %}

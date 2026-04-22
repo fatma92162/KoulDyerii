@@ -92,8 +92,17 @@
                 
                 <div class="info-box">
                     <h4><i class="fas fa-align-left"></i> Description</h4>
-                    <p>{{ formation.description }}</p>
+                    <p>{{ formationDescription }}</p>
                 </div>
+
+                {% if videoEmbedUrl %}
+                    <div class="info-box">
+                        <h4><i class="fas fa-video"></i> Aperçu vidéo</h4>
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ videoEmbedUrl }}" title="Vidéo formation" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
             
             <div class="col-md-4">
@@ -111,11 +120,22 @@
                             <i class="fas fa-check"></i> Déjà inscrit
                         </button>
                     {% else %}
-                        <form method="post" action="{{ path('app_formations_inscrire', {id: formation.idFormation}) }}">
-                            <button type="submit" class="btn-inscrire">
-                                <i class="fas fa-calendar-plus"></i> S'inscrire maintenant
-                            </button>
-                        </form>
+                        {% if (formation.prix ?? 0) > 0 %}
+                            <form method="post" action="{{ path('app_formations_checkout', {id: formation.idFormation}) }}">
+                                <button type="submit" class="btn-inscrire">
+                                    <i class="fas fa-credit-card"></i> Payer et s'inscrire
+                                </button>
+                            </form>
+                            <div class="text-center text-muted small mt-2">
+                                Paiement sécurisé via Stripe
+                            </div>
+                        {% else %}
+                            <form method="post" action="{{ path('app_formations_inscrire', {id: formation.idFormation}) }}">
+                                <button type="submit" class="btn-inscrire">
+                                    <i class="fas fa-calendar-plus"></i> S'inscrire maintenant
+                                </button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 {% else %}
                     <div class="alert alert-warning text-center">
@@ -132,6 +152,47 @@
                     <p><i class="fas fa-certificate"></i> Certificat à la fin</p>
                     <p><i class="fas fa-chalkboard-user"></i> Formateurs experts</p>
                 </div>
+
+                {# ── Score du dernier quiz ── #}
+                {% if app.user and lastResult %}
+                    {% set passed = lastResult.percentage >= 80 %}
+                    <div class="mt-3 p-3 rounded border-start border-4 {{ passed ? 'border-success bg-success bg-opacity-10' : 'border-warning bg-warning bg-opacity-10' }}">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <strong>📊 Votre dernier score :</strong>
+                                <span class="fw-bold fs-5 ms-1 {{ passed ? 'text-success' : 'text-warning' }}">
+                                    {{ lastResult.percentage|number_format(0) }}%
+                                </span>
+                                <small class="text-muted d-block">
+                                    {{ lastResult.score }}/{{ lastResult.totalQuestions }} — {{ lastResult.submittedAt|date('d/m/Y') }}
+                                </small>
+                            </div>
+                            {% if passed %}
+                                <span class="badge bg-success fs-6">🎓 Certification obtenue</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">⚠️ Non certifié (seuil : 80%)</span>
+                            {% endif %}
+                        </div>
+                        {% if passed and lastResult.certificate %}
+                            <a href="{{ path('app_certificate_show', {id: lastResult.certificate.id}) }}"
+                               class="btn btn-sm btn-outline-success mt-2">
+                                <i class="fas fa-certificate me-1"></i> Voir mon certificat
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if quizAvailable %}
+                    <a href="{{ path('app_formations_quiz_start', {id: formation.idFormation}) }}" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-{{ lastResult ? 'redo' : 'play-circle' }} me-1"></i>
+                        {{ lastResult ? 'Repasser le quiz' : 'Start Quiz' }}
+                        ({{ formation.quiz.duration // 60 }} min)
+                    </a>
+                {% else %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        Quiz bientôt disponible pour cette formation.
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

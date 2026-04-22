@@ -33,13 +33,22 @@ class RecompenseController extends AbstractController
         $prochaineRecompense = $this->recompenseService->getProchaineRecompense($pointsActuels);
         $progression = $this->recompenseService->getProgression($pointsActuels, $prochaineRecompense);
         
+        // Récupérer les IDs des récompenses déjà obtenues non utilisées
+        $idsRecompensesObtenues = [];
+        foreach ($recompensesObtenues as $ro) {
+            if (!$ro->isUtilise()) {
+                $idsRecompensesObtenues[] = $ro->getRecompense()->getIdRecompense();
+            }
+        }
+        
         return $this->render('recompenses/index.html.twig', [
             'pointsActuels' => $pointsActuels,
             'recompenses' => $recompenses,
             'recompensesAccessibles' => $recompensesAccessibles,
             'recompensesObtenues' => $recompensesObtenues,
             'prochaineRecompense' => $prochaineRecompense,
-            'progression' => $progression
+            'progression' => $progression,
+            'idsRecompensesObtenues' => $idsRecompensesObtenues  // Ajouté pour le template
         ]);
     }
 
@@ -49,7 +58,33 @@ class RecompenseController extends AbstractController
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->json(['success' => false, 'message' => 'Non connecté'], 401);
+            return $this->json(['success' => false, 'message' => 'Veuillez vous connecter'], 401);
+        }
+        
+        // Vérifier si l'utilisateur a déjà cette récompense non utilisée
+        $recompensesObtenues = $this->recompenseService->getRecompensesObtenues($user);
+        foreach ($recompensesObtenues as $recompenseObtenue) {
+            if ($recompenseObtenue->getRecompense()->getIdRecompense() === $id && !$recompenseObtenue->isUtilise()) {
+                return $this->json([
+                    'success' => false, 
+                    'message' => 'Vous possédez déjà cette récompense non utilisée. Veuillez l\'utiliser avant d\'en échanger une nouvelle.'
+                ], 400);
+            }
+        }
+        
+        // Vérifier les points
+        $pointsActuels = $this->pointsService->getSolde($user->getIdUtilisateur());
+        $recompense = $this->recompenseService->getRecompenseById($id);
+        
+        if (!$recompense) {
+            return $this->json(['success' => false, 'message' => 'Récompense non trouvée'], 404);
+        }
+        
+        if ($pointsActuels < $recompense->getPointsRequis()) {
+            return $this->json([
+                'success' => false, 
+                'message' => 'Points insuffisants. Vous avez ' . $pointsActuels . ' points, besoin de ' . $recompense->getPointsRequis() . ' points.'
+            ], 400);
         }
         
         $resultat = $this->recompenseService->echangerRecompense($user, $id, $this->pointsService);
@@ -81,5 +116,29 @@ class RecompenseController extends AbstractController
         return $this->render('recompenses/mes_recompenses.html.twig', [
             'recompensesObtenues' => $recompensesObtenues
         ]);
+    }
+    
+    #[Route('/utiliser/{code}', name: 'app_recompenses_utiliser', methods: ['POST'])]
+    public function utiliserRecompense(string $code, Request $request): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Veuillez vous connecter'], 401);
+        }
+        
+        $resultat = $this->recompenseService->utiliserRecompense($code, $user);
+        
+        if ($request->isXmlHttpRequest()) {
+            return $this->json($resultat);
+        }
+        
+        if ($resultat['success']) {
+            $this->addFlash('success', $resultat['message']);
+        } else {
+            $this->addFlash('error', $resultat['message']);
+        }
+        
+        return $this->redirectToRoute('app_mes_recompenses');
     }
 }

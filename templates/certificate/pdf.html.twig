@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificat — {{ certificate.quizResult.quiz.formation.titre }}</title>
+    <style>
+        @page { size: A4 landscape; margin: 0; }
+        * { box-sizing: border-box; }
+        html, body {
+            width: 297mm;
+            height: 210mm;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            background: #efefef;
+            color: #2f2f2f;
+        }
+
+        .page {
+            position: relative;
+            width: 297mm;
+            height: 210mm;
+        }
+        .frame {
+            position: absolute;
+            top: 10mm;
+            left: 10mm;
+            width: 277mm;
+            height: 190mm;
+            border: 2px solid #2a3f59;
+            background: #efefef;
+            overflow: hidden;
+        }
+        .inner {
+            position: absolute;
+            top: 4mm;
+            left: 4mm;
+            right: 4mm;
+            bottom: 4mm;
+            border: 1px solid #cfd6df;
+            padding: 8mm 10mm;
+            background: #efefef;
+        }
+
+        .corner {
+            position: absolute;
+            width: 50mm;
+            height: 50mm;
+            opacity: 0.9;
+        }
+        .corner.tl { top: -5mm; left: -5mm; }
+        .corner.br { bottom: -5mm; right: -5mm; }
+        .corner.bl { bottom: -5mm; left: -5mm; opacity: 0.25; }
+        .corner.tr { top: -5mm; right: -5mm; opacity: 0.25; }
+        .corner .square {
+            position: absolute;
+            border: 3px solid #274b6f;
+            transform: rotate(45deg);
+        }
+        .corner .s1 { width: 22mm; height: 22mm; top: 18mm; left: 18mm; }
+        .corner .s2 { width: 30mm; height: 30mm; top: 12mm; left: 12mm; border-color: #1f3a54; }
+        .corner .s3 { width: 38mm; height: 38mm; top: 6mm; left: 6mm; border-color: #305e87; }
+        .corner .s4 { width: 46mm; height: 46mm; top: 0; left: 0; border-color: #274b6f; }
+
+        .brand-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6mm;
+        }
+        .brand-table td {
+            vertical-align: top;
+            width: 50%;
+        }
+        .brand {
+            display: block;
+        }
+        .brand-mark {
+            width: 14mm;
+            height: 14mm;
+            border: 2px solid #2a3f59;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 12mm;
+            font-weight: 700;
+            color: #2a3f59;
+            margin-bottom: 3mm;
+            font-size: 9px;
+        }
+        .brand-title {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #2a3f59;
+        }
+        .brand-sub {
+            font-size: 9.5px;
+            letter-spacing: 1px;
+            color: #6b7b8d;
+            text-transform: uppercase;
+        }
+        .brand-right {
+            text-align: right;
+        }
+
+        .cert-title {
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #5c5c5c;
+            text-transform: uppercase;
+            margin: 4mm 0 3mm;
+            font-weight: 700;
+        }
+        .name {
+            text-align: center;
+            font-size: 22px;
+            color: #274b6f;
+            font-family: "DejaVu Serif", "Times New Roman", serif;
+            font-weight: 700;
+            margin: 0 0 4mm;
+        }
+        .body-text {
+            text-align: center;
+            font-size: 11.5px;
+            color: #4a4a4a;
+            line-height: 1.5;
+        }
+        .formation {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2a3f59;
+        }
+        .score {
+            display: inline-block;
+            margin-top: 4mm;
+            background: #1fb25b;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 700;
+            box-shadow: 0 3px 8px rgba(31, 178, 91, 0.25);
+        }
+        .threshold {
+            margin-top: 3mm;
+            font-size: 10.5px;
+            color: #8a8a8a;
+            text-align: center;
+        }
+
+        .signature {
+            margin-top: 8mm;
+            text-align: center;
+        }
+        .sign-line {
+            width: 60mm;
+            height: 1px;
+            background: #2a3f59;
+            margin: 0 auto 2mm;
+        }
+        .sign-name {
+            font-size: 11px;
+            color: #2a3f59;
+            font-weight: 700;
+        }
+        .sign-title {
+            font-size: 10px;
+            color: #6b7b8d;
+        }
+
+        .footer {
+            position: absolute;
+            left: 10mm;
+            right: 10mm;
+            bottom: 6mm;
+            border-top: 1px solid #cfd6df;
+            padding-top: 3mm;
+            font-size: 10px;
+            color: #777;
+        }
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .footer-table td {
+            vertical-align: bottom;
+        }
+        .footer-label {
+            display: block;
+            font-size: 9px;
+            color: #9b9b9b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .uid {
+            font-family: "DejaVu Sans Mono", monospace;
+            font-size: 10px;
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .footer-center {
+            text-align: center;
+            color: #2a3f59;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .footer-right {
+            text-align: right;
+        }
+        .date {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="frame">
+            <div class="inner">
+                <div class="corner tl">
+                    <div class="square s4"></div>
+                    <div class="square s3"></div>
+                    <div class="square s2"></div>
+                    <div class="square s1"></div>
+                </div>
+                <div class="corner br">
+                    <div class="square s4"></div>
+                    <div class="square s3"></div>
+                    <div class="square s2"></div>
+                    <div class="square s1"></div>
+                </div>
+                <div class="corner bl">
+                    <div class="square s4"></div>
+                    <div class="square s3"></div>
+                    <div class="square s2"></div>
+                    <div class="square s1"></div>
+                </div>
+                <div class="corner tr">
+                    <div class="square s4"></div>
+                    <div class="square s3"></div>
+                    <div class="square s2"></div>
+                    <div class="square s1"></div>
+                </div>
+
+                <table class="brand-table">
+                    <tr>
+                        <td>
+                            <div class="brand">
+                                <div class="brand-mark">KD</div>
+                                <div class="brand-title">KOUL DYERI</div>
+                                <div class="brand-sub">Plateforme de formation</div>
+                            </div>
+                        </td>
+                        <td class="brand-right">
+                            <div class="brand">
+                                <div class="brand-mark">KD</div>
+                                <div class="brand-title">CERTIFICATION</div>
+                                <div class="brand-sub">Résultat officiel</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="cert-title">Certificat de Réussite</div>
+                <div class="name">{{ certificate.quizResult.user.nom }}</div>
+                <div class="body-text">
+                    est certifié(e) pour avoir complété avec succès la formation
+                    <br>
+                    <span class="formation">{{ certificate.quizResult.quiz.formation.titre }}</span>
+                </div>
+                <div class="score">
+                    🏆 Score : {{ certificate.quizResult.percentage|number_format(1) }}%
+                    ({{ certificate.quizResult.score }}/{{ certificate.quizResult.totalQuestions }})
+                </div>
+                <div class="threshold">Seuil de certification atteint : ≥ 80%</div>
+
+                <div class="signature">
+                    <div class="sign-line"></div>
+                    <div class="sign-name">Direction Koul Dyeri</div>
+                    <div class="sign-title">Formation &amp; Certification</div>
+                </div>
+
+                <div class="footer">
+                    <table class="footer-table">
+                        <tr>
+                            <td>
+                                <span class="footer-label">Identifiant du certificat</span>
+                                <span class="uid">{{ certificate.certificateUid }}</span>
+                            </td>
+                            <td class="footer-center">✦ ✦ ✦</td>
+                            <td class="footer-right">
+                                <span class="footer-label">Date d'émission</span>
+                                <span class="date">{{ certificate.createdAt|date('d/m/Y') }}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

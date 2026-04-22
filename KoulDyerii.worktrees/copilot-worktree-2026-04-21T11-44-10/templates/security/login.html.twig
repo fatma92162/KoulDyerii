@@ -1,0 +1,230 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 40px;
+        padding: 50px 40px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.7s ease-out;
+        max-width: 500px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .login-header .logo-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .login-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+    
+    .login-header .slogan {
+        font-size: 16px;
+        color: #FF6B6B;
+        font-style: italic;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .input-group {
+        position: relative;
+    }
+    
+    .input-group .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 14px 15px 14px 50px;
+        border: 2px solid #f0e6d6;
+        border-radius: 15px;
+        font-size: 15px;
+        background: #fefcf8;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+    }
+    
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+    }
+    
+    .alert {
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        animation: shake 0.5s ease;
+    }
+    
+    .alert-danger {
+        background: #fff0f0;
+        color: #FF6B6B;
+        border: 1px solid #ffd4d4;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .register-link {
+        text-align: center;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #f0e6d6;
+    }
+    
+    .register-link p {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .register-link a {
+        color: #FF6B6B;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 35px 25px;
+        }
+        .login-header h1 {
+            font-size: 28px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-icon">🍽️</div>
+            <h1>KOUL DYERI</h1>
+            <div class="slogan">"Kojintek Bin Ydik"</div>
+            <p class="text-muted mt-2">Le plaisir est dans votre assiette</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                <strong>⚠️ Erreur :</strong> {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-group">
+                <label>📧 EMAIL</label>
+                <div class="input-group">
+                    <span class="icon">✉️</span>
+                    <input type="email" name="email" id="email" class="form-control" 
+                           placeholder="exemple@email.com" value="{{ last_username }}" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>🔒 MOT DE PASSE</label>
+                <div class="input-group">
+                    <span class="icon">🔐</span>
+                    <input type="password" name="password" id="password" class="form-control" 
+                           placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button type="submit" class="btn-login">
+                🔥 SE CONNECTER 🔥
+            </button>
+        </form>
+
+        <div class="register-link">
+            <p>🔒 Nouveau chez Koul Dyeri ?</p>
+            <a href="{{ path('app_register') }}">✨ Créer un compte ✨</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

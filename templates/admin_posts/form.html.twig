@@ -77,7 +77,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>✏️ {{ titre }}</h3>
         <a href="{{ path('app_admin_posts_index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour
+            <i class="fas fa-arrow-left"></i> {{ 'common.back'|trans }}
         </a>
     </div>
 
@@ -89,7 +89,7 @@
         {# Formulaire de modification #}
         <form method="post" action="{{ path('app_admin_post_update', {id: post.id}) }}" enctype="multipart/form-data" novalidate>
             <div class="mb-3">
-                <label for="title" class="form-label">Titre *</label>
+                <label for="title" class="form-label">{{ 'posts.form.title_label'|trans }} *</label>
                 <input type="text" class="form-control {% if errors.title is defined %}is-invalid{% endif %}" 
                        id="title" name="title" value="{{ formData.title|default(post.title) }}" required>
                 {% if errors.title is defined %}
@@ -98,18 +98,18 @@
             </div>
 
             <div class="mb-3">
-                <label for="content" class="form-label">Contenu *</label>
+                <label for="content" class="form-label">{{ 'posts.form.content_label'|trans }} *</label>
                 <textarea class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
                           id="content" name="content" rows="8" required>{{ formData.content|default(post.content) }}</textarea>
                 {% if errors.content is defined %}
                     <div class="invalid-feedback">{{ errors.content }}</div>
                 {% else %}
-                    <small class="help-text">Le contenu doit contenir entre 10 et 5000 caractères.</small>
+                    <small class="help-text">{{ 'admin.posts.form.content_help'|trans }}</small>
                 {% endif %}
             </div>
 
             <div class="mb-3">
-                <label for="image" class="form-label">Image (optionnel)</label>
+                <label for="image" class="form-label">{{ 'posts.form.image_label'|trans }}</label>
                 <input type="file" class="form-control {% if errors.image is defined %}is-invalid{% endif %}" 
                        id="image" name="image" accept="image/*">
                 {% if errors.image is defined %}
@@ -118,26 +118,26 @@
                 
                 {% if post.imagePath %}
                     <div class="current-image">
-                        <small class="text-muted d-block mb-2">Image actuelle :</small>
+                        <small class="text-muted d-block mb-2">{{ 'posts.form.current_image'|trans }}</small>
                         <div class="d-flex flex-wrap align-items-center gap-3">
                             <img src="{{ post.imagePath }}" style="max-height: 100px; border-radius: 8px;">
                             <div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="delete_image" id="delete_image" value="1">
                                     <label class="form-check-label text-danger" for="delete_image">
-                                        <i class="fas fa-trash-alt"></i> Supprimer cette image
+                                        <i class="fas fa-trash-alt"></i> {{ 'posts.form.delete_image'|trans }}
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
-                <small class="help-text">Formats acceptés : JPG, PNG, GIF, WebP — Taille maximale : 2 Mo</small>
+                <small class="help-text">{{ 'admin.posts.form.image_formats'|trans }}</small>
             </div>
 
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Enregistrer
+                    <i class="fas fa-save"></i> {{ 'common.save'|trans }}
                 </button>
             </div>
         </form>
@@ -145,40 +145,40 @@
         {# Formulaire de création #}
         <form method="post" action="{{ path('app_admin_post_create') }}" enctype="multipart/form-data" novalidate>
             <div class="mb-3">
-                <label for="title" class="form-label">Titre *</label>
+                <label for="title" class="form-label">{{ 'posts.form.title_label'|trans }} *</label>
                 <input type="text" class="form-control {% if errors.title is defined %}is-invalid{% endif %}" 
                        id="title" name="title" value="{{ formData.title|default('') }}" required>
                 {% if errors.title is defined %}
                     <div class="invalid-feedback">{{ errors.title }}</div>
                 {% else %}
-                    <small class="help-text">Le titre doit contenir entre 3 et 100 caractères.</small>
+                    <small class="help-text">{{ 'admin.posts.form.title_help'|trans }}</small>
                 {% endif %}
             </div>
 
             <div class="mb-3">
-                <label for="content" class="form-label">Contenu *</label>
+                <label for="content" class="form-label">{{ 'posts.form.content_label'|trans }} *</label>
                 <textarea class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
                           id="content" name="content" rows="8" required>{{ formData.content|default('') }}</textarea>
                 {% if errors.content is defined %}
                     <div class="invalid-feedback">{{ errors.content }}</div>
                 {% else %}
-                    <small class="help-text">Le contenu doit contenir entre 10 et 5000 caractères.</small>
+                    <small class="help-text">{{ 'admin.posts.form.content_help'|trans }}</small>
                 {% endif %}
             </div>
 
             <div class="mb-3">
-                <label for="image" class="form-label">Image (optionnel)</label>
+                <label for="image" class="form-label">{{ 'posts.form.image_label'|trans }}</label>
                 <input type="file" class="form-control {% if errors.image is defined %}is-invalid{% endif %}" 
                        id="image" name="image" accept="image/*">
                 {% if errors.image is defined %}
                     <div class="invalid-feedback">{{ errors.image }}</div>
                 {% endif %}
-                <small class="help-text">Formats acceptés : JPG, PNG, GIF, WebP — Taille maximale : 2 Mo</small>
+                <small class="help-text">{{ 'admin.posts.form.image_formats'|trans }}</small>
             </div>
 
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Publier
+                    <i class="fas fa-save"></i> {{ 'admin.posts.form.publish_button'|trans }}
                 </button>
             </div>
         </form>

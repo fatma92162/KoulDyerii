@@ -1,164 +1,1152 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block admin_title %}Gestion des publications{% endblock %}
+{% block admin_title %}{{ 'admin.posts.title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
-    .search-bar {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 25px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .search-bar .form-control,
-    .search-bar .form-select {
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-    }
-    
-    .search-bar .btn {
-        border-radius: 10px;
-        padding: 10px 25px;
-    }
-    
-    .table th {
-        white-space: nowrap;
-    }
-    
-    .btn-group {
-        gap: 5px;
-    }
-    
-    .alert {
-        padding: 12px 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    .alert-danger {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
+/* ============================================================
+   VARIABLES & BASE
+   ============================================================ */
+:root {
+    --crimson:       #7B0A2A;
+    --crimson-dark:  #4E0619;
+    --crimson-light: #A61840;
+    --gold:          #C9922E;
+    --gold-light:    #E8BE6A;
+    --parchment:     #F7F0E6;
+    --parchment-dark:#EDE3D3;
+    --ink:           #1A120B;
+    --ink-soft:      #4A3728;
+    --muted:         #8A7468;
+    --surface:       #FFFFFF;
+    --surface-2:     #FBF7F2;
+    --border:        #E8DED2;
+    --green:         #1A7F4B;
+    --blue:          #2563EB;
+    --shadow-sm:     0 1px 3px rgba(26,18,11,.07), 0 1px 2px rgba(26,18,11,.05);
+    --shadow-md:     0 4px 12px rgba(26,18,11,.09), 0 2px 6px rgba(26,18,11,.06);
+    --shadow-lg:     0 10px 30px rgba(26,18,11,.12), 0 4px 12px rgba(26,18,11,.07);
+    --radius-sm:     8px;
+    --radius-md:     14px;
+    --radius-lg:     22px;
+    --t:             all .22s cubic-bezier(.4,0,.2,1);
+}
+
+.posts-page * { box-sizing: border-box; }
+.posts-page { font-family: 'DM Sans', sans-serif; color: var(--ink); }
+
+/* ── Page header ── */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--border);
+}
+.page-header-left h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--crimson);
+    margin: 0 0 2px;
+}
+.page-header-left p { margin: 0; font-size: 13px; color: var(--muted); }
+.page-header-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* ── Buttons ── */
+.btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; text-decoration: none; border: none;
+    transition: var(--t); white-space: nowrap;
+}
+.btn-primary { background: linear-gradient(135deg, var(--crimson), var(--crimson-light)); color: #fff; box-shadow: 0 3px 10px rgba(123,10,42,.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(123,10,42,.35); color: #fff; }
+.btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--ink); box-shadow: 0 3px 10px rgba(201,146,46,.25); }
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(201,146,46,.35); color: var(--ink); }
+.btn-success { background: linear-gradient(135deg, #1A7F4B, #24A765); color: #fff; box-shadow: 0 3px 10px rgba(26,127,75,.22); }
+.btn-success:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(26,127,75,.32); color: #fff; }
+.btn-outline { background: var(--surface); color: var(--ink-soft); border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); }
+.btn-outline:hover { border-color: var(--crimson); color: var(--crimson); background: rgba(123,10,42,.04); }
+
+/* ── Stats ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius-md); padding: 20px 18px; text-align: center;
+    box-shadow: var(--shadow-sm); transition: var(--t); position: relative; overflow: hidden;
+}
+.stat-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:linear-gradient(90deg,var(--crimson),var(--gold)); opacity:0; transition:var(--t); }
+.stat-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:transparent; }
+.stat-card:hover::before { opacity:1; }
+.stat-icon { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:18px; }
+.stat-icon.red   { background:rgba(123,10,42,.1);  color:var(--crimson); }
+.stat-icon.gold  { background:rgba(201,146,46,.12); color:var(--gold); }
+.stat-icon.green { background:rgba(26,127,75,.1);   color:var(--green); }
+.stat-icon.blue  { background:rgba(37,99,235,.1);   color:var(--blue); }
+.stat-number { font-family:'Playfair Display',serif; font-size:34px; font-weight:800; color:var(--crimson); line-height:1; margin-bottom:5px; }
+.stat-label  { font-size:12px; font-weight:500; color:var(--muted); letter-spacing:.3px; text-transform:uppercase; }
+
+/* ── Filter bar ── */
+.filter-bar { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-md); padding:18px 22px; margin-bottom:24px; box-shadow:var(--shadow-sm); }
+.filter-bar form { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.filter-bar .search-wrapper { flex:1 1 260px; position:relative; }
+.filter-bar .search-wrapper i { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px; }
+.filter-bar input[type="text"] { width:100%;padding:10px 16px 10px 38px;border:1.5px solid var(--border);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--surface-2);outline:none;transition:var(--t); }
+.filter-bar input[type="text"]:focus { border-color:var(--crimson);box-shadow:0 0 0 3px rgba(123,10,42,.08);background:#fff; }
+.filter-bar select { padding:10px 16px;border:1.5px solid var(--border);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink-soft);background:var(--surface-2);outline:none;cursor:pointer;transition:var(--t);min-width:190px; }
+.filter-bar select:focus { border-color:var(--crimson);box-shadow:0 0 0 3px rgba(123,10,42,.08); }
+
+/* ── Alerts ── */
+.alert { display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:14px;font-weight:500;animation:slideIn .3s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+.alert-success { background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0; }
+.alert-danger  { background:#FEF2F2;color:#991B1B;border:1px solid #FECACA; }
+
+/* ── Layout ── */
+.posts-layout { display:flex; gap:26px; align-items:flex-start; }
+.posts-main   { flex:2; min-width:0; }
+@media(max-width:992px){ .posts-layout{flex-direction:column;} .notifications-sidebar{position:static!important;width:100%;} }
+
+/* ============================================================
+   NOTIFICATIONS SIDEBAR — AMÉLIORÉE
+   ============================================================ */
+.notifications-sidebar {
+    flex: 0 0 310px;
+    width: 310px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 60px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.notif-sidebar-head {
+    padding: 16px 18px 14px;
+    background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.notif-sidebar-head-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notif-sidebar-head h5 {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.notif-bell-wrap {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    background: rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+}
+
+.notif-bell-wrap .badge {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 16px; height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--crimson-dark);
+}
+
+.notif-head-actions {
+    display: flex;
+    gap: 7px;
+}
+
+.notif-head-btn {
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    color: rgba(255,255,255,.9);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--t);
+    white-space: nowrap;
+}
+.notif-head-btn:hover { background: rgba(255,255,255,.28); color: #fff; }
+.notif-head-btn.icon-only { padding: 5px 9px; }
+
+/* Filter tabs */
+.notif-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface-2);
+    border-bottom: 1.5px solid var(--border);
+    flex-shrink: 0;
+}
+.notif-tab {
+    flex: 1;
+    padding: 9px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: var(--t);
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: 'DM Sans', sans-serif;
+}
+.notif-tab:hover { color: var(--crimson); background: var(--parchment); }
+.notif-tab.active { color: var(--crimson); border-bottom-color: var(--crimson); background: var(--surface); }
+
+/* Scrollable list */
+.notif-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.notif-list::-webkit-scrollbar { width: 4px; }
+.notif-list::-webkit-scrollbar-track { background: transparent; }
+.notif-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Notification item */
+.notif-item {
+    position: relative;
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 38px 11px 14px;
+    transition: var(--t);
+    cursor: default;
+    overflow: hidden;
+}
+.notif-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+    background: transparent;
+    transition: var(--t);
+}
+.notif-item:hover { border-color: var(--parchment-dark); box-shadow: var(--shadow-sm); transform: translateX(2px); }
+.notif-item.unread { background: #FFFBF2; border-color: rgba(201,146,46,.3); }
+.notif-item.unread::before { background: var(--gold); }
+
+/* Unread dot */
+.notif-unread-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: inline-block;
+    margin-right: 5px;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.notif-top {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+
+.notif-type-icon {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+.notif-type-icon.like    { background: rgba(123,10,42,.1);  color: var(--crimson); }
+.notif-type-icon.comment { background: rgba(37,99,235,.1);  color: var(--blue); }
+.notif-type-icon.pin     { background: rgba(201,146,46,.15);color: var(--gold); }
+.notif-type-icon.signal  { background: #FEF2F2;             color: #DC2626; }
+.notif-type-icon.default { background: var(--parchment);    color: var(--muted); }
+
+.notif-time {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.notif-message {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+}
+
+.notif-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--crimson);
+    text-decoration: none;
+    margin-top: 5px;
+    transition: var(--t);
+}
+.notif-link:hover { color: var(--gold); }
+
+/* Mark-read button */
+.notif-mark-read {
+    position: absolute;
+    top: 50%; right: 10px;
+    transform: translateY(-50%);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 10px;
+    opacity: 0;
+    transition: var(--t);
+}
+.notif-item:hover .notif-mark-read { opacity: 1; }
+.notif-mark-read:hover { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; transform: translateY(-50%) scale(1.1); }
+
+/* Empty state */
+.notif-empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--muted);
+}
+.notif-empty-icon {
+    width: 50px; height: 50px;
+    background: var(--parchment);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 20px;
+    color: var(--muted);
+}
+.notif-empty p { font-size: 13px; margin: 0; }
+
+/* Sidebar footer */
+.notif-footer {
+    padding: 10px 14px;
+    border-top: 1.5px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.notif-footer-count { font-size: 11px; color: var(--muted); }
+.btn-mark-all {
+    background: none;
+    border: none;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--crimson);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: var(--t);
+    font-family: 'DM Sans', sans-serif;
+}
+.btn-mark-all:hover { background: var(--parchment); }
+
+/* ============================================================
+   POST CARDS (inchangé)
+   ============================================================ */
+.posts-list { display:flex; flex-direction:column; gap:18px; }
+
+.post-card {
+    background:var(--surface);border:1.5px solid var(--border);
+    border-radius:var(--radius-lg);overflow:hidden;
+    box-shadow:var(--shadow-sm);transition:var(--t);position:relative;
+}
+.post-card:hover { box-shadow:var(--shadow-lg);border-color:var(--parchment-dark);transform:translateY(-2px); }
+.post-card.pinned { border-left:4px solid var(--gold);background:linear-gradient(to right,#FFFBF2 0%,var(--surface) 60%); }
+
+/* Pin ribbon */
+.pin-ribbon {
+    position:absolute;top:16px;right:-1px;
+    background:linear-gradient(135deg,var(--gold),#E8A020);
+    color:var(--ink);font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+    padding:4px 14px 4px 11px;border-radius:4px 0 0 4px;
+    box-shadow:-2px 2px 8px rgba(0,0,0,.12);
+    display:flex;align-items:center;gap:5px;z-index:5;
+}
+
+.post-card-inner { padding:22px 26px; }
+
+/* Author row */
+.author-row { display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap; }
+.avatar {
+    width:42px;height:42px;border-radius:50%;flex-shrink:0;overflow:hidden;
+    background:linear-gradient(135deg,var(--crimson),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#fff;
+    box-shadow:0 2px 8px rgba(123,10,42,.2);
+}
+.avatar img { width:100%;height:100%;object-fit:cover; }
+.author-meta strong { display:block;font-size:14.5px;font-weight:600;color:var(--ink); }
+.author-meta time { font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px; }
+
+.flag-badge { display:inline-flex;align-items:center;gap:5px;background:var(--parchment);color:var(--muted);border:1px solid var(--border);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;transition:var(--t); }
+.flag-badge.flagged { background:#FEF2F2;color:#DC2626;border-color:#FECACA; }
+.btn-unflag { background:none;border:none;color:#DC2626;cursor:pointer;padding:0;font-size:12px;opacity:.7;transition:var(--t);line-height:1; }
+.btn-unflag:hover { opacity:1;transform:scale(1.15); }
+
+.author-controls { margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center; }
+
+/* Post body */
+.post-title { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3; }
+.post-excerpt { font-size:14px;color:var(--ink-soft);line-height:1.65;margin-bottom:14px; }
+.post-image-wrap { border-radius:var(--radius-sm);overflow:hidden;margin-bottom:16px;max-height:340px; }
+.post-image-wrap img { width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease; }
+.post-card:hover .post-image-wrap img { transform:scale(1.02); }
+.post-divider { height:1px;background:var(--border);margin:0 -26px 16px; }
+.action-row { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
+
+/* Inline buttons */
+.act-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:var(--t); }
+.act-btn:hover { border-color:var(--crimson);color:var(--crimson);background:rgba(123,10,42,.04); }
+.act-btn.like-btn.reacted { border-color:var(--crimson);color:var(--crimson);background:rgba(123,10,42,.07); }
+
+/* Admin buttons */
+.adm-btn { display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;border:1.5px solid var(--border);background:var(--surface);transition:var(--t); }
+.adm-btn.edit-btn { color:#D97706; }
+.adm-btn.edit-btn:hover { border-color:#D97706;background:#FFFBEB;color:#B45309; }
+.adm-btn.del-btn { color:#DC2626; }
+.adm-btn.del-btn:hover { border-color:#DC2626;background:#FEF2F2; }
+.del-form { display:inline; }
+.del-form button { background:none; }
+
+/* ── PIN BUTTON — special ── */
+.pin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: var(--t);
+    position: relative;
+    overflow: hidden;
+}
+.pin-btn .pin-icon { transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+.pin-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,146,46,.06); }
+.pin-btn:hover .pin-icon { transform: rotate(-30deg) scale(1.2); }
+
+/* Pinned state */
+.pin-btn.is-pinned {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--ink);
+    box-shadow: 0 3px 10px rgba(201,146,46,.3);
+}
+.pin-btn.is-pinned .pin-icon { transform: rotate(-45deg); color: var(--ink); }
+.pin-btn.is-pinned:hover {
+    background: linear-gradient(135deg, #b07a1e, var(--gold));
+    box-shadow: 0 5px 14px rgba(201,146,46,.45);
+}
+.pin-btn.is-pinned:hover .pin-icon { transform: rotate(0deg) scale(1.1); }
+
+/* Loading state */
+.pin-btn.loading { pointer-events: none; opacity: .7; }
+.pin-btn.loading .pin-icon { animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.toast-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.toast {
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 50px;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+    animation: toastIn .3s cubic-bezier(.34,1.4,.64,1);
+    pointer-events: all;
+}
+.toast.gold  { background: linear-gradient(135deg, var(--gold), #E8A020); color: var(--ink); }
+.toast.gray  { background: var(--ink-soft); color: #fff; }
+@keyframes toastIn  { from{opacity:0;transform:translateY(16px) scale(.95)} to{opacity:1;transform:none} }
+@keyframes toastOut { from{opacity:1;transform:none} to{opacity:0;transform:translateY(16px) scale(.95)} }
+.toast.out { animation: toastOut .25s ease forwards; }
+
+/* Empty state */
+.empty-state { text-align:center;padding:60px 20px;background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--radius-lg); }
+.empty-state .empty-icon { width:72px;height:72px;background:var(--parchment);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:28px;color:var(--muted); }
+.empty-state h4 { font-family:'Playfair Display',serif;font-size:20px;color:var(--ink-soft);margin-bottom:8px; }
+.empty-state p { color:var(--muted);font-size:14px;margin-bottom:22px; }
+
+/* Modal stats */
+.modal-content { border:none;border-radius:var(--radius-lg)!important;overflow:hidden;box-shadow:0 24px 60px rgba(26,18,11,.18); }
+.modal-header { background:linear-gradient(135deg,var(--crimson-dark),var(--crimson));color:#fff;padding:20px 26px;border-bottom:none; }
+.modal-header .modal-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:700; }
+.modal-header .btn-close { filter:brightness(0) invert(1); }
+.modal-body { padding:28px;background:var(--surface-2); }
+.modal-footer { background:var(--surface);border-top:1px solid var(--border); }
+.chart-card { background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);padding:18px;box-shadow:var(--shadow-sm); }
+.chart-card-title { font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:12px; }
+
+/* Responsive */
+@media(max-width:768px){
+    .page-header{flex-direction:column;align-items:flex-start;}
+    .filter-bar form{flex-direction:column;}
+    .filter-bar select,.filter-bar input[type="text"]{width:100%;}
+    .author-row{flex-wrap:wrap;}
+    .author-controls{width:100%;justify-content:flex-start;margin-left:0;}
+    .action-row{flex-direction:column;align-items:stretch;}
+    .post-card-inner{padding:16px 18px;}
+    .post-divider{margin:0 -18px 14px;}
+}
 </style>
 {% endblock %}
 
 {% block admin_content %}
-<div class="admin-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>📝 Gestion des publications</h3>
-        <a href="{{ path('app_post_new') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Nouvelle publication
-        </a>
+<div class="posts-page">
+
+    {# ── PAGE HEADER ── #}
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fas fa-newspaper" style="font-size:22px;margin-right:8px;opacity:.85"></i>{{ 'admin.posts.header_title'|trans }}</h2>
+            <p>{{ 'admin.posts.header_subtitle'|trans }}</p>
+        </div>
+        <div class="page-header-right">
+            <a href="{{ path('app_admin_posts_export', {search: search, sort: sort}) }}" class="btn btn-success">
+                <i class="fas fa-file-csv"></i> {{ 'admin.posts.export_csv'|trans }}
+            </a>
+            <button type="button" class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#statsModal">
+                <i class="fas fa-chart-line"></i> {{ 'admin.posts.stats'|trans }}
+            </button>
+            <a href="{{ path('app_admin_post_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> {{ 'admin.posts.new_post'|trans }}
+            </a>
+        </div>
     </div>
 
-    <!-- Barre de recherche -->
-    <div class="search-bar">
-        <form method="get" action="{{ path('app_admin_posts_index') }}" class="d-flex gap-2">
-            <div class="flex-grow-1">
-                <input type="text" 
-                       name="search" 
-                       class="form-control" 
-                       placeholder="🔍 Rechercher par titre, contenu ou auteur..." 
-                       value="{{ search|default('') }}">
+    {# ── STATS CARDS ── #}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-newspaper"></i></div>
+            <div class="stat-number">{{ stats.total|default(0) }}</div>
+            <div class="stat-label">{{ 'admin.posts.stats_total'|trans }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon gold"><i class="fas fa-thumbtack"></i></div>
+            <div class="stat-number">{{ stats.pinned|default(0) }}</div>
+            <div class="stat-label">{{ 'admin.posts.stats_pinned'|trans }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-comment"></i></div>
+            <div class="stat-number">{{ stats.with_comments|default(0) }}</div>
+            <div class="stat-label">{{ 'admin.posts.stats_comments'|trans }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-image"></i></div>
+            <div class="stat-number">{{ stats.with_images|default(0) }}</div>
+            <div class="stat-label">{{ 'admin.posts.stats_images'|trans }}</div>
+        </div>
+    </div>
+
+    {# ── FILTER BAR ── #}
+    <div class="filter-bar">
+        <form method="get" action="{{ path('app_admin_posts_index') }}">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" placeholder="{{ 'admin.posts.search_placeholder'|trans }}" value="{{ search|default('') }}">
             </div>
-            <div>
-                <select name="sort" class="form-select">
-                    <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>📅 Les plus récents</option>
-                    <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>📅 Les plus anciens</option>
-                    <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>🔥 Les plus populaires</option>
-                    <option value="pinned" {{ sort == 'pinned' ? 'selected' : '' }}>📌 Épinglés d'abord</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i> Chercher
-            </button>
+            <select name="sort">
+                <option value="recent"  {{ sort == 'recent'  ? 'selected' : '' }}>{{ 'admin.posts.sort_recent'|trans }}</option>
+                <option value="oldest"  {{ sort == 'oldest'  ? 'selected' : '' }}>{{ 'admin.posts.sort_oldest'|trans }}</option>
+                <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>{{ 'admin.posts.sort_popular'|trans }}</option>
+                <option value="pinned"  {{ sort == 'pinned'  ? 'selected' : '' }}>{{ 'admin.posts.sort_pinned'|trans }}</option>
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> {{ 'admin.posts.search_button'|trans }}</button>
         </form>
     </div>
 
+    {# ── FLASH MESSAGES ── #}
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success">{{ message }}</div>
+        <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ message }}</div>
     {% endfor %}
     {% for message in app.flashes('error') %}
-        <div class="alert alert-danger">{{ message }}</div>
+        <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
     {% endfor %}
 
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Auteur</th>
-                    <th>Titre</th>
-                    <th>Contenu</th>
-                    <th>Commentaires</th>
-                    <th>Épinglé</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr>
-                    <td class="align-middle">{{ post.id }}</td>
-                    <td class="align-middle">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                {{ post.utilisateur.nom|first|upper }}
-                            </div>
-                            {{ post.utilisateur.nom }}
-                        </div>
-                    </td>
-                    <td class="align-middle">{{ post.title|slice(0, 40) }}{% if post.title|length > 40 %}...{% endif %}</td>
-                    <td class="align-middle">{{ post.content|slice(0, 50) }}{% if post.content|length > 50 %}...{% endif %}</td>
-                    <td class="align-middle text-center">
-                        <span class="badge bg-info">{{ post.commentaires|length }}</span>
-                    </td>
-                    <td class="align-middle">
-                        <form method="post" action="{{ path('app_admin_post_pin', {id: post.id}) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-sm {% if post.isPinned %}btn-warning{% else %}btn-outline-secondary{% endif %}">
-                                <i class="fas fa-thumbtack"></i> {{ post.isPinned ? 'Désépingler' : 'Épingler' }}
-                            </button>
-                        </form>
-                    </td>
-                    <td class="align-middle">{{ post.createdAt|date('d/m/Y H:i') }}</td>
-                    <td class="align-middle">
-                        <div class="btn-group" role="group">
-                            <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="btn btn-sm btn-info" title="Voir">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer cette publication ?')" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {# ── TWO-COLUMN LAYOUT ── #}
+    <div class="posts-layout">
 
-    {% if posts is empty %}
-        <div class="text-center py-5">
-            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
-            <p class="text-muted">Aucune publication trouvée.</p>
-            <a href="{{ path('app_post_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Créer la première publication
-            </a>
+        {# ═══ MAIN POSTS ═══ #}
+        <div class="posts-main">
+            <div class="posts-list">
+                {% for post in posts %}
+
+                <article class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-card-{{ post.id }}">
+
+                    {% if post.isPinned %}
+                        <div class="pin-ribbon" id="pin-ribbon-{{ post.id }}">
+                            <i class="fas fa-thumbtack"></i> {{ 'admin.posts.pinned_label'|trans }}
+                        </div>
+                    {% else %}
+                        <div class="pin-ribbon" id="pin-ribbon-{{ post.id }}" style="display:none">
+                            <i class="fas fa-thumbtack"></i> {{ 'admin.posts.pinned_label'|trans }}
+                        </div>
+                    {% endif %}
+
+                    <div class="post-card-inner">
+                        <div class="author-row">
+                            <div class="avatar">
+                                {% if post.utilisateur and post.utilisateur.photo %}
+                                    <img src="{{ post.utilisateur.photo }}" alt="">
+                                {% else %}
+                                    {{ post.utilisateur ? post.utilisateur.nom|first|upper : '?' }}
+                                {% endif %}
+                            </div>
+                            <div class="author-meta">
+                                <strong>{{ post.utilisateur ? post.utilisateur.nom : ('admin.posts.unknown_user'|trans) }}</strong>
+                                <time><i class="far fa-clock"></i> {{ post.createdAt|date('d/m/Y à H:i') }}</time>
+                            </div>
+
+                            <span class="flag-badge {% if post.signalementCount > 0 %}flagged{% endif %}">
+                                <i class="fas fa-flag"></i> {{ post.signalementCount|default(0) }}
+                            </span>
+                            {% if post.signalementCount > 0 %}
+                                <button class="btn-unflag" data-post-id="{{ post.id }}" title="{{ 'admin.posts.reset_reports'|trans }}">
+                                    <i class="fas fa-undo-alt"></i>
+                                </button>
+                            {% endif %}
+
+                            <div class="author-controls">
+                                {# ── PIN BUTTON ── #}
+                                <button class="pin-btn {% if post.isPinned %}is-pinned{% endif %}"
+                                        data-post-id="{{ post.id }}"
+                                        data-pinned="{{ post.isPinned ? '1' : '0' }}"
+                                        id="pin-btn-{{ post.id }}"
+                                        title="{{ post.isPinned ? 'admin.posts.pin_tooltip_unpin'|trans : 'admin.posts.pin_tooltip_pin'|trans }}">
+                                    <i class="fas fa-thumbtack pin-icon"></i>
+                                    <span class="pin-label" id="pin-label-{{ post.id }}">
+                                        {{ post.isPinned ? 'admin.posts.pin_label_unpin'|trans : 'admin.posts.pin_label_pin'|trans }}
+                                    </span>
+                                </button>
+
+                                {% if app.user and post.utilisateur and post.utilisateur.idUtilisateur == app.user.idUtilisateur %}
+                                    <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="adm-btn edit-btn">
+                                        <i class="fas fa-edit"></i> {{ 'common.edit'|trans }}
+                                    </a>
+                                    <form class="del-form" method="post"
+                                          action="{{ path('app_admin_post_delete', {id: post.id}) }}"
+                                          onsubmit="return confirm('{{ 'admin.posts.delete_confirm'|trans }}')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                        <button type="submit" class="adm-btn del-btn">
+                                            <i class="fas fa-trash"></i> {{ 'common.delete'|trans }}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="post-title">{{ post.title }}</div>
+                        <div class="post-excerpt">
+                            {{ post.content|striptags|slice(0, 220) }}{% if post.content|striptags|length > 220 %}…{% endif %}
+                        </div>
+
+                        {% if post.imagePath %}
+                            <div class="post-image-wrap">
+                                <img src="{{ post.imagePath }}" alt="{{ post.title }}" loading="lazy">
+                            </div>
+                        {% endif %}
+
+                        <div class="post-divider"></div>
+                        <div class="action-row">
+                            <button class="act-btn like-btn {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}"
+                                    data-post-id="{{ post.id }}"
+                                    id="like-btn-{{ post.id }}">
+                                <i class="fas fa-heart"></i>
+                                <span id="like-count-{{ post.id }}">{{ likesCount[post.id]|default(0) }}</span>
+                            </button>
+                            <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="act-btn">
+                                <i class="fas fa-comment"></i> {{ 'admin.posts.comments'|trans }}
+                                <span style="background:var(--parchment);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--ink-soft)">{{ post.commentaires|length }}</span>
+                            </a>
+                            <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="act-btn" style="margin-left:auto">
+                                {{ 'admin.posts.read_more'|trans }} <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-newspaper"></i></div>
+                    <h4>{{ 'admin.posts.empty_title'|trans }}</h4>
+                    <p>{{ 'admin.posts.empty_subtitle'|trans }}</p>
+                    <a href="{{ path('app_admin_post_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {{ 'admin.posts.empty_action'|trans }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-    {% endif %}
+
+        {# ═══ NOTIFICATIONS SIDEBAR AMÉLIORÉE ═══ #}
+        <aside class="notifications-sidebar">
+
+            {# Header #}
+            <div class="notif-sidebar-head">
+                <div class="notif-sidebar-head-left">
+                    <div class="notif-bell-wrap">
+                        <i class="fas fa-bell"></i>
+                        {% set unreadCount = 0 %}
+                        {% if notifications is defined %}
+                            {% for n in notifications %}{% if not n.isRead %}{% set unreadCount = unreadCount + 1 %}{% endif %}{% endfor %}
+                        {% endif %}
+                        {% if unreadCount > 0 %}
+                            <span class="badge" id="notif-badge">{{ unreadCount }}</span>
+                        {% else %}
+                            <span class="badge" id="notif-badge" style="display:none">0</span>
+                        {% endif %}
+                    </div>
+                    <h5>{{ 'admin.posts.notifications_title'|trans }}</h5>
+                </div>
+                <div class="notif-head-actions">
+                    <button class="notif-head-btn icon-only" id="refreshNotifBtn" title="{{ 'admin.posts.notifications_refresh'|trans }}">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# Filter tabs #}
+            <div class="notif-tabs">
+                <button class="notif-tab active" data-filter="all">{{ 'admin.posts.notifications_all'|trans }}</button>
+                <button class="notif-tab" data-filter="unread">{{ 'admin.posts.notifications_unread'|trans }}</button>
+                <button class="notif-tab" data-filter="like">{{ 'admin.posts.notifications_likes'|trans }}</button>
+                <button class="notif-tab" data-filter="comment">{{ 'admin.posts.notifications_comments'|trans }}</button>
+            </div>
+
+            {# List #}
+            <div class="notif-list" id="notifList">
+                {% if notifications is defined and notifications|length > 0 %}
+                    {% for notif in notifications %}
+                        {# Detect type for icon #}
+                        {% set notifType = 'default' %}
+                        {% if 'like' in notif.message|lower %}{% set notifType = 'like' %}
+                        {% elseif 'comment' in notif.message|lower or 'commentaire' in notif.message|lower %}{% set notifType = 'comment' %}
+                        {% elseif 'épingl' in notif.message|lower or 'pin' in notif.message|lower %}{% set notifType = 'pin' %}
+                        {% elseif 'signal' in notif.message|lower %}{% set notifType = 'signal' %}
+                        {% endif %}
+
+                        <div class="notif-item {% if not notif.isRead %}unread{% endif %}"
+                             data-id="{{ notif.id }}"
+                             data-type="{{ notifType }}"
+                             data-read="{{ notif.isRead ? '1' : '0' }}">
+
+                            <div class="notif-top">
+                                {% if not notif.isRead %}<span class="notif-unread-dot"></span>{% endif %}
+                                <span class="notif-type-icon {{ notifType }}">
+                                    {% if notifType == 'like' %}<i class="fas fa-heart"></i>
+                                    {% elseif notifType == 'comment' %}<i class="fas fa-comment"></i>
+                                    {% elseif notifType == 'pin' %}<i class="fas fa-thumbtack"></i>
+                                    {% elseif notifType == 'signal' %}<i class="fas fa-flag"></i>
+                                    {% else %}<i class="fas fa-bell"></i>{% endif %}
+                                </span>
+                                <span class="notif-time">{{ notif.createdAt|date('d/m H:i') }}</span>
+                            </div>
+
+                            <div class="notif-message">{{ notif.message }}</div>
+
+                            {% if notif.entityId %}
+                                <a href="{{ path('app_admin_post_show', {id: notif.entityId}) }}" class="notif-link">
+                                    <i class="fas fa-arrow-right" style="font-size:9px"></i> {{ 'admin.posts.notifications_view_post'|trans }}
+                                </a>
+                            {% endif %}
+
+                            {% if not notif.isRead %}
+                                <button class="notif-mark-read" data-id="{{ notif.id }}" title="{{ 'admin.posts.notifications_mark_read'|trans }}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="notif-empty" id="notifEmpty">
+                        <div class="notif-empty-icon"><i class="fas fa-bell-slash"></i></div>
+                        <p>{{ 'admin.posts.notifications_empty'|trans }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Footer #}
+            <div class="notif-footer">
+                <span class="notif-footer-count" id="notifFooterCount">
+                    {% set notifCount = notifications is defined ? notifications|length : 0 %}
+                    {{ 'admin.posts.notifications_count'|trans({'%count%': notifCount}) }}
+                </span>
+                <button class="btn-mark-all" id="btnMarkAll">
+                    <i class="fas fa-check-double"></i> {{ 'admin.posts.notifications_mark_all'|trans }}
+                </button>
+            </div>
+
+        </aside>
+
+    </div>{# end posts-layout #}
+</div>{# end posts-page #}
+
+{# ── TOAST container ── #}
+<div class="toast-container" id="toastContainer"></div>
+
+{# ── STATS MODAL ── #}
+<div class="modal fade" id="statsModal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statsModalLabel">
+                    <i class="fas fa-chart-line" style="margin-right:8px;opacity:.85"></i> {{ 'admin.posts.stats_modal_title'|trans }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'common.close'|trans }}"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_posts_30'|trans }}</div><canvas id="modalPostsChart" height="180"></canvas></div></div>
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_comments_30'|trans }}</div><canvas id="modalCommentsChart" height="180"></canvas></div></div>
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_likes_30'|trans }}</div><canvas id="modalLikesChart" height="180"></canvas></div></div>
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_top_users'|trans }}</div><canvas id="modalTopUsersChart" height="180"></canvas></div></div>
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_pinned_distribution'|trans }}</div><canvas id="modalPinnedChart" height="180"></canvas></div></div>
+                    <div class="col-md-6"><div class="chart-card"><div class="chart-card-title">{{ 'admin.posts.stats_with_image'|trans }}</div><canvas id="modalImageChart" height="180"></canvas></div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-bs-dismiss="modal">{{ 'common.close'|trans }}</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#8A7468';
+const CRIMSON='#7B0A2A', GOLD='#C9922E', GREEN='#1A7F4B', BLUE='#2563EB';
+const adminPostsI18n = {
+    error: "{{ 'common.error'|trans|e('js') }}",
+    connectionError: "{{ 'common.connection_error'|trans|e('js') }}",
+    pinTooltip: "{{ 'admin.posts.pin_tooltip_pin'|trans|e('js') }}",
+    unpinTooltip: "{{ 'admin.posts.pin_tooltip_unpin'|trans|e('js') }}",
+    pinLabel: "{{ 'admin.posts.pin_label_pin'|trans|e('js') }}",
+    unpinLabel: "{{ 'admin.posts.pin_label_unpin'|trans|e('js') }}",
+    toastPinned: "{{ 'admin.posts.toast_pin'|trans|e('js') }}",
+    toastUnpinned: "{{ 'admin.posts.toast_unpin'|trans|e('js') }}"
+};
+
+/* ════════════════════════════════════════════
+   TOAST
+   ════════════════════════════════════════════ */
+function showToast(msg, type = 'gold') {
+    const tc = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<i class="fas ${type==='gold' ? 'fa-thumbtack' : 'fa-check-circle'}"></i> ${msg}`;
+    tc.appendChild(t);
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 280); }, 2800);
+}
+
+/* ════════════════════════════════════════════
+   PIN / UNPIN — sans rechargement
+   ════════════════════════════════════════════ */
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id      = this.dataset.postId;
+        const isPinned = this.dataset.pinned === '1';
+        const label   = document.getElementById(`pin-label-${id}`);
+        const ribbon  = document.getElementById(`pin-ribbon-${id}`);
+        const card    = document.getElementById(`post-card-${id}`);
+
+        this.classList.add('loading');
+
+        fetch(`/admin/posts/${id}/pin`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            this.classList.remove('loading');
+            if (!data.success) { showToast(data.message || adminPostsI18n.error, 'err'); return; }
+
+            const nowPinned = data.pinned;
+
+            this.dataset.pinned = nowPinned ? '1' : '0';
+            nowPinned ? this.classList.add('is-pinned') : this.classList.remove('is-pinned');
+            this.title = nowPinned ? adminPostsI18n.unpinTooltip : adminPostsI18n.pinTooltip;
+            if (label) label.textContent = nowPinned ? adminPostsI18n.unpinLabel : adminPostsI18n.pinLabel;
+
+            if (card) {
+                if (nowPinned) {
+                    card.classList.add('pinned');
+                    if (ribbon) ribbon.style.display = 'flex';
+                } else {
+                    card.classList.remove('pinned');
+                    if (ribbon) ribbon.style.display = 'none';
+                }
+            }
+
+            showToast(
+                nowPinned ? adminPostsI18n.toastPinned : adminPostsI18n.toastUnpinned,
+                nowPinned ? 'gold' : 'gray'
+            );
+        })
+        .catch(() => {
+            this.classList.remove('loading');
+            showToast(adminPostsI18n.connectionError, 'err');
+        });
+    });
+});
+
+/* ════════════════════════════════════════════
+   LIKE TOGGLE
+   ════════════════════════════════════════════ */
+document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.postId;
+        fetch(`/admin/posts/${id}/like`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'like' })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                document.getElementById(`like-count-${id}`).textContent = d.count;
+                const b = document.getElementById(`like-btn-${id}`);
+                d.liked ? b.classList.add('reacted') : b.classList.remove('reacted');
+            }
+        })
+        .catch(console.error);
+    });
+});
+
+/* ════════════════════════════════════════════
+   RESET SIGNALS
+   ════════════════════════════════════════════ */
+document.querySelectorAll('.btn-unflag').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const id = this.dataset.postId;
+        if (!confirm('Réinitialiser les signalements pour cette publication ?')) return;
+        fetch(`/admin/posts/${id}/reset-signals`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(d => { if (d.success) location.reload(); else alert(d.message || 'Erreur'); })
+        .catch(() => alert('Erreur de connexion'));
+    });
+});
+
+/* ════════════════════════════════════════════
+   NOTIFICATIONS (améliorées)
+   ════════════════════════════════════════════ */
+function updateBadge() {
+    const unread = document.querySelectorAll('.notif-item.unread').length;
+    const badge  = document.getElementById('notif-badge');
+    const footer = document.getElementById('notifFooterCount');
+    const total  = document.querySelectorAll('.notif-item').length;
+    if (badge) {
+        badge.textContent = unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    if (footer) footer.textContent = `${total} notification(s)`;
+}
+
+function attachNotifItemEvents() {
+    document.querySelectorAll('.notif-mark-read').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const id   = this.dataset.id;
+            const item = this.closest('.notif-item');
+            fetch(`/admin/posts/notifications/mark-read/${id}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    item.classList.remove('unread');
+                    item.dataset.read = '1';
+                    item.querySelector('.notif-unread-dot')?.remove();
+                    this.remove();
+                    updateBadge();
+                    applyActiveFilter();
+                }
+            })
+            .catch(console.error);
+        });
+    });
+}
+
+// Filter tabs
+let activeFilter = 'all';
+document.querySelectorAll('.notif-tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+        document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        activeFilter = this.dataset.filter;
+        applyActiveFilter();
+    });
+});
+
+function applyActiveFilter() {
+    const items = document.querySelectorAll('.notif-item');
+    let visible = 0;
+    items.forEach(item => {
+        const type    = item.dataset.type;
+        const isUnread = item.classList.contains('unread');
+        let show = false;
+        if (activeFilter === 'all')    show = true;
+        if (activeFilter === 'unread') show = isUnread;
+        if (activeFilter === 'like')   show = (type === 'like');
+        if (activeFilter === 'comment')show = (type === 'comment');
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    const empty = document.getElementById('notifEmpty');
+    if (empty) empty.style.display = visible === 0 ? '' : 'none';
+}
+
+// Mark all read
+document.getElementById('btnMarkAll')?.addEventListener('click', function () {
+    const unreads = document.querySelectorAll('.notif-item.unread');
+    if (unreads.length === 0) return;
+    const promises = Array.from(unreads).map(item => {
+        const id = item.dataset.id;
+        return fetch(`/admin/posts/notifications/mark-read/${id}`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(r => r.json()).then(d => {
+            if (d.success) {
+                item.classList.remove('unread');
+                item.dataset.read = '1';
+                item.querySelector('.notif-unread-dot')?.remove();
+                item.querySelector('.notif-mark-read')?.remove();
+            }
+        });
+    });
+    Promise.all(promises).then(() => { updateBadge(); applyActiveFilter(); showToast('Toutes les notifications marquées comme lues', 'gold'); });
+});
+
+// Refresh
+document.getElementById('refreshNotifBtn')?.addEventListener('click', function () {
+    const icon = this.querySelector('i');
+    icon.style.animation = 'spin .6s linear infinite';
+    fetch(window.location.href)
+        .then(r => r.text())
+        .then(html => {
+            const doc  = new DOMParser().parseFromString(html, 'text/html');
+            const newL = doc.querySelector('#notifList')?.innerHTML;
+            if (newL) {
+                document.getElementById('notifList').innerHTML = newL;
+                attachNotifItemEvents();
+                updateBadge();
+                applyActiveFilter();
+            }
+            icon.style.animation = '';
+        })
+        .catch(() => { icon.style.animation = ''; });
+});
+
+attachNotifItemEvents();
+updateBadge();
+
+/* ════════════════════════════════════════════
+   CHARTS
+   ════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    const postsDates       = {{ postsDates|raw }};
+    const postsCounts      = {{ postsCounts|raw }};
+    const commentsDates    = {{ commentsDates|raw }};
+    const commentsCounts   = {{ commentsCounts|raw }};
+    const likesDates       = {{ likesDates|raw }};
+    const likesCounts      = {{ likesCounts|raw }};
+    const topUsersNames    = {{ topUsersNames|raw }};
+    const topUsersActivity = {{ topUsersActivity|raw }};
+    const pinnedPosts      = {{ pinnedPosts }};
+    const unpinnedPosts    = {{ unpinnedPosts }};
+    const withImage        = {{ withImage }};
+    const withoutImage     = {{ withoutImage }};
+
+    const lineOpts = color => ({
+        responsive:true, maintainAspectRatio:true,
+        plugins:{ legend:{display:false} },
+        scales:{ x:{grid:{color:'#F0E8DE'},ticks:{maxTicksLimit:7}}, y:{grid:{color:'#F0E8DE'},beginAtZero:true} },
+        elements:{ point:{radius:3,hoverRadius:5,backgroundColor:color} }
+    });
+    const lineDs = (label,data,color) => ({ label,data,borderColor:color,backgroundColor:color+'18',fill:true,tension:.38,borderWidth:2 });
+
+    new Chart(document.getElementById('modalPostsChart'),    { type:'line', data:{labels:postsDates,    datasets:[lineDs('Publications',postsCounts,    CRIMSON)]}, options:lineOpts(CRIMSON) });
+    new Chart(document.getElementById('modalCommentsChart'), { type:'line', data:{labels:commentsDates, datasets:[lineDs('Commentaires',commentsCounts, GREEN)]},  options:lineOpts(GREEN)  });
+    new Chart(document.getElementById('modalLikesChart'),    { type:'line', data:{labels:likesDates,    datasets:[lineDs('Likes',likesCounts,           GOLD)]},   options:lineOpts(GOLD)   });
+    new Chart(document.getElementById('modalTopUsersChart'), { type:'bar',  data:{labels:topUsersNames, datasets:[{label:'Actions',data:topUsersActivity,backgroundColor:[CRIMSON,GOLD,GREEN,BLUE,'#9333EA'],borderRadius:6,borderSkipped:false}]}, options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F0E8DE'},beginAtZero:true}}} });
+
+    const donutOpts = { responsive:true, maintainAspectRatio:true, plugins:{ legend:{position:'bottom',labels:{usePointStyle:true,padding:16,font:{size:12}}} }, cutout:'62%' };
+    new Chart(document.getElementById('modalPinnedChart'), { type:'doughnut', data:{labels:['Épinglés','Non épinglés'], datasets:[{data:[pinnedPosts,unpinnedPosts],backgroundColor:[GOLD,'#EDE3D3'],borderWidth:0}]}, options:donutOpts });
+    new Chart(document.getElementById('modalImageChart'),  { type:'doughnut', data:{labels:['Avec image','Sans image'],  datasets:[{data:[withImage,withoutImage],  backgroundColor:[BLUE,'#EDE3D3'],borderWidth:0}]}, options:donutOpts });
+});
+</script>
 {% endblock %}

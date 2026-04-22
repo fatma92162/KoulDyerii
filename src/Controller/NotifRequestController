@@ -1,0 +1,216 @@
+<?php
+// src/Controller/NotifRequestController.php
+
+namespace App\Controller;
+
+use App\Entity\NotifRequest;
+use App\Entity\Notification;
+use App\Entity\Utilisateur;
+use App\Repository\NotifRequestRepository;
+use App\Repository\PostRepository;
+use App\Repository\UtilisateurRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+#[Route('/notif-request')]
+class NotifRequestController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private NotifRequestRepository $notifRequestRepository,
+        private UtilisateurRepository $utilisateurRepository,
+        private PostRepository $postRepository
+    ) {}
+
+    // ✅ Envoyer une demande de connexion
+    #[Route('/send/{id}', name: 'app_notif_request_send', methods: ['POST'])]
+    public function sendRequest(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Connectez-vous'], 401);
+        }
+
+        $receiver = $this->utilisateurRepository->find($id);
+        if (!$receiver) {
+            return $this->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
+        }
+
+        if ($user->getIdUtilisateur() === $receiver->getIdUtilisateur()) {
+            return $this->json(['success' => false, 'message' => 'Vous ne pouvez pas vous envoyer une demande'], 403);
+        }
+
+        // Vérifier si une demande existe déjà
+        if ($this->notifRequestRepository->hasPendingRequest($user, $receiver)) {
+            return $this->json(['success' => false, 'message' => 'Demande déjà envoyée'], 400);
+        }
+
+        if ($this->notifRequestRepository->areFriends($user, $receiver)) {
+            return $this->json(['success' => false, 'message' => 'Vous êtes déjà connectés'], 400);
+        }
+
+        $notifRequest = new NotifRequest();
+        $notifRequest->setSender($user);
+        $notifRequest->setReceiver($receiver);
+        $notifRequest->setStatus('pending');
+        $notifRequest->setCreatedAt(new \DateTime());
+
+        $this->entityManager->persist($notifRequest);
+        $this->entityManager->flush();
+
+        // Créer une notification pour le destinataire
+        $notification = new Notification();
+        $notification->setUtilisateur($receiver);
+        $notification->setMessage("{$user->getNom()} vous a envoyé une demande de connexion");
+        $notification->setType('friend_request');
+        $notification->setSenderId($user->getIdUtilisateur());
+        $notification->setCreatedAt(new \DateTime());
+        $notification->setIsRead(false);
+        $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Demande envoyée avec succès'
+        ]);
+    }
+
+    // ✅ Accepter une demande de connexion
+    #[Route('/accept/{id}', name: 'app_notif_request_accept', methods: ['POST'])]
+    public function acceptRequest(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Connectez-vous'], 401);
+        }
+
+        $notifRequest = $this->notifRequestRepository->find($id);
+        if (!$notifRequest) {
+            return $this->json(['success' => false, 'message' => 'Demande non trouvée'], 404);
+        }
+
+        if ($notifRequest->getReceiver()->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+            return $this->json(['success' => false, 'message' => 'Action non autorisée'], 403);
+        }
+
+        $notifRequest->setStatus('accepted');
+        $this->entityManager->flush();
+
+        // Notifier l'expéditeur que sa demande a été acceptée
+        $notification = new Notification();
+        $notification->setUtilisateur($notifRequest->getSender());
+        $notification->setMessage("{$user->getNom()} a accepté votre demande de connexion");
+        $notification->setType('friend_accepted');
+        $notification->setSenderId($user->getIdUtilisateur());
+        $notification->setCreatedAt(new \DateTime());
+        $notification->setIsRead(false);
+        $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Demande acceptée'
+        ]);
+    }
+
+    // ✅ Refuser une demande de connexion
+    #[Route('/reject/{id}', name: 'app_notif_request_reject', methods: ['POST'])]
+    public function rejectRequest(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Connectez-vous'], 401);
+        }
+
+        $notifRequest = $this->notifRequestRepository->find($id);
+        if (!$notifRequest) {
+            return $this->json(['success' => false, 'message' => 'Demande non trouvée'], 404);
+        }
+
+        if ($notifRequest->getReceiver()->getIdUtilisateur() !== $user->getIdUtilisateur()) {
+            return $this->json(['success' => false, 'message' => 'Action non autorisée'], 403);
+        }
+
+        $notifRequest->setStatus('rejected');
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Demande refusée'
+        ]);
+    }
+
+    // ✅ Voir le profil d'un ami (avec ses publications)
+    #[Route('/friend-profile/{id}', name: 'app_friend_profile', methods: ['GET'])]
+    public function friendProfile(int $id): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $friend = $this->utilisateurRepository->find($id);
+        if (!$friend) {
+            $this->addFlash('error', 'Utilisateur non trouvé');
+            return $this->redirectToRoute('app_posts_index');
+        }
+
+        // Vérifier si l'utilisateur est ami avec la personne
+        $areFriends = $this->notifRequestRepository->areFriends($user, $friend);
+        
+        if (!$areFriends && $user->getIdUtilisateur() !== $friend->getIdUtilisateur()) {
+            $this->addFlash('error', 'Vous devez être connecté pour voir ce profil');
+            return $this->redirectToRoute('app_posts_index');
+        }
+
+        // Récupérer les publications de l'ami
+        $posts = $this->postRepository->findBy(
+            ['utilisateur' => $friend],
+            ['created_at' => 'DESC']
+        );
+
+        return $this->render('friend/profile.html.twig', [
+            'friend' => $friend,
+            'posts' => $posts,
+            'areFriends' => $areFriends
+        ]);
+    }
+
+    // ✅ Mes demandes de connexion
+    #[Route('/my-requests', name: 'app_notif_requests_list', methods: ['GET'])]
+    public function myRequests(): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $pendingRequests = $this->notifRequestRepository->findPendingRequests($user);
+        $myFriends = $this->notifRequestRepository->findAcceptedFriends($user);
+
+        return $this->render('friend/requests.html.twig', [
+            'pendingRequests' => $pendingRequests,
+            'myFriends' => $myFriends
+        ]);
+    }
+
+    // ✅ Lister mes amis
+    #[Route('/friends', name: 'app_friends_list', methods: ['GET'])]
+    public function friendsList(): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $friends = $this->notifRequestRepository->findAcceptedFriends($user);
+
+        return $this->render('friend/friends.html.twig', [
+            'friends' => $friends
+        ]);
+    }
+}s

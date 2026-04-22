@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Entity\PasswordResetToken;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -15,6 +16,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ResetPasswordController extends AbstractController
 {
+    public function __construct(
+        #[Autowire('%app.public_base_url%')]
+        private string $publicBaseUrl = ''
+    ) {}
+
     #[Route('/mot-de-passe-oublie', name: 'app_forgot_password')]
     public function forgot(Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
     {
@@ -39,7 +45,9 @@ class ResetPasswordController extends AbstractController
                 $em->flush();
 
                 // Envoyer l'email
-                $resetLink = $this->generateUrl('app_reset_password', ['token' => $token->getToken()], 0);
+                $resetPath = $this->generateUrl('app_reset_password', ['token' => $token->getToken()]);
+                $baseUrl = rtrim($this->publicBaseUrl ?: $request->getSchemeAndHttpHost(), '/');
+                $resetLink = $baseUrl . $resetPath;
                 $emailMessage = (new Email())
                     ->from('no-reply@kouldyeri.com')
                     ->to($user->getEmail())

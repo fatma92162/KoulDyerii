@@ -89,6 +89,13 @@
         border-radius: 10px;
         border: 2px solid #f0e6d6;
     }
+    .integration-box {
+        background: #fff8f0;
+        border: 1px solid #e8d5b7;
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -101,6 +108,30 @@
                 <p class="mb-0">Partagez votre création culinaire</p>
             </div>
             <div class="form-body">
+                <div class="integration-box">
+                    <strong>⚡ Préremplissage rapide (OpenFoodFacts)</strong>
+                    <div class="row g-2 mt-1">
+                        <div class="col-md-8">
+                            <input type="text" id="barcodeInput" class="form-control" placeholder="Code-barres (8 à 14 chiffres)">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-danger w-100" id="btnOpenFoodFacts">
+                                Préremplir
+                            </button>
+                        </div>
+                    </div>
+                    <small id="openFoodFactsResult" class="text-muted d-block mt-2"></small>
+                    <div class="mt-3 border-top pt-3">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSpoonacular">
+                                Suggestions recettes (Spoonacular)
+                            </button>
+                            <small id="spoonacularResult" class="text-muted align-self-center"></small>
+                        </div>
+                        <ul id="spoonacularList" class="mt-2 mb-0 small"></ul>
+                    </div>
+                </div>
+
                 <form method="post" enctype="multipart/form-data" id="platForm" novalidate>
                     
                     <!-- Nom du plat -->
@@ -204,6 +235,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const descriptionInput = document.getElementById('description');
     const imageInput = document.getElementById('image');
     const imagePreview = document.getElementById('imagePreview');
+    const ingredientsInput = document.getElementById('ingredients');
+    const categorieInput = document.getElementById('categorie');
+    const barcodeInput = document.getElementById('barcodeInput');
+    const btnOpenFoodFacts = document.getElementById('btnOpenFoodFacts');
+    const openFoodFactsResult = document.getElementById('openFoodFactsResult');
+    const btnSpoonacular = document.getElementById('btnSpoonacular');
+    const spoonacularResult = document.getElementById('spoonacularResult');
+    const spoonacularList = document.getElementById('spoonacularList');
     
     // Validation du nom
     if (nomInput) {
@@ -284,6 +323,88 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 imagePreview.innerHTML = '';
             }
+        });
+    }
+
+    if (btnOpenFoodFacts && barcodeInput) {
+        btnOpenFoodFacts.addEventListener('click', async function() {
+            const barcode = barcodeInput.value.trim();
+            if (!/^[0-9]{8,14}$/.test(barcode)) {
+                openFoodFactsResult.textContent = 'Code-barres invalide.';
+                openFoodFactsResult.className = 'text-danger d-block mt-2';
+                return;
+            }
+
+            openFoodFactsResult.textContent = 'Recherche en cours...';
+            openFoodFactsResult.className = 'text-muted d-block mt-2';
+
+            const urlTemplate = '{{ path('app_integrations_openfoodfacts', {barcode: '00000000'}) }}';
+            const url = urlTemplate.replace('00000000', encodeURIComponent(barcode));
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                openFoodFactsResult.textContent = data.message || 'Aucune donnée trouvée.';
+                openFoodFactsResult.className = 'text-danger d-block mt-2';
+                return;
+            }
+
+            if (!nomInput.value.trim() && data.data.name) {
+                nomInput.value = data.data.name;
+            }
+            if (!ingredientsInput.value.trim() && data.data.ingredients) {
+                ingredientsInput.value = data.data.ingredients;
+            }
+            if (!categorieInput.value && Array.isArray(data.data.categories)) {
+                const cats = data.data.categories.join(' ').toLowerCase();
+                if (cats.includes('dessert')) {
+                    categorieInput.value = 'dessert';
+                } else if (cats.includes('drink') || cats.includes('boisson')) {
+                    categorieInput.value = 'boisson';
+                } else if (cats.includes('starter') || cats.includes('entree')) {
+                    categorieInput.value = 'entree';
+                } else {
+                    categorieInput.value = 'plat';
+                }
+            }
+
+            openFoodFactsResult.textContent = 'Données récupérées et champs préremplis.';
+            openFoodFactsResult.className = 'text-success d-block mt-2';
+        });
+    }
+
+    if (btnSpoonacular && nomInput) {
+        btnSpoonacular.addEventListener('click', async function() {
+            const query = nomInput.value.trim();
+            if (!query) {
+                spoonacularResult.textContent = 'Saisissez d’abord un nom de plat.';
+                spoonacularResult.className = 'text-danger align-self-center';
+                return;
+            }
+
+            spoonacularResult.textContent = 'Recherche...';
+            spoonacularResult.className = 'text-muted align-self-center';
+            spoonacularList.innerHTML = '';
+
+            const url = '{{ path('app_integrations_spoonacular_search') }}?query=' + encodeURIComponent(query) + '&limit=5';
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                spoonacularResult.textContent = data.message || 'Aucune suggestion.';
+                spoonacularResult.className = 'text-danger align-self-center';
+                return;
+            }
+
+            spoonacularResult.textContent = 'Suggestions trouvées.';
+            spoonacularResult.className = 'text-success align-self-center';
+
+            data.data.forEach((item) => {
+                const li = document.createElement('li');
+                const img = item.image ? `<img src="${item.image}" alt="" style="width:28px;height:28px;object-fit:cover;border-radius:6px;margin-right:6px;">` : '';
+                li.innerHTML = `${img}${item.title}`;
+                spoonacularList.appendChild(li);
+            });
         });
     }
     

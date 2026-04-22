@@ -9,11 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'visitor_activity')]
 #[ORM\Index(name: 'idx_visitor_session', columns: ['session_id'])]
 #[ORM\Index(name: 'idx_visitor_last_seen', columns: ['last_seen'])]
-
+#[ORM\Index(name: 'idx_visitor_route_name', columns: ['route_name'])]
+#[ORM\Index(name: 'idx_visitor_source_platform', columns: ['source_platform'])]
 class VisitorActivity
 {
-    #[ORM\Column(name: 'device_type', type: 'string', length: 20, nullable: true)]
-private ?string $deviceType = null;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -31,6 +30,18 @@ private ?string $deviceType = null;
     #[ORM\Column(name: 'page_url', type: 'string', length: 500, nullable: true)]
     private ?string $pageUrl = null;
 
+    #[ORM\Column(name: 'device_type', type: 'string', length: 20, nullable: true)]
+    private ?string $deviceType = null;
+
+    #[ORM\Column(name: 'referrer_url', type: 'string', length: 1000, nullable: true)]
+    private ?string $referrerUrl = null;
+
+    #[ORM\Column(name: 'utm_source', type: 'string', length: 100, nullable: true)]
+    private ?string $utmSource = null;
+
+    #[ORM\Column(name: 'source_platform', type: 'string', length: 50, nullable: true)]
+    private ?string $sourcePlatform = null;
+
     #[ORM\Column(name: 'last_seen', type: 'datetime')]
     private ?\DateTimeInterface $lastSeen = null;
 
@@ -43,16 +54,6 @@ private ?string $deviceType = null;
         $this->createdAt = $now;
         $this->lastSeen = $now;
     }
-    public function getDeviceType(): ?string
-{
-    return $this->deviceType;
-}
-
-public function setDeviceType(?string $deviceType): self
-{
-    $this->deviceType = $deviceType;
-    return $this;
-}
 
     public function getId(): ?int
     {
@@ -100,6 +101,50 @@ public function setDeviceType(?string $deviceType): self
     public function setPageUrl(?string $pageUrl): self
     {
         $this->pageUrl = $pageUrl;
+        return $this;
+    }
+
+    public function getDeviceType(): ?string
+    {
+        return $this->deviceType;
+    }
+
+    public function setDeviceType(?string $deviceType): self
+    {
+        $this->deviceType = $deviceType;
+        return $this;
+    }
+
+    public function getReferrerUrl(): ?string
+    {
+        return $this->referrerUrl;
+    }
+
+    public function setReferrerUrl(?string $referrerUrl): self
+    {
+        $this->referrerUrl = $referrerUrl;
+        return $this;
+    }
+
+    public function getUtmSource(): ?string
+    {
+        return $this->utmSource;
+    }
+
+    public function setUtmSource(?string $utmSource): self
+    {
+        $this->utmSource = $utmSource;
+        return $this;
+    }
+
+    public function getSourcePlatform(): ?string
+    {
+        return $this->sourcePlatform;
+    }
+
+    public function setSourcePlatform(?string $sourcePlatform): self
+    {
+        $this->sourcePlatform = $sourcePlatform;
         return $this;
     }
 

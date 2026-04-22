@@ -5,6 +5,11 @@ namespace App\Controller;
 use App\Service\UtilisateurService;
 use App\Service\PointsFideliteService;
 use App\Repository\HistoriqueConnexionRepository;
+use App\Repository\PostRepository;
+use App\Repository\CommentaireRepository;
+use App\Repository\ReactionRepository;
+use App\Repository\CommandeRepository;
+use App\Repository\RecompenseUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nucleos\DompdfBundle\Factory\DompdfFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,17 +19,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/utilisateur')]
 class UtilisateurWebController extends AbstractController
 {
+    private MailerInterface $mailer;
+
     public function __construct(
         private UtilisateurService $service,
         private PointsFideliteService $pointsService,
         private TokenStorageInterface $tokenStorage,
         private EntityManagerInterface $entityManager,
-        private HistoriqueConnexionRepository $historiqueRepository
-    ) {}
+        private HistoriqueConnexionRepository $historiqueRepository,
+        MailerInterface $mailer
+    ) {
+        $this->mailer = $mailer;
+    }
 
     #[Route('/', name: 'app_utilisateur_liste', methods: ['GET'])]
     public function liste(): Response
@@ -47,36 +59,59 @@ class UtilisateurWebController extends AbstractController
     }
 
     #[Route('/mon-profil', name: 'app_mon_profil', methods: ['GET'])]
-    public function monProfil(): Response
-    {
+    public function monProfil(
+        PostRepository $postRepository,
+        CommentaireRepository $commentaireRepository,
+        ReactionRepository $reactionRepository
+    ): Response {
         $user = $this->getUser();
         $utilisateur = $this->service->getOne($user->getIdUtilisateur());
         $points = $this->pointsService->getSolde($user->getIdUtilisateur());
 
+        $recentPosts = $postRepository->findBy(
+            ['utilisateur' => $utilisateur],
+            ['created_at' => 'DESC']
+        );
+
+        foreach ($recentPosts as $post) {
+            $post->likesCount = $reactionRepository->countByPost($post->getId());
+            $post->commentsCount = count($post->getCommentaires());
+        }
+
+        $stats = [
+            'posts' => count($recentPosts),
+            'comments' => $commentaireRepository->count(['utilisateur' => $utilisateur]),
+            'likesReceived' => 0,
+            'inscriptions' => 0,
+            'weeklyConnections' => 0,
+            'streak' => 0,
+        ];
+
         if ($user->getRole() === 'admin') {
             return $this->render('utilisateur/profil_admin.html.twig', [
                 'utilisateur' => $utilisateur,
-                'points' => $points
+                'points' => $points,
+                'recentPosts' => $recentPosts,
+                'stats' => $stats,
             ]);
         }
 
         return $this->render('utilisateur/profil.html.twig', [
             'utilisateur' => $utilisateur,
-            'points' => $points
+            'points' => $points,
+            'recentPosts' => $recentPosts,
+            'stats' => $stats,
         ]);
     }
 
-    // ✅ NOUVEAU : Historique des connexions de l'utilisateur connecté
     #[Route('/mon-historique', name: 'app_historique_index', methods: ['GET'])]
     public function monHistorique(): Response
     {
         $user = $this->getUser();
-
         $historique = $this->historiqueRepository->findBy(
             ['utilisateur' => $user],
             ['dateConnexion' => 'DESC']
         );
-
         return $this->render('utilisateur/historique.html.twig', [
             'historique' => $historique,
             'utilisateur' => $user,
@@ -113,12 +148,10 @@ class UtilisateurWebController extends AbstractController
             'dateNaissance' => $request->request->get('dateNaissance'),
         ];
         
-        // Gestion de la photo/avatar
         $photoFile = $request->files->get('photo');
         $avatarUrl = $request->request->get('avatar_url');
         
         if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
-            // Upload d'une vraie photo
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profiles';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
@@ -128,13 +161,10 @@ class UtilisateurWebController extends AbstractController
             $photoFile->move($uploadDir, $newFileName);
             $data['photo'] = '/uploads/profiles/' . $newFileName;
         } elseif ($avatarUrl) {
-            // Utilisation d'un avatar (URL)
             $data['photo'] = $avatarUrl;
         }
         
         $utilisateur = $this->service->create($data);
-        
-        // Créer automatiquement un solde de points pour le nouvel utilisateur
         $this->pointsService->ajouterPoints($utilisateur->getIdUtilisateur(), 0, 'Création du compte');
         
         $this->addFlash('success', 'Utilisateur créé avec succès !');
@@ -168,17 +198,14 @@ class UtilisateurWebController extends AbstractController
                 $data['motDePasse'] = $request->request->get('motDePasse');
             }
 
-            // Gestion de la photo/avatar
             $photoFile = $request->files->get('photo');
             $avatarUrl = $request->request->get('avatar_url');
             
             if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
-                // Upload d'une nouvelle photo
                 $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profiles';
                 if (!file_exists($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-                // Supprimer l'ancienne photo si c'était un fichier local
                 if ($utilisateur->getPhoto() && str_starts_with($utilisateur->getPhoto(), '/uploads/')) {
                     $oldPath = $this->getParameter('kernel.project_dir') . '/public' . $utilisateur->getPhoto();
                     if (file_exists($oldPath)) {
@@ -190,10 +217,8 @@ class UtilisateurWebController extends AbstractController
                 $photoFile->move($uploadDir, $newFileName);
                 $data['photo'] = '/uploads/profiles/' . $newFileName;
             } elseif ($avatarUrl) {
-                // Utilisation d'un avatar (URL)
                 $data['photo'] = $avatarUrl;
             }
-            // Si aucun fichier ni avatar, on ne modifie pas la photo
 
             $this->service->update($id, $data);
             $this->addFlash('success', 'Utilisateur modifié avec succès !');
@@ -251,7 +276,6 @@ class UtilisateurWebController extends AbstractController
             $data['motDePasse'] = $request->request->get('motDePasse');
         }
 
-        // Gestion de la photo/avatar
         $photoFile = $request->files->get('photo');
         $avatarUrl = $request->request->get('avatar_url');
         
@@ -301,7 +325,6 @@ class UtilisateurWebController extends AbstractController
             return $this->redirectToRoute('app_utilisateur_liste');
         }
         
-        // Supprimer la photo locale si elle existe
         if ($utilisateur->getPhoto() && str_starts_with($utilisateur->getPhoto(), '/uploads/')) {
             $oldPath = $this->getParameter('kernel.project_dir') . '/public' . $utilisateur->getPhoto();
             if (file_exists($oldPath)) {
@@ -309,16 +332,10 @@ class UtilisateurWebController extends AbstractController
             }
         }
         
-        // Supprimer les enregistrements liés dans la table portefeuille
         $conn = $this->entityManager->getConnection();
         $conn->executeStatement('DELETE FROM portefeuille WHERE idUtilisateur = :id', ['id' => $id]);
-        
-        // Supprimer le solde de points
         $this->pointsService->supprimerSolde($id);
-        
-        // Supprimer l'utilisateur
         $this->service->delete($id);
-        
         $this->entityManager->flush();
         
         $this->addFlash('success', 'Utilisateur supprimé avec succès !');
@@ -362,9 +379,6 @@ class UtilisateurWebController extends AbstractController
         ]);
     }
 
-    /**
-     * ✅ Bannir un utilisateur (route appelée via AJAX)
-     */
     #[Route('/{id}/ban', name: 'app_utilisateur_ban', methods: ['POST'])]
     public function ban(int $id, Request $request): JsonResponse
     {
@@ -390,13 +404,9 @@ class UtilisateurWebController extends AbstractController
         }
 
         $this->entityManager->flush();
-
         return $this->json(['success' => true, 'message' => 'Statut de bannissement mis à jour']);
     }
 
-    /**
-     * ✅ Exporter la liste des utilisateurs en PDF (avec filtres et tri)
-     */
     #[Route('/export-pdf', name: 'app_utilisateur_export_pdf', methods: ['GET'])]
     public function exportPdf(Request $request, DompdfFactoryInterface $dompdfFactory): Response
     {
@@ -467,9 +477,6 @@ class UtilisateurWebController extends AbstractController
         ]);
     }
 
-    /**
-     * 🤖 Assistant de recherche en langage naturel (chatbot)
-     */
     #[Route('/chat-search', name: 'app_utilisateur_chat_search', methods: ['POST'])]
     public function chatSearch(Request $request): JsonResponse
     {
@@ -531,5 +538,203 @@ class UtilisateurWebController extends AbstractController
         }
 
         return $this->json(['filters' => $filters]);
+    }
+
+    #[Route('/generer-rapport', name: 'app_utilisateur_generer_rapport', methods: ['POST'])]
+    public function genererRapport(
+        Request $request,
+        PostRepository $postRepository,
+        CommandeRepository $commandeRepository,
+        RecompenseUserRepository $recompenseUserRepository
+    ): JsonResponse {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Non connecté'], 401);
+        }
+        
+        $data = json_decode($request->getContent(), true);
+        $type = $data['type'] ?? 'activite';
+        $periode = $data['periode'] ?? '30';
+        $format = $data['format'] ?? 'pdf';
+        $emailDestinataire = $data['email'] ?? $user->getEmail();
+        
+        if (!filter_var($emailDestinataire, FILTER_VALIDATE_EMAIL)) {
+            return $this->json(['success' => false, 'message' => 'Email invalide'], 400);
+        }
+        
+        $dateDebut = null;
+        if ($periode !== 'all') {
+            $dateDebut = new \DateTime('-' . (int)$periode . ' days');
+        }
+        
+        $points = $this->pointsService->getSolde($user->getIdUtilisateur());
+        
+        $queryBuilder = $postRepository->createQueryBuilder('p')
+            ->where('p.utilisateur = :user')
+            ->setParameter('user', $user);
+        if ($dateDebut) {
+            $queryBuilder->andWhere('p.createdAt >= :dateDebut')
+                ->setParameter('dateDebut', $dateDebut);
+        }
+        $publications = $queryBuilder->getQuery()->getResult();
+        $nbPublications = count($publications);
+        
+        $queryBuilderCommande = $commandeRepository->createQueryBuilder('c')
+            ->where('c.utilisateur = :user')
+            ->setParameter('user', $user);
+        if ($dateDebut) {
+            $queryBuilderCommande->andWhere('c.createdAt >= :dateDebut')
+                ->setParameter('dateDebut', $dateDebut);
+        }
+        $commandes = $queryBuilderCommande->getQuery()->getResult();
+        $nbCommandes = count($commandes);
+        
+        $recompenses = $recompenseUserRepository->findBy(['utilisateur' => $user]);
+        $nbRecompenses = count($recompenses);
+        
+        $postsParMois = $postRepository->createQueryBuilder('p')
+            ->select('MONTH(p.createdAt) as mois, YEAR(p.createdAt) as annee, COUNT(p.id) as total')
+            ->where('p.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->groupBy('annee, mois')
+            ->orderBy('annee', 'DESC')
+            ->addOrderBy('mois', 'DESC')
+            ->setMaxResults(12)
+            ->getQuery()
+            ->getResult();
+        
+        $html = $this->renderView('utilisateur/rapport_pdf.html.twig', [
+            'utilisateur' => $user,
+            'type' => $type,
+            'periode' => $periode,
+            'dateDebut' => $dateDebut,
+            'points' => $points,
+            'nbPublications' => $nbPublications,
+            'nbCommandes' => $nbCommandes,
+            'nbRecompenses' => $nbRecompenses,
+            'publications' => $publications,
+            'commandes' => $commandes,
+            'recompenses' => $recompenses,
+            'postsParMois' => $postsParMois,
+            'dateGeneration' => new \DateTime(),
+        ]);
+        
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->setOptions(new \Dompdf\Options([
+            'defaultFont' => 'Arial',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true
+        ]));
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        $pdfContent = $dompdf->output();
+        
+        $filename = sprintf('rapport_%s_%s_%s.pdf', $type, $user->getNom(), date('Y-m-d'));
+        
+        $email = (new Email())
+            ->from('no-reply@kouldyeri.com')
+            ->to($emailDestinataire)
+            ->subject('📊 Votre rapport Koul Dyeri - ' . date('d/m/Y'))
+            ->html($this->renderView('emails/rapport.html.twig', [
+                'utilisateur' => $user,
+                'type' => $type,
+                'periode' => $periode,
+                'dateGeneration' => new \DateTime(),
+            ]))
+            ->attach($pdfContent, $filename, 'application/pdf');
+        
+        $this->mailer->send($email);
+        
+        return $this->json([
+            'success' => true,
+            'message' => 'Rapport généré et envoyé à ' . $emailDestinataire
+        ]);
+    }
+
+    /**
+     * ✅ Envoyer une réclamation / signaler un problème (version avec email destinataire)
+     */
+    #[Route('/envoyer-reclamation', name: 'app_utilisateur_envoyer_reclamation', methods: ['POST'])]
+    public function envoyerReclamation(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        $data = json_decode($request->getContent(), true);
+        
+        $type = $data['type'] ?? 'autre';
+        $emailDestinataire = $data['emailDestinataire'] ?? '';
+        $emailUtilisateur = $data['emailUtilisateur'] ?? '';
+        $sujet = $data['sujet'] ?? '';
+        $description = $data['description'] ?? '';
+        $copieEmail = $data['copieEmail'] ?? false;
+        
+        // Validation
+        if (!$emailDestinataire || !$emailUtilisateur || !$sujet || !$description) {
+            return $this->json(['success' => false, 'message' => 'Tous les champs sont obligatoires']);
+        }
+        
+        if (!filter_var($emailDestinataire, FILTER_VALIDATE_EMAIL)) {
+            return $this->json(['success' => false, 'message' => 'Email destinataire invalide']);
+        }
+        
+        if (!filter_var($emailUtilisateur, FILTER_VALIDATE_EMAIL)) {
+            return $this->json(['success' => false, 'message' => 'Email utilisateur invalide']);
+        }
+        
+        $types = [
+            'technique' => '🔧 Problème technique',
+            'commande' => '🛒 Problème de commande',
+            'livraison' => '🚚 Problème de livraison',
+            'paiement' => '💳 Problème de paiement',
+            'compte' => '👤 Problème de compte',
+            'contenu' => '📝 Problème de contenu',
+            'autre' => '📝 Autre problème'
+        ];
+        
+        $typeLibelle = $types[$type] ?? '📝 Autre problème';
+        $ticketId = 'TKT-' . strtoupper(uniqid()) . '-' . date('Ymd');
+        
+        // Email au destinataire (admin)
+        $emailAdmin = (new Email())
+            ->from($emailUtilisateur)
+            ->to($emailDestinataire)
+            ->subject('📢 Réclamation - ' . $sujet)
+            ->html($this->renderView('emails/reclamation_admin.html.twig', [
+                'ticketId' => $ticketId,
+                'type' => $typeLibelle,
+                'emailUtilisateur' => $emailUtilisateur,
+                'emailDestinataire' => $emailDestinataire,
+                'sujet' => $sujet,
+                'description' => $description,
+                'user' => $user,
+                'date' => new \DateTime()
+            ]));
+        
+        $this->mailer->send($emailAdmin);
+        
+        // Copie à l'utilisateur si demandé
+        if ($copieEmail) {
+            $emailUser = (new Email())
+                ->from('no-reply@kouldyeri.com')
+                ->to($emailUtilisateur)
+                ->subject('📋 Votre réclamation a bien été enregistrée - Koul Dyeri')
+                ->html($this->renderView('emails/reclamation_user.html.twig', [
+                    'ticketId' => $ticketId,
+                    'type' => $typeLibelle,
+                    'sujet' => $sujet,
+                    'description' => $description,
+                    'emailDestinataire' => $emailDestinataire,
+                    'date' => new \DateTime()
+                ]));
+            
+            $this->mailer->send($emailUser);
+        }
+        
+        return $this->json([
+            'success' => true,
+            'message' => 'Votre réclamation a été envoyée à ' . $emailDestinataire,
+            'ticketId' => $ticketId
+        ]);
     }
 }

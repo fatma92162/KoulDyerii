@@ -217,7 +217,7 @@
         <div class="col-12">
 
             <a href="{{ path('app_posts_index') }}" class="btn btn-outline-secondary mb-4">
-                <i class="fas fa-arrow-left"></i> Retour au fil d'actualité
+                <i class="fas fa-arrow-left"></i> {{ 'posts.form.back_to_feed'|trans }}
             </a>
 
             {# Affichage des messages flash #}
@@ -241,31 +241,31 @@
                     {% endif %}
 
                         <div class="mb-4">
-                            <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                            <label for="title" class="form-label">{{ 'posts.form.title_label'|trans }} <span class="text-danger">*</span></label>
                             <input type="text" 
                                    class="form-control {% if errors.title is defined %}is-invalid{% endif %}" 
                                    id="title" 
                                    name="title" 
                                    value="{{ post ? post.title : formData.title|default('') }}" 
-                                   placeholder="Donnez un titre clair à votre publication">
+                                   placeholder="{{ 'posts.form.title_placeholder'|trans }}">
                             {% if errors.title is defined %}
                                 <div class="invalid-feedback">{{ errors.title }}</div>
                             {% endif %}
                         </div>
 
                         <div class="mb-4">
-                            <label for="content" class="form-label">Contenu <span class="text-danger">*</span></label>
+                            <label for="content" class="form-label">{{ 'posts.form.content_label'|trans }} <span class="text-danger">*</span></label>
                             
                             <!-- Barre d'outils d'édition -->
                             <div class="editor-toolbar">
-                                <button type="button" onclick="formatText('bold')" title="Gras">
-                                    <i class="fas fa-bold"></i> Gras
+                                <button type="button" onclick="formatText('bold')" title="{{ 'posts.editor.bold'|trans }}">
+                                    <i class="fas fa-bold"></i> {{ 'posts.editor.bold'|trans }}
                                 </button>
-                                <button type="button" onclick="formatText('italic')" title="Italique">
-                                    <i class="fas fa-italic"></i> Italique
+                                <button type="button" onclick="formatText('italic')" title="{{ 'posts.editor.italic'|trans }}">
+                                    <i class="fas fa-italic"></i> {{ 'posts.editor.italic'|trans }}
                                 </button>
-                                <button type="button" onclick="formatText('list')" title="Liste à puces">
-                                    <i class="fas fa-list-ul"></i> Liste
+                                <button type="button" onclick="formatText('list')" title="{{ 'posts.editor.list'|trans }}">
+                                    <i class="fas fa-list-ul"></i> {{ 'posts.editor.list'|trans }}
                                 </button>
                             </div>
                             
@@ -274,7 +274,7 @@
                                       id="content" 
                                       name="content" 
                                       rows="8" 
-                                      placeholder="Que voulez-vous partager aujourd'hui ?"
+                                      placeholder="{{ 'posts.form.content_placeholder'|trans }}"
                                       onkeyup="updatePreview()"
                                       oninput="updatePreview()">{{ post ? post.content : formData.content|default('') }}</textarea>
                             
@@ -283,22 +283,22 @@
                             {% endif %}
                             
                             <small class="help-text">
-                                <i class="fas fa-info-circle"></i> Utilisez les boutons ci-dessus pour formater votre texte (Gras, Italique, Liste)
+                                <i class="fas fa-info-circle"></i> {{ 'posts.form.editor_help'|trans }}
                             </small>
                         </div>
 
                         <!-- Aperçu en direct -->
                         <div class="preview-panel">
                             <div class="preview-header">
-                                <i class="fas fa-eye"></i> Aperçu du résultat
+                                <i class="fas fa-eye"></i> {{ 'posts.form.preview_title'|trans }}
                             </div>
                             <div class="preview-content" id="preview">
-                                {{ post ? post.content|raw : 'Le texte formaté apparaîtra ici...'|raw }}
+                                {{ post ? post.content|raw : ('posts.form.preview_empty'|trans)|raw }}
                             </div>
                         </div>
 
                         <div class="mb-4 mt-4">
-                            <label for="image" class="form-label">Image (optionnel)</label>
+                            <label for="image" class="form-label">{{ 'posts.form.image_label'|trans }}</label>
                             <input type="file" 
                                    class="form-control {% if errors.image is defined %}is-invalid{% endif %}" 
                                    id="image" 
@@ -310,11 +310,11 @@
 
                             {% if post and post.imagePath %}
                                 <div class="current-image">
-                                    <small class="text-muted d-block mb-2">Image actuelle :</small>
+                                    <small class="text-muted d-block mb-2">{{ 'posts.form.current_image'|trans }}</small>
                                     <div class="d-flex flex-wrap align-items-center gap-3">
-                                        <img src="{{ post.imagePath }}" 
-                                             alt="Image actuelle" 
-                                             class="img-fluid">
+                                         <img src="{{ post.imagePath }}" 
+                                              alt="{{ 'posts.form.current_image'|trans }}" 
+                                              class="img-fluid">
                                         <div>
                                             <div class="form-check">
                                                 <input class="form-check-input" 
@@ -323,7 +323,7 @@
                                                        id="delete_image" 
                                                        value="1">
                                                 <label class="form-check-label text-danger" for="delete_image">
-                                                    <i class="fas fa-trash-alt"></i> Supprimer cette image
+                                                    <i class="fas fa-trash-alt"></i> {{ 'posts.form.delete_image'|trans }}
                                                 </label>
                                             </div>
                                         </div>
@@ -332,17 +332,17 @@
                             {% endif %}
 
                             <small class="help-text">
-                                Formats acceptés : JPG, PNG, GIF, WebP — Taille maximale recommandée : 2 Mo
+                                {{ 'posts.form.image_formats'|trans }}
                             </small>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-5">
                             <a href="{{ path('app_posts_index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
+                                <i class="fas fa-times"></i> {{ 'common.cancel'|trans }}
                             </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> 
-                                {{ post ? 'Enregistrer les modifications' : 'Publier la publication' }}
+                                {{ post ? 'posts.form.save'|trans : 'posts.form.publish'|trans }}
                             </button>
                         </div>
 
@@ -355,6 +355,13 @@
 </div>
 
 <script>
+    const postI18n = {
+        boldPlaceholder: "{{ 'posts.editor.bold_placeholder'|trans|e('js') }}",
+        italicPlaceholder: "{{ 'posts.editor.italic_placeholder'|trans|e('js') }}",
+        listPlaceholder: "{{ 'posts.editor.list_placeholder'|trans|e('js') }}",
+        previewEmpty: "{{ 'posts.form.preview_empty'|trans|e('js') }}"
+    };
+
     // Fonctions pour formater le texte
     function formatText(type) {
         const textarea = document.getElementById('content');
@@ -365,17 +372,17 @@
         
         switch(type) {
             case 'bold':
-                formattedText = selectedText ? '**' + selectedText + '**' : '**texte en gras**';
+                formattedText = selectedText ? '**' + selectedText + '**' : '**' + postI18n.boldPlaceholder + '**';
                 break;
             case 'italic':
-                formattedText = selectedText ? '*' + selectedText + '*' : '*texte en italique*';
+                formattedText = selectedText ? '*' + selectedText + '*' : '*' + postI18n.italicPlaceholder + '*';
                 break;
             case 'list':
                 if (selectedText) {
                     const lines = selectedText.split('\n');
                     formattedText = lines.map(line => '- ' + line).join('\n');
                 } else {
-                    formattedText = '\n- Élément 1\n- Élément 2\n- Élément 3';
+                    formattedText = '\n' + postI18n.listPlaceholder;
                 }
                 break;
             default:
@@ -444,7 +451,7 @@
         
         const html = markdownToHtml(content);
         if (html.trim() === '' || html === '<br>') {
-            previewDiv.innerHTML = '<em class="text-muted">Le texte formaté apparaîtra ici...</em>';
+            previewDiv.innerHTML = '<em class="text-muted">' + postI18n.previewEmpty + '</em>';
         } else {
             previewDiv.innerHTML = html;
         }

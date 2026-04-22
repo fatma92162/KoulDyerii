@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes notifications{% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 800px;">
+    <h2>🔔 Mes notifications</h2>
+    <div class="list-group mt-3">
+        {% for notif in notifications %}
+            {% if notif.postId %}
+                <a href="{{ path('app_post_show', {id: notif.postId}) }}"
+                   class="list-group-item list-group-item-action {% if not notif.isRead %}bg-light border-start border-primary{% endif %}"
+                   onclick="markNotificationAsRead({{ notif.id }})">
+                    {{ notif.message }}
+                    <div class="small text-muted">{{ notif.createdAt|date('d/m/Y H:i') }}</div>
+                </a>
+            {% else %}
+                <div class="list-group-item {% if not notif.isRead %}bg-light border-start border-primary{% endif %}"
+                     onclick="markNotificationAsRead({{ notif.id }})">
+                    {{ notif.message }}
+                    <div class="small text-muted">{{ notif.createdAt|date('d/m/Y H:i') }}</div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">Aucune notification.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Repository;   // ⚠️ Changement crucial : namespace App\Repository (pas App\Entity)
 
+use App\Entity\SignalementPost;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,28 +16,15 @@ class SignalementPostRepository extends ServiceEntityRepository
         parent::__construct($registry, SignalementPost::class);
     }
 
-    //    /**
-    //     * @return SignalementPost[] Returns an array of SignalementPost objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?SignalementPost
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    // ========== MÉTHODES PERSONNALISÉES ==========
+    // Ajoutez ici vos propres méthodes, par exemple :
+    // public function findNonTraites(): array
+    // {
+    //     return $this->createQueryBuilder('s')
+    //         ->andWhere('s.traite = :false')
+    //         ->setParameter('false', false)
+    //         ->orderBy('s.createdAt', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }

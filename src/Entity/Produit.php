@@ -32,7 +32,24 @@ class Produit
     #[ORM\Column(name: 'id_vendeuse', type: 'integer', nullable: true)]
     private ?int $idVendeuse = null;
 
-    // Getters et Setters
+    #[ORM\Column(name: 'quantite', type: 'integer', options: ['default' => 0])]
+    private ?int $quantite = 0;
+
+    #[ORM\Column(name: 'bundle_active', type: 'boolean', options: ['default' => false])]
+    private ?bool $bundleActive = false;
+
+    #[ORM\Column(name: 'bundle_type', type: 'string', length: 50, nullable: true)]
+    private ?string $bundleType = null;
+
+    #[ORM\Column(name: 'bundle_buy_qty', type: 'integer', nullable: true)]
+    private ?int $bundleBuyQty = null;
+
+    #[ORM\Column(name: 'bundle_pay_qty', type: 'integer', nullable: true)]
+    private ?int $bundlePayQty = null;
+
+    #[ORM\Column(name: 'bundle_discount_percent', type: 'integer', nullable: true)]
+    private ?int $bundleDiscountPercent = null;
+
     public function getIdProduit(): ?int
     {
         return $this->idProduit;
@@ -101,6 +118,72 @@ class Produit
     public function setIdVendeuse(?int $idVendeuse): self
     {
         $this->idVendeuse = $idVendeuse;
+        return $this;
+    }
+
+    public function getQuantite(): ?int
+    {
+        return $this->quantite;
+    }
+
+    public function setQuantite(int $quantite): self
+    {
+        $this->quantite = max(0, $quantite);
+        return $this;
+    }
+
+    public function getBundleActive(): ?bool
+    {
+        return $this->bundleActive;
+    }
+
+    public function setBundleActive(bool $bundleActive): self
+    {
+        $this->bundleActive = $bundleActive;
+        return $this;
+    }
+
+    public function getBundleType(): ?string
+    {
+        return $this->bundleType;
+    }
+
+    public function setBundleType(?string $bundleType): self
+    {
+        $this->bundleType = $bundleType ?: null;
+        return $this;
+    }
+
+    public function getBundleBuyQty(): ?int
+    {
+        return $this->bundleBuyQty;
+    }
+
+    public function setBundleBuyQty(?int $bundleBuyQty): self
+    {
+        $this->bundleBuyQty = $bundleBuyQty;
+        return $this;
+    }
+
+    public function getBundlePayQty(): ?int
+    {
+        return $this->bundlePayQty;
+    }
+
+    public function setBundlePayQty(?int $bundlePayQty): self
+    {
+        $this->bundlePayQty = $bundlePayQty;
+        return $this;
+    }
+
+    public function getBundleDiscountPercent(): ?int
+    {
+        return $this->bundleDiscountPercent;
+    }
+
+    public function setBundleDiscountPercent(?int $bundleDiscountPercent): self
+    {
+        $this->bundleDiscountPercent = $bundleDiscountPercent;
         return $this;
     }
 }

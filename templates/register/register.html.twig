@@ -1,401 +1,716 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscription - Rejoignez Koul Dyeri{% endblock %}
+{% block title %}{{ 'auth.register.page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
 <style>
-    .register-container {
-        min-height: calc(100vh - 100px);
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== PAGE ===== */
+    .register-page {
+        min-height: 100vh;
+        background-color: #ede8dc;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 40px 20px;
-    }
-    
-    .register-card {
-        background: rgba(255, 255, 255, 0.98);
-        border-radius: 30px;
+        position: relative;
         overflow: hidden;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
-        max-width: 1100px;
+        font-family: Arial, sans-serif;
+    }
+
+    /* ===== ORNEMENTS SVG EN ARRIERE-PLAN ===== */
+    .bg-ornaments {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* ===== CARD PRINCIPALE ===== */
+    .register-card {
+        display: flex;
         width: 100%;
+        max-width: 1100px;
+        border-radius: 22px;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+        border: 0.5px solid rgba(90, 26, 26, 0.15);
         animation: fadeInUp 0.7s ease-out;
     }
-    
+
     @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
-    
-    /* Partie gauche - Style tunisien */
+
+    /* ===== COLONNE GAUCHE ===== */
     .register-left {
-        background: linear-gradient(135deg, #2c1810 0%, #8B4513 50%, #D2691E 100%);
-        padding: 50px 30px;
-        color: white;
-        height: 100%;
+        width: 280px;
+        flex-shrink: 0;
+        background-color: #5a1a1a;
+        padding: 2.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         position: relative;
         overflow: hidden;
     }
-    
-    .register-left::before {
-        content: "🍽️";
+
+    .left-pattern {
         position: absolute;
-        font-size: 250px;
-        bottom: -80px;
-        right: -80px;
-        opacity: 0.1;
-        transform: rotate(-15deg);
+        inset: 0;
+        opacity: 0.10;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
     }
-    
-    .register-left::after {
-        content: "🌶️";
-        position: absolute;
-        font-size: 180px;
-        top: -50px;
-        left: -50px;
-        opacity: 0.1;
-        transform: rotate(10deg);
-    }
-    
-    .register-left h2 {
-        font-size: 36px;
-        font-weight: 800;
-        margin-bottom: 20px;
-        position: relative;
-    }
-    
-    .register-left p {
-        font-size: 16px;
-        opacity: 0.9;
-        line-height: 1.6;
-        margin-bottom: 30px;
-    }
-    
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 30px;
-    }
-    
-    .feature-list li {
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-    }
-    
-    .feature-list li i {
-        width: 35px;
-        height: 35px;
-        background: rgba(255, 255, 255, 0.2);
+
+    /* Logo */
+    .logo-circle {
+        width: 96px;
+        height: 96px;
         border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1.5px solid rgba(255, 255, 255, 0.22);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-    }
-    
-    .spices-decoration {
-        margin-top: 40px;
-        text-align: center;
-        font-size: 50px;
-        opacity: 0.6;
-    }
-    
-    /* Partie droite - Formulaire */
-    .register-right {
-        padding: 50px 40px;
-        background: white;
-    }
-    
-    .register-right h3 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
-    }
-    
-    .register-right .subtitle {
-        color: #888;
-        margin-bottom: 30px;
-        font-size: 14px;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
         position: relative;
+        z-index: 1;
     }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #555;
-        margin-bottom: 8px;
-        display: block;
-        font-size: 14px;
-    }
-    
-    .form-group .required-star {
-        color: #FF6B6B;
-    }
-    
-    .form-control, .form-select {
-        border: 2px solid #f0e6d6;
-        border-radius: 15px;
-        padding: 12px 18px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: #fefcf8;
-        width: 100%;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #D2691E;
-        box-shadow: 0 0 0 0.2rem rgba(210, 105, 30, 0.15);
-        background: white;
-        outline: none;
-    }
-    
-    .form-control.is-invalid, .form-select.is-invalid {
-        border-color: #dc3545;
-    }
-    
-    .form-control.is-valid, .form-select.is-valid {
-        border-color: #28a745;
-    }
-    
-    .invalid-feedback {
-        font-size: 12px;
-        margin-top: 5px;
-        display: block;
-        color: #dc3545;
-    }
-    
-    .password-toggle {
-        position: absolute;
-        right: 15px;
-        top: 45px;
-        color: #D2691E;
-        cursor: pointer;
-        z-index: 10;
-    }
-    
-    .btn-register {
-        background: linear-gradient(135deg, #D2691E 0%, #CD853F 100%);
-        border: none;
-        border-radius: 50px;
-        padding: 14px;
-        font-weight: 700;
-        font-size: 16px;
-        width: 100%;
-        transition: all 0.3s ease;
-        color: white;
-        margin-top: 20px;
-    }
-    
-    .btn-register:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(210, 105, 30, 0.4);
-    }
-    
-    .login-link {
+
+    .brand-name {
+        font-family: Georgia, serif;
+        font-size: 17px;
+        font-weight: normal;
+        color: #f5d9c0;
+        letter-spacing: 0.08em;
         text-align: center;
-        margin-top: 25px;
-        font-size: 14px;
-        color: #666;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
     }
-    
-    .login-link a {
-        color: #D2691E;
-        text-decoration: none;
+
+    /* Features list */
+    .feature-list {
+        list-style: none;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        margin-top: auto;
+    }
+
+    .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 0;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+        line-height: 1.4;
+    }
+
+    .feat-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.10);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spices-deco {
+        margin-top: 2rem;
+        text-align: center;
+        font-size: 20px;
+        letter-spacing: 6px;
+        opacity: 0.55;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ===== COLONNE DROITE ===== */
+    .register-right {
+        flex: 1;
+        background: #faf5ec;
+        padding: 2.5rem 2.5rem;
+        position: relative;
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+
+    .right-ornament {
+        position: absolute;
+        top: 0; right: 0;
+        pointer-events: none;
+        opacity: 0.055;
+    }
+
+    .register-right h2 {
+        font-family: Georgia, serif;
+        font-size: 26px;
+        font-weight: normal;
+        color: #3a1a0a;
+        margin-bottom: 4px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .register-subtitle {
+        font-size: 13px;
+        color: #a08060;
+        margin-bottom: 1.8rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Form fields */
+    .form-group {
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 11px;
         font-weight: 600;
+        color: #7a4530;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
     }
-    
-    .login-link a:hover {
-        text-decoration: underline;
+
+    .input-wrap {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid rgba(90, 26, 26, 0.18);
+        border-radius: 10px;
+        padding: 0 14px;
+        height: 44px;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
-    
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+
+    .input-wrap:focus-within {
+        border-color: #5a1a1a;
+        box-shadow: 0 0 0 3px rgba(90, 26, 26, 0.10);
     }
-    
-    .shake {
-        animation: shake 0.3s ease-in-out;
+
+    .input-wrap.is-invalid {
+        border-color: #c0392b;
     }
-    
+
+    .input-icon {
+        flex-shrink: 0;
+        margin-right: 10px;
+        opacity: 0.5;
+    }
+
+    .input-wrap input, .input-wrap select {
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: #3a1a0a;
+        font-family: Arial, sans-serif;
+        outline: none;
+        width: 100%;
+    }
+
+    .input-wrap select {
+        cursor: pointer;
+    }
+
+    .input-wrap input::placeholder { color: #c0a090; }
+
+    .toggle-password {
+        cursor: pointer;
+        color: #8a4530;
+        opacity: 0.6;
+        flex-shrink: 0;
+        transition: opacity 0.15s;
+    }
+    .toggle-password:hover { opacity: 1; }
+
+    .row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 0;
+    }
+
+    .row .form-group {
+        flex: 1;
+    }
+
+    /* Help text */
+    .help-text {
+        font-size: 11px;
+        color: #a08060;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Buttons */
+    .btn-register {
+        width: 100%;
+        height: 46px;
+        background-color: #5a1a1a;
+        color: #ffffff;
+        border: none;
+        border-radius: 25px;
+        font-size: 15px;
+        font-family: Arial, sans-serif;
+        font-weight: 600;
+        cursor: pointer;
+        letter-spacing: 0.03em;
+        transition: opacity 0.2s, transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+        margin-top: 1rem;
+    }
+
+    .btn-register:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+    }
+
+    /* Divider */
+    .divider-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 1.2rem 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .divider-line span {
+        font-size: 12px;
+        color: #b09080;
+        white-space: nowrap;
+    }
+
+    .divider-line::before,
+    .divider-line::after {
+        content: '';
+        flex: 1;
+        height: 0.5px;
+        background: rgba(90, 26, 26, 0.15);
+    }
+
+    /* Google button */
+    .btn-google {
+        width: 100%;
+        height: 44px;
+        background: #ffffff;
+        border: 1px solid rgba(90, 26, 26, 0.20);
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #3a1a0a;
+        font-family: Arial, sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.15s;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-google:hover {
+        background: #f5ede0;
+        transform: translateY(-1px);
+        color: #3a1a0a;
+        text-decoration: none;
+    }
+
+    /* Login link */
+    .login-text {
+        text-align: center;
+        margin-top: 1.2rem;
+        font-size: 13px;
+        color: #9a7060;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-text a {
+        color: #5a1a1a;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .login-text a:hover { text-decoration: underline; }
+
+    /* Alert */
+    .alert-tunisian {
+        background: #f5e8e0;
+        border: 0.5px solid rgba(90, 26, 26, 0.25);
+        border-left: 3px solid #5a1a1a;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #5a1a1a;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .alert-success-tunisian {
+        background: #e0f5e8;
+        border: 0.5px solid rgba(26, 90, 50, 0.25);
+        border-left: 3px solid #2a7a4f;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #1a5a36;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .register-left {
-            display: none;
-        }
-        .register-right {
-            padding: 30px 25px;
-        }
-        .register-card {
-            max-width: 500px;
-        }
+        .register-left { display: none; }
+        .register-right { padding: 2rem 1.5rem; }
+        .register-card { max-width: 500px; border-radius: 16px; }
+        .row { flex-direction: column; gap: 0; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="register-container">
+<div class="register-page">
+
+    {# ===== Ornements arabesques en arrière-plan ===== #}
+    <svg class="bg-ornaments" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <g opacity="0.20">
+            <circle cx="1100" cy="100" r="160" fill="none" stroke="#6b1f1f" stroke-width="0.8"/>
+            <circle cx="1100" cy="100" r="120" fill="none" stroke="#6b1f1f" stroke-width="0.5"/>
+            <circle cx="1100" cy="100" r="80"  fill="none" stroke="#6b1f1f" stroke-width="0.4"/>
+            <circle cx="1100" cy="100" r="40"  fill="none" stroke="#6b1f1f" stroke-width="0.4"/>
+            <line x1="1100" y1="-62" x2="1100" y2="262" stroke="#6b1f1f" stroke-width="0.6"/>
+            <line x1="938"  y1="100" x2="1262" y2="100" stroke="#6b1f1f" stroke-width="0.6"/>
+            <line x1="987"  y1="-13" x2="1213" y2="213" stroke="#6b1f1f" stroke-width="0.35"/>
+            <line x1="1213" y1="-13" x2="987"  y2="213" stroke="#6b1f1f" stroke-width="0.35"/>
+            <circle cx="1100" cy="100" r="12" fill="#6b1f1f" opacity="0.3"/>
+        </g>
+        <g opacity="0.15" transform="translate(80,720)">
+            <circle cx="0" cy="0" r="130" fill="none" stroke="#6b1f1f" stroke-width="0.8"/>
+            <circle cx="0" cy="0" r="90"  fill="none" stroke="#6b1f1f" stroke-width="0.5"/>
+            <circle cx="0" cy="0" r="50"  fill="none" stroke="#6b1f1f" stroke-width="0.4"/>
+            <line x1="0" y1="-130" x2="0" y2="130" stroke="#6b1f1f" stroke-width="0.6"/>
+            <line x1="-130" y1="0" x2="130" y2="0" stroke="#6b1f1f" stroke-width="0.6"/>
+            <line x1="-92"  y1="-92" x2="92"  y2="92"  stroke="#6b1f1f" stroke-width="0.35"/>
+            <line x1="92"   y1="-92" x2="-92" y2="92"  stroke="#6b1f1f" stroke-width="0.35"/>
+            <circle cx="0" cy="0" r="10" fill="#6b1f1f" opacity="0.35"/>
+        </g>
+        <g opacity="0.10">
+            <path d="M600,30 L620,50 L600,70 L580,50 Z" fill="none" stroke="#6b1f1f" stroke-width="1.2"/>
+            <path d="M600,22 L628,50 L600,78 L572,50 Z" fill="none" stroke="#6b1f1f" stroke-width="0.5"/>
+            <circle cx="600" cy="50" r="7" fill="#6b1f1f" opacity="0.45"/>
+        </g>
+        <g opacity="0.08">
+            <path d="M200,40 L214,54 L200,68 L186,54 Z" fill="none" stroke="#6b1f1f" stroke-width="0.9"/>
+            <path d="M900,730 L914,744 L900,758 L886,744 Z" fill="none" stroke="#6b1f1f" stroke-width="0.9"/>
+            <path d="M300,760 L312,772 L300,784 L288,772 Z" fill="none" stroke="#6b1f1f" stroke-width="0.9"/>
+        </g>
+        <g opacity="0.06">
+            <line x1="0" y1="0"   x2="1200" y2="0"   stroke="#6b1f1f" stroke-width="1.5"/>
+            <line x1="0" y1="12"  x2="1200" y2="12"  stroke="#6b1f1f" stroke-width="0.5"/>
+            <line x1="0" y1="800" x2="1200" y2="800" stroke="#6b1f1f" stroke-width="1.5"/>
+            <line x1="0" y1="788" x2="1200" y2="788" stroke="#6b1f1f" stroke-width="0.5"/>
+        </g>
+    </svg>
+
+    {# ===== CARD ===== #}
     <div class="register-card">
-        <div class="row g-0">
-            <!-- Partie gauche - Présentation -->
-            <div class="col-md-5 register-left">
-                <h2>🍽️ Koul Dyeri</h2>
-                <p>Rejoignez la plus grande communauté culinaire tunisienne</p>
-                
-                <ul class="feature-list">
-                    <li>
-                        <i class="fas fa-utensils"></i>
-                        <span>Découvrez des recettes authentiques</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-users"></i>
-                        <span>Partagez vos créations culinaires</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-star"></i>
-                        <span>Gagnez des points de fidélité</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-gift"></i>
-                        <span>Profitez de récompenses exclusives</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-store"></i>
-                        <span>Achetez des produits artisanaux</span>
-                    </li>
-                </ul>
-                
-                <div class="spices-decoration">
-                    🌶️ 🍅 🍋 🍞 🧂
+
+        {# ===== COLONNE GAUCHE ===== #}
+        <div class="register-left">
+            <svg class="left-pattern" viewBox="0 0 280 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="zellige" x="0" y="0" width="46" height="46" patternUnits="userSpaceOnUse">
+                        <path d="M23 0 L46 23 L23 46 L0 23 Z" fill="none" stroke="#fff" stroke-width="1"/>
+                        <circle cx="23" cy="23" r="5.5" fill="none" stroke="#fff" stroke-width="0.7"/>
+                        <line x1="0" y1="0" x2="46" y2="46" stroke="#fff" stroke-width="0.35"/>
+                        <line x1="46" y1="0" x2="0" y2="46" stroke="#fff" stroke-width="0.35"/>
+                        <circle cx="0"  cy="0"  r="2" fill="#fff" opacity="0.4"/>
+                        <circle cx="46" cy="0"  r="2" fill="#fff" opacity="0.4"/>
+                        <circle cx="0"  cy="46" r="2" fill="#fff" opacity="0.4"/>
+                        <circle cx="46" cy="46" r="2" fill="#fff" opacity="0.4"/>
+                    </pattern>
+                </defs>
+                <rect width="280" height="600" fill="url(#zellige)"/>
+            </svg>
+
+            <div class="logo-circle">
+                <svg width="72" height="62" viewBox="0 0 144 124" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 112 L10 22 Q10 8 22 8 Q31 8 37 17 L62 58 L62 10 L80 10 L80 112 L62 112 L62 68 L37 112 Z" fill="#e06040"/>
+                    <path d="M88 112 L88 10 L106 10 L106 48 Q126 46 128 58 Q128 70 106 72 L106 78 Q128 78 128 94 Q128 112 106 112 Z M106 50 L106 66 Q116 66 116 58 Q116 50 106 50 Z M106 76 L106 104 Q116 104 116 94 Q116 84 106 82 Z" fill="#7a4020"/>
+                    <line x1="88" y1="24" x2="128" y2="24" stroke="#9a5530" stroke-width="2.5"/>
+                    <rect x="112" y="8" width="7" height="18" fill="#7a4020" opacity="0.8"/>
+                    <path d="M115 6 Q112 1 109 2 Q113 4 116 8" fill="#c8a880" opacity="0.7"/>
+                    <circle cx="114" cy="6" r="3" fill="#c8a880" opacity="0.6"/>
+                </svg>
+            </div>
+
+            <div class="brand-name">Koul Dyeri</div>
+
+            <ul class="feature-list">
+                <li>
+                    <div class="feat-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 14H8V8h8v8z" fill="rgba(255,255,255,0.65)"/>
+                        </svg>
+                    </div>
+                    {{ 'auth.features.recipes'|trans }}
+                </li>
+                <li>
+                    <div class="feat-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,0.65)" stroke-width="1.6"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="rgba(255,255,255,0.65)" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    {{ 'auth.features.share'|trans }}
+                </li>
+                <li>
+                    <div class="feat-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="rgba(255,255,255,0.65)" stroke-width="1.6"/>
+                        </svg>
+                    </div>
+                    {{ 'auth.features.points'|trans }}
+                </li>
+                <li>
+                    <div class="feat-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 3h18v18H3z" stroke="rgba(255,255,255,0.65)" stroke-width="1.6"/>
+                            <path d="M8 7h8M8 12h8M8 17h5" stroke="rgba(255,255,255,0.65)" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    {{ 'auth.features.shop'|trans }}
+                </li>
+            </ul>
+
+            <div class="spices-deco">🌶 🧂 🍋 🍅</div>
+        </div>
+
+        {# ===== COLONNE DROITE - FORMULAIRE ===== #}
+        <div class="register-right">
+
+            <svg class="right-ornament" width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="160" cy="20" r="155" fill="none" stroke="#6b1f1f" stroke-width="1.2"/>
+                <circle cx="160" cy="20" r="120" fill="none" stroke="#6b1f1f" stroke-width="0.6"/>
+                <circle cx="160" cy="20" r="85"  fill="none" stroke="#6b1f1f" stroke-width="0.5"/>
+                <circle cx="160" cy="20" r="50"  fill="none" stroke="#6b1f1f" stroke-width="0.4"/>
+                <line x1="160" y1="-136" x2="160" y2="176" stroke="#6b1f1f" stroke-width="0.6"/>
+                <line x1="-4"  y1="20"  x2="324" y2="20"  stroke="#6b1f1f" stroke-width="0.6"/>
+            </svg>
+
+            <h2>{{ 'auth.register.heading'|trans }}</h2>
+            <p class="register-subtitle">{{ 'auth.register.subtitle'|trans }}</p>
+
+            {# Flash messages #}
+            {% for message in app.flashes('success') %}
+                <div class="alert-success-tunisian">
+                    {{ message }}
                 </div>
-            </div>
-            
-            <!-- Partie droite - Formulaire -->
-            <div class="col-md-7 register-right">
-                <h3>Créez votre compte</h3>
-                <p class="subtitle">Rejoignez-nous et commencez votre aventure culinaire</p>
-                
-                <form method="post" id="registerForm" novalidate>
-                    <div class="form-group">
-                        <label for="nom">Nom complet <span class="required-star">*</span></label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="nom" 
-                               name="nom" 
-                               placeholder="Votre nom et prénom"
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert-tunisian">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <form method="post" id="registerForm" novalidate>
+
+                {# Nom complet #}
+                <div class="form-group">
+                    <label for="nom">{{ 'auth.register.full_name_label'|trans }}</label>
+                    <div class="input-wrap" id="wrap-nom">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="8" r="4" stroke="#7a4530" stroke-width="1.5"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <input type="text"
+                               id="nom"
+                               name="nom"
+                               placeholder="{{ 'auth.register.full_name_placeholder'|trans }}"
+                               value="{{ last_nom|default('') }}"
                                required>
-                        <div class="invalid-feedback"></div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Adresse email <span class="required-star">*</span></label>
-                        <input type="email" 
-                               class="form-control" 
-                               id="email" 
-                               name="email" 
-                               placeholder="exemple@email.com"
+                </div>
+
+                {# Email #}
+                <div class="form-group">
+                    <label for="email">{{ 'auth.form.email_label'|trans }}</label>
+                    <div class="input-wrap" id="wrap-email">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="4" width="20" height="16" rx="2" stroke="#7a4530" stroke-width="1.5"/>
+                            <path d="M2 8l10 6 10-6" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               placeholder="{{ 'auth.form.email_placeholder'|trans }}"
+                               value="{{ last_email|default('') }}"
                                required>
-                        <div class="invalid-feedback"></div>
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="password">Mot de passe <span class="required-star">*</span></label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="••••••••"
-                                       required>
-                                <i class="fas fa-eye password-toggle" onclick="togglePassword('password')"></i>
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="confirm_password">Confirmer <span class="required-star">*</span></label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="confirm_password" 
-                                       name="confirm_password" 
-                                       placeholder="••••••••"
-                                       required>
-                                <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password')"></i>
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
+                </div>
+
+                {# Mot de passe + Confirmation #}
+                <div class="row">
                     <div class="form-group">
-                        <label for="region">Gouvernorat</label>
-                        <select class="form-select" id="region" name="region">
-                            <option value="">Sélectionnez votre gouvernorat</option>
-                            <option value="Tunis">Tunis</option>
-                            <option value="Ariana">Ariana</option>
-                            <option value="Ben Arous">Ben Arous</option>
-                            <option value="Manouba">Manouba</option>
-                            <option value="Nabeul">Nabeul</option>
-                            <option value="Zaghouan">Zaghouan</option>
-                            <option value="Bizerte">Bizerte</option>
-                            <option value="Béja">Béja</option>
-                            <option value="Jendouba">Jendouba</option>
-                            <option value="Le Kef">Le Kef</option>
-                            <option value="Siliana">Siliana</option>
-                            <option value="Sousse">Sousse</option>
-                            <option value="Monastir">Monastir</option>
-                            <option value="Mahdia">Mahdia</option>
-                            <option value="Sfax">Sfax</option>
-                            <option value="Kairouan">Kairouan</option>
-                            <option value="Kasserine">Kasserine</option>
-                            <option value="Sidi Bouzid">Sidi Bouzid</option>
-                            <option value="Gabès">Gabès</option>
-                            <option value="Médenine">Médenine</option>
-                            <option value="Tataouine">Tataouine</option>
-                            <option value="Gafsa">Gafsa</option>
-                            <option value="Tozeur">Tozeur</option>
-                            <option value="Kébili">Kébili</option>
+                        <label for="password">{{ 'auth.form.password_label'|trans }}</label>
+                        <div class="input-wrap" id="wrap-password">
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#7a4530" stroke-width="1.5"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   placeholder="{{ 'auth.form.password_placeholder'|trans }}"
+                                   required>
+                            <span class="toggle-password" onclick="togglePassword('password')" title="{{ 'auth.form.toggle_password'|trans }}">
+                                <svg id="eye-icon-pwd" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#7a4530" stroke-width="1.5"/>
+                                    <circle cx="12" cy="12" r="3" stroke="#7a4530" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">{{ 'auth.register.confirm_label'|trans }}</label>
+                        <div class="input-wrap" id="wrap-confirm">
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#7a4530" stroke-width="1.5"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <input type="password"
+                                   id="confirm_password"
+                                   name="confirm_password"
+                                   placeholder="{{ 'auth.form.password_placeholder'|trans }}"
+                                   required>
+                            <span class="toggle-password" onclick="togglePassword('confirm_password')" title="{{ 'auth.form.toggle_password'|trans }}">
+                                <svg id="eye-icon-confirm" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#7a4530" stroke-width="1.5"/>
+                                    <circle cx="12" cy="12" r="3" stroke="#7a4530" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Gouvernorat #}
+                <div class="form-group">
+                    <label for="region">{{ 'auth.register.region_label'|trans }}</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#7a4530" stroke-width="1.5"/>
+                            <circle cx="12" cy="9" r="2.5" stroke="#7a4530" stroke-width="1.5"/>
+                        </svg>
+                        <select id="region" name="region">
+                            <option value="">{{ 'auth.register.region_placeholder'|trans }}</option>
+                            <option value="Tunis">{{ 'auth.regions.tunis'|trans }}</option>
+                            <option value="Ariana">{{ 'auth.regions.ariana'|trans }}</option>
+                            <option value="Ben Arous">{{ 'auth.regions.ben_arous'|trans }}</option>
+                            <option value="Manouba">{{ 'auth.regions.manouba'|trans }}</option>
+                            <option value="Nabeul">{{ 'auth.regions.nabeul'|trans }}</option>
+                            <option value="Zaghouan">{{ 'auth.regions.zaghouan'|trans }}</option>
+                            <option value="Bizerte">{{ 'auth.regions.bizerte'|trans }}</option>
+                            <option value="Béja">{{ 'auth.regions.beja'|trans }}</option>
+                            <option value="Jendouba">{{ 'auth.regions.jendouba'|trans }}</option>
+                            <option value="Le Kef">{{ 'auth.regions.le_kef'|trans }}</option>
+                            <option value="Siliana">{{ 'auth.regions.siliana'|trans }}</option>
+                            <option value="Sousse">{{ 'auth.regions.sousse'|trans }}</option>
+                            <option value="Monastir">{{ 'auth.regions.monastir'|trans }}</option>
+                            <option value="Mahdia">{{ 'auth.regions.mahdia'|trans }}</option>
+                            <option value="Sfax">{{ 'auth.regions.sfax'|trans }}</option>
+                            <option value="Kairouan">{{ 'auth.regions.kairouan'|trans }}</option>
+                            <option value="Kasserine">{{ 'auth.regions.kasserine'|trans }}</option>
+                            <option value="Sidi Bouzid">{{ 'auth.regions.sidi_bouzid'|trans }}</option>
+                            <option value="Gabès">{{ 'auth.regions.gabes'|trans }}</option>
+                            <option value="Médenine">{{ 'auth.regions.medenine'|trans }}</option>
+                            <option value="Tataouine">{{ 'auth.regions.tataouine'|trans }}</option>
+                            <option value="Gafsa">{{ 'auth.regions.gafsa'|trans }}</option>
+                            <option value="Tozeur">{{ 'auth.regions.tozeur'|trans }}</option>
+                            <option value="Kébili">{{ 'auth.regions.kebili'|trans }}</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="dateNaissance">Date de naissance</label>
-                        <input type="date" class="form-control" id="dateNaissance" name="dateNaissance">
+                </div>
+
+                {# Date de naissance #}
+                <div class="form-group">
+                    <label for="dateNaissance">{{ 'auth.register.birthdate_label'|trans }}</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7a4530" stroke-width="1.5"/>
+                            <path d="M3 10h18M8 2v4M16 2v4" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <input type="date" id="dateNaissance" name="dateNaissance">
                     </div>
-                    
-                    <!-- ✅ AJOUT : Champ pour choisir le rôle -->
-                    <div class="form-group">
-                        <label for="role">Rôle</label>
-                        <select class="form-select" id="role" name="role">
-                            <option value="user">Utilisateur standard</option>
-                            <option value="admin">Administrateur</option>
+                </div>
+
+                {# ===== TYPE D'UTILISATEUR (RÔLE) ===== #}
+                <div class="form-group">
+                    <label for="role">{{ 'auth.register.role_label'|trans }} <span class="required-star" style="color:#c0392b;">*</span></label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" stroke="#7a4530" stroke-width="1.5"/>
+                        </svg>
+                        <select id="role" name="role" required>
+                            <option value="user" selected>{{ 'auth.register.role_user'|trans }}</option>
+                            <option value="admin">{{ 'auth.register.role_admin'|trans }}</option>
                         </select>
-                        <small class="text-muted">⚠️ Sélectionnez "Administrateur" uniquement si vous avez l'autorisation.</small>
                     </div>
-                    
-                    <button type="submit" class="btn-register">
-                        <i class="fas fa-user-plus"></i> Créer mon compte
-                    </button>
-                    
-                    <div class="login-link">
-                        Vous avez déjà un compte ? 
-                        <a href="{{ path('app_login') }}">Connectez-vous</a>
-                    </div>
-                </form>
-            </div>
+                    <small class="help-text">
+                        {{ 'auth.register.role_warning'|trans }}
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M8.5 3.5a4 4 0 100 8 4 4 0 000-8zM20 8v6M23 11h-6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ 'auth.register.submit'|trans }}
+                </button>
+            </form>
+
+            <div class="divider-line"><span>{{ 'common.or'|trans }}</span></div>
+
+            <a href="{{ path('app_google') }}" class="btn-google">
+                <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                {{ 'auth.register.google'|trans }}
+            </a>
+
+            <p class="login-text">
+                {{ 'auth.register.already_account'|trans }}
+                <a href="{{ path('app_login') }}">{{ 'auth.register.login_link'|trans }}</a>
+            </p>
+
         </div>
     </div>
 </div>
@@ -403,16 +718,15 @@
 <script>
 function togglePassword(fieldId) {
     const field = document.getElementById(fieldId);
-    const icon = field.nextElementSibling;
+    const eyeIcon = fieldId === 'password' ? 'eye-icon-pwd' : 'eye-icon-confirm';
+    const icon = document.getElementById(eyeIcon);
     
     if (field.type === 'password') {
         field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" stroke="#7a4530" stroke-width="1.5" stroke-linecap="round"/>';
     } else {
         field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#7a4530" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#7a4530" stroke-width="1.5"/>';
     }
 }
 
@@ -422,104 +736,74 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('confirm_password');
+    const roleSelect = document.getElementById('role');
+    const wrapNom = document.getElementById('wrap-nom');
+    const wrapEmail = document.getElementById('wrap-email');
+    const wrapPassword = document.getElementById('wrap-password');
+    const wrapConfirm = document.getElementById('wrap-confirm');
+    const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
     
     // Validation du nom
     nomInput.addEventListener('input', function() {
         const value = this.value.trim();
-        const errorDiv = this.parentElement.querySelector('.invalid-feedback');
-        
         if (value.length === 0) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Le nom est obligatoire';
+            wrapNom.classList.add('is-invalid');
         } else if (value.length < 3) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Le nom doit contenir au moins 3 caractères';
-        } else if (value.length > 100) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Le nom ne peut pas dépasser 100 caractères';
+            wrapNom.classList.add('is-invalid');
         } else {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-            errorDiv.textContent = '';
+            wrapNom.classList.remove('is-invalid');
         }
     });
     
     // Validation de l'email
     emailInput.addEventListener('input', function() {
         const value = this.value.trim();
-        const errorDiv = this.parentElement.querySelector('.invalid-feedback');
-        const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
-        
-        if (value.length === 0) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'L\'email est obligatoire';
-        } else if (!emailRegex.test(value)) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Veuillez entrer une adresse email valide';
+        if (value.length === 0 || !emailRegex.test(value)) {
+            wrapEmail.classList.add('is-invalid');
         } else {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-            errorDiv.textContent = '';
+            wrapEmail.classList.remove('is-invalid');
         }
     });
     
     // Validation du mot de passe
     passwordInput.addEventListener('input', function() {
         const value = this.value;
-        const errorDiv = this.parentElement.querySelector('.invalid-feedback');
-        
         if (value.length === 0) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Le mot de passe est obligatoire';
+            wrapPassword.classList.add('is-invalid');
         } else if (value.length < 6) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-            errorDiv.textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+            wrapPassword.classList.add('is-invalid');
         } else {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-            errorDiv.textContent = '';
-            
-            if (confirmInput.value) {
-                validateConfirmPassword();
-            }
+            wrapPassword.classList.remove('is-invalid');
+            if (confirmInput.value) validateConfirmPassword();
         }
     });
     
-    // Validation de la confirmation
     function validateConfirmPassword() {
-        const errorDiv = confirmInput.parentElement.querySelector('.invalid-feedback');
-        
         if (confirmInput.value.length === 0) {
-            confirmInput.classList.add('is-invalid');
-            confirmInput.classList.remove('is-valid');
-            errorDiv.textContent = 'Veuillez confirmer votre mot de passe';
+            wrapConfirm.classList.add('is-invalid');
         } else if (passwordInput.value !== confirmInput.value) {
-            confirmInput.classList.add('is-invalid');
-            confirmInput.classList.remove('is-valid');
-            errorDiv.textContent = 'Les mots de passe ne correspondent pas';
+            wrapConfirm.classList.add('is-invalid');
         } else {
-            confirmInput.classList.remove('is-invalid');
-            confirmInput.classList.add('is-valid');
-            errorDiv.textContent = '';
+            wrapConfirm.classList.remove('is-invalid');
         }
     }
     
     confirmInput.addEventListener('input', validateConfirmPassword);
     
-    // Animation au submit
+    // Validation du rôle avant soumission
     form.addEventListener('submit', function(e) {
-        const inputs = form.querySelectorAll('.form-control, .form-select');
+        if (!roleSelect.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner un type d\'utilisateur');
+            return false;
+        }
+        
         let hasError = false;
+        const inputs = [nomInput, emailInput, passwordInput, confirmInput];
         
         inputs.forEach(input => {
-            if (input.classList.contains('is-invalid')) {
+            const wrap = document.getElementById('wrap-' + input.id);
+            if (wrap && wrap.classList.contains('is-invalid')) {
                 hasError = true;
                 input.parentElement.classList.add('shake');
                 setTimeout(() => {
@@ -530,6 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (hasError) {
             e.preventDefault();
+            alert('Veuillez corriger les erreurs dans le formulaire');
         }
     });
 });

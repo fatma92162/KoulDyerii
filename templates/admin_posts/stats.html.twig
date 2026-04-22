@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Statistiques - Administration{% endblock %}
+{% block title %}{{ 'admin.posts.stats_page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -62,12 +62,12 @@
 <div class="admin-header">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
-            <h1><i class="fas fa-chart-line"></i> Statistiques avancées</h1>
+            <h1><i class="fas fa-chart-line"></i> {{ 'admin.posts.stats_header_title'|trans }}</h1>
             <a href="{{ path('app_admin_posts_index') }}" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Retour à la gestion
+                <i class="fas fa-arrow-left"></i> {{ 'admin.posts.stats_back'|trans }}
             </a>
         </div>
-        <p class="mb-0">Analyse des performances de la plateforme</p>
+        <p class="mb-0">{{ 'admin.posts.stats_header_subtitle'|trans }}</p>
     </div>
 </div>
 
@@ -76,27 +76,27 @@
         <div class="col-md-3">
             <div class="card-stats text-center">
                 <div class="stat-number">{{ totalPosts }}</div>
-                <div class="stat-label">Publications</div>
+                <div class="stat-label">{{ 'admin.posts.stats_posts_label'|trans }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card-stats text-center">
                 <div class="stat-number">{{ totalComments }}</div>
-                <div class="stat-label">Commentaires</div>
+                <div class="stat-label">{{ 'admin.posts.stats_comments_label'|trans }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card-stats text-center">
                 <div class="stat-number">{{ totalLikes }}</div>
-                <div class="stat-label">Likes</div>
+                <div class="stat-label">{{ 'admin.posts.stats_likes_label'|trans }}</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card-stats text-center">
                 <div class="stat-number">{{ avgComments }}</div>
-                <div class="stat-label">Moy. commentaires/post</div>
+                <div class="stat-label">{{ 'admin.posts.stats_avg_comments_label'|trans }}</div>
                 <div class="stat-number mt-2">{{ avgLikes }}</div>
-                <div class="stat-label">Moy. likes/post</div>
+                <div class="stat-label">{{ 'admin.posts.stats_avg_likes_label'|trans }}</div>
             </div>
         </div>
     </div>
@@ -105,7 +105,7 @@
         <!-- Évolution des publications -->
         <div class="col-md-6">
             <div class="card-stats">
-                <h4><i class="fas fa-chart-line"></i> Publications (30 derniers jours)</h4>
+                <h4><i class="fas fa-chart-line"></i> {{ 'admin.posts.stats_posts_30_long'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="postsChart"></canvas>
                 </div>
@@ -115,7 +115,7 @@
         <!-- Évolution des commentaires -->
         <div class="col-md-6">
             <div class="card-stats">
-                <h4><i class="fas fa-comments"></i> Commentaires (30 derniers jours)</h4>
+                <h4><i class="fas fa-comments"></i> {{ 'admin.posts.stats_comments_30_long'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="commentsChart"></canvas>
                 </div>
@@ -125,7 +125,7 @@
         <!-- Évolution des likes -->
         <div class="col-md-6">
             <div class="card-stats">
-                <h4><i class="fas fa-heart"></i> Likes (30 derniers jours)</h4>
+                <h4><i class="fas fa-heart"></i> {{ 'admin.posts.stats_likes_30_long'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="likesChart"></canvas>
                 </div>
@@ -135,7 +135,7 @@
         <!-- Top 5 utilisateurs les plus actifs -->
         <div class="col-md-6">
             <div class="card-stats">
-                <h4><i class="fas fa-trophy"></i> Top 5 utilisateurs actifs</h4>
+                <h4><i class="fas fa-trophy"></i> {{ 'admin.posts.stats_top_users_active'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="topUsersChart"></canvas>
                 </div>
@@ -145,7 +145,7 @@
         <!-- Répartition épinglés vs non épinglés -->
         <div class="col-md-4">
             <div class="card-stats">
-                <h4><i class="fas fa-thumbtack"></i> Publications épinglées</h4>
+                <h4><i class="fas fa-thumbtack"></i> {{ 'admin.posts.stats_pinned_label'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="pinnedChart"></canvas>
                 </div>
@@ -155,7 +155,7 @@
         <!-- Répartition avec/sans image -->
         <div class="col-md-4">
             <div class="card-stats">
-                <h4><i class="fas fa-image"></i> Publications avec image</h4>
+                <h4><i class="fas fa-image"></i> {{ 'admin.posts.stats_with_image_label'|trans }}</h4>
                 <div class="chart-container">
                     <canvas id="imageChart"></canvas>
                 </div>
@@ -165,13 +165,13 @@
         <!-- Résumé rapide -->
         <div class="col-md-4">
             <div class="card-stats">
-                <h4><i class="fas fa-chart-pie"></i> Résumé</h4>
+                <h4><i class="fas fa-chart-pie"></i> {{ 'admin.posts.stats_summary_title'|trans }}</h4>
                 <ul class="list-unstyled mt-3">
-                    <li><strong>📊 Taux d'engagement :</strong> {{ totalComments + totalLikes }} interactions</li>
-                    <li><strong>📌 Épinglés :</strong> {{ pinnedPosts }} ({{ (pinnedPosts / totalPosts * 100)|round(1) }}%)</li>
-                    <li><strong>🖼️ Avec image :</strong> {{ withImage }} ({{ (withImage / totalPosts * 100)|round(1) }}%)</li>
-                    <li><strong>💬 Commentaires par post :</strong> {{ avgComments }}</li>
-                    <li><strong>❤️ Likes par post :</strong> {{ avgLikes }}</li>
+                    <li><strong>📊 {{ 'admin.posts.stats_engagement_label'|trans }} :</strong> {{ totalComments + totalLikes }} {{ 'admin.posts.stats_engagement_value'|trans }}</li>
+                    <li><strong>📌 {{ 'admin.posts.stats_pinned_short'|trans }} :</strong> {{ pinnedPosts }} ({{ (pinnedPosts / totalPosts * 100)|round(1) }}%)</li>
+                    <li><strong>🖼️ {{ 'admin.posts.stats_with_image_short'|trans }} :</strong> {{ withImage }} ({{ (withImage / totalPosts * 100)|round(1) }}%)</li>
+                    <li><strong>💬 {{ 'admin.posts.stats_comments_per_post'|trans }} :</strong> {{ avgComments }}</li>
+                    <li><strong>❤️ {{ 'admin.posts.stats_likes_per_post'|trans }} :</strong> {{ avgLikes }}</li>
                 </ul>
             </div>
         </div>
@@ -179,6 +179,17 @@
 </div>
 
 <script>
+const statsI18n = {
+    postsLabel: "{{ 'admin.posts.stats_posts_label'|trans|e('js') }}",
+    commentsLabel: "{{ 'admin.posts.stats_comments_label'|trans|e('js') }}",
+    likesLabel: "{{ 'admin.posts.stats_likes_label'|trans|e('js') }}",
+    topUsersLabel: "{{ 'admin.posts.stats_top_users_label'|trans|e('js') }}",
+    actionsAxis: "{{ 'admin.posts.stats_actions_axis'|trans|e('js') }}",
+    pinnedLabel: "{{ 'admin.posts.stats_pinned_short'|trans|e('js') }}",
+    unpinnedLabel: "{{ 'admin.posts.stats_unpinned_short'|trans|e('js') }}",
+    withImageLabel: "{{ 'admin.posts.stats_with_image_short'|trans|e('js') }}",
+    withoutImageLabel: "{{ 'admin.posts.stats_without_image_short'|trans|e('js') }}"
+};
 // Évolution des publications
 const ctxPosts = document.getElementById('postsChart').getContext('2d');
 new Chart(ctxPosts, {
@@ -186,7 +197,7 @@ new Chart(ctxPosts, {
     data: {
         labels: {{ postsDates|raw }},
         datasets: [{
-            label: 'Publications',
+            label: statsI18n.postsLabel,
             data: {{ postsCounts|raw }},
             borderColor: '#FF6B6B',
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
@@ -204,7 +215,7 @@ new Chart(ctxComments, {
     data: {
         labels: {{ commentsDates|raw }},
         datasets: [{
-            label: 'Commentaires',
+            label: statsI18n.commentsLabel,
             data: {{ commentsCounts|raw }},
             borderColor: '#4CAF50',
             backgroundColor: 'rgba(76, 175, 80, 0.1)',
@@ -222,7 +233,7 @@ new Chart(ctxLikes, {
     data: {
         labels: {{ likesDates|raw }},
         datasets: [{
-            label: 'Likes',
+            label: statsI18n.likesLabel,
             data: {{ likesCounts|raw }},
             borderColor: '#FFC107',
             backgroundColor: 'rgba(255, 193, 7, 0.1)',
@@ -240,7 +251,7 @@ new Chart(ctxUsers, {
     data: {
         labels: {{ topUsersNames|raw }},
         datasets: [{
-            label: "Nombre d'actions (posts + commentaires)",
+            label: statsI18n.topUsersLabel,
             data: {{ topUsersActivity|raw }},
             backgroundColor: '#8B0000',
             borderRadius: 8
@@ -249,7 +260,7 @@ new Chart(ctxUsers, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, title: { display: true, text: 'Actions' } } }
+        scales: { y: { beginAtZero: true, title: { display: true, text: statsI18n.actionsAxis } } }
     }
 });
 
@@ -258,7 +269,7 @@ const ctxPinned = document.getElementById('pinnedChart').getContext('2d');
 new Chart(ctxPinned, {
     type: 'doughnut',
     data: {
-        labels: ['Épinglés', 'Non épinglés'],
+        labels: [statsI18n.pinnedLabel, statsI18n.unpinnedLabel],
         datasets: [{
             data: [{{ pinnedPosts }}, {{ unpinnedPosts }}],
             backgroundColor: ['#5bc0de', '#f0e6d6'],
@@ -273,7 +284,7 @@ const ctxImage = document.getElementById('imageChart').getContext('2d');
 new Chart(ctxImage, {
     type: 'doughnut',
     data: {
-        labels: ['Avec image', 'Sans image'],
+        labels: [statsI18n.withImageLabel, statsI18n.withoutImageLabel],
         datasets: [{
             data: [{{ withImage }}, {{ withoutImage }}],
             backgroundColor: ['#FF8E53', '#f0e6d6'],

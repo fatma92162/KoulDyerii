@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier le commentaire | Koul Dyeri{% endblock %}
+{% block title %}{{ 'posts.comments.edit_page_title'|trans }} | Koul Dyeri{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -119,7 +119,7 @@
         <div class="col-12">
 
             <a href="{{ path('app_post_show', {id: commentaire.post.id}) }}" class="btn btn-outline-secondary mb-4">
-                <i class="fas fa-arrow-left"></i> Retour à la publication
+                <i class="fas fa-arrow-left"></i> {{ 'posts.comments.back_to_post'|trans }}
             </a>
 
             {% for message in app.flashes('error') %}
@@ -128,32 +128,32 @@
 
             <div class="form-card">
                 <div class="form-header">
-                    <h3>✏️ Modifier votre commentaire</h3>
+                    <h3>✏️ {{ 'posts.comments.edit_heading'|trans }}</h3>
                 </div>
 
                 <div class="form-body">
                     <form method="post" action="{{ path('app_comment_update', {id: commentaire.id}) }}" novalidate>
                         <div class="mb-4">
-                            <label for="content" class="form-label">Commentaire <span class="text-danger">*</span></label>
+                            <label for="content" class="form-label">{{ 'posts.comments.label'|trans }} <span class="text-danger">*</span></label>
                             <textarea class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
                                       id="content" 
                                       name="content" 
                                       rows="6" 
-                                      placeholder="Modifiez votre commentaire..."
+                                      placeholder="{{ 'posts.comments.edit_placeholder'|trans }}"
                                       required>{{ formData.content|default(commentaire.content) }}</textarea>
                             {% if errors.content is defined %}
                                 <div class="invalid-feedback">{{ errors.content }}</div>
                             {% else %}
-                                <small class="help-text">Le commentaire doit contenir entre 2 et 1000 caractères.</small>
+                                <small class="help-text">{{ 'posts.comments.help'|trans }}</small>
                             {% endif %}
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-5">
                             <a href="{{ path('app_post_show', {id: commentaire.post.id}) }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
+                                <i class="fas fa-times"></i> {{ 'common.cancel'|trans }}
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Enregistrer les modifications
+                                <i class="fas fa-save"></i> {{ 'common.save_changes'|trans }}
                             </button>
                         </div>
                     </form>

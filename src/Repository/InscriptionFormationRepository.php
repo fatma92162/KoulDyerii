@@ -43,7 +43,30 @@ class InscriptionFormationRepository extends ServiceEntityRepository
             ->setParameter('idFormation', $idFormation)
             ->getQuery()
             ->getSingleScalarResult();
-        
+
         return $result > 0;
+    }
+
+    /**
+     * Compte les inscriptions par statut pour une formation donnée.
+     * @return array{en_attente: int, acceptee: int, refusee: int}
+     */
+    public function countByStatutForFormation(int $idFormation): array
+    {
+        $rows = $this->createQueryBuilder('i')
+            ->select('i.statut, COUNT(i.idInscription) AS cnt')
+            ->andWhere('i.idFormation = :idFormation')
+            ->setParameter('idFormation', $idFormation)
+            ->groupBy('i.statut')
+            ->getQuery()
+            ->getResult();
+
+        $counts = ['en_attente' => 0, 'acceptee' => 0, 'refusee' => 0];
+        foreach ($rows as $row) {
+            if (isset($counts[$row['statut']])) {
+                $counts[$row['statut']] = (int) $row['cnt'];
+            }
+        }
+        return $counts;
     }
 }

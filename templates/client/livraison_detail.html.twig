@@ -1,221 +1,371 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail livraison #{{ livraison.idLivraison }} - Koul Dyeri{% endblock %}
+{% block title %}Suivi de livraison - Koul Dyeri{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
-    .detail-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+    .tracker-page {
+        min-height: 100vh;
+        background: #f5f5f5;
     }
-    
-    .detail-header {
-        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
-        padding: 20px 30px;
+
+    .tracker-header {
+        background: linear-gradient(135deg, #ff7a00 0%, #ff9500 100%);
+        color: white;
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-weight: 700;
+        font-size: 24px;
+    }
+
+    .tracker-header .back-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        font-size: 22px;
+    }
+
+    .tracker-map-wrap {
+        position: relative;
+        background: #eaeaea;
+    }
+
+    #trackerMap {
+        height: 58vh;
+        min-height: 420px;
+        width: 100%;
+    }
+
+    .eta-bubble {
+        position: absolute;
+        left: 50%;
+        bottom: -54px;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: white;
+        border: 8px solid #ff8a00;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        z-index: 500;
+        font-size: 34px;
+        font-weight: 800;
+        color: #111;
+    }
+
+    .tracker-info {
+        background: white;
+        padding: 86px 24px 34px;
+        text-align: center;
+    }
+
+    .tracker-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #083b4c;
+        margin-bottom: 10px;
+    }
+
+    .tracker-subtitle {
+        font-size: 18px;
+        color: #1d4d5b;
+        max-width: 760px;
+        margin: 0 auto 18px;
+        line-height: 1.5;
+    }
+
+    .tracker-badges {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .tracker-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+        background: #fff3e8;
+        color: #a34d00;
+        border: 1px solid #ffd4ad;
+    }
+
+    .tracker-card {
+        max-width: 950px;
+        margin: 0 auto;
+        background: #fffaf6;
+        border: 1px solid #ffe1c8;
+        border-radius: 22px;
+        padding: 22px;
+        text-align: left;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.05);
+    }
+
+    .tracker-card-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .tracker-mini-box {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid #f3e2d4;
+    }
+
+    .tracker-mini-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #8b6e59;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .tracker-mini-value {
+        font-size: 18px;
+        font-weight: 800;
+        color: #1f1f1f;
+        word-break: break-word;
+    }
+
+    .tracker-actions {
+        margin-top: 22px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .tracker-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 14px 24px;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .tracker-btn-primary {
+        background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
         color: white;
     }
-    
-    .detail-body {
-        padding: 30px;
+
+    .tracker-btn-secondary {
+        background: #fff3e8;
+        color: #a34d00;
+        border: 1px solid #ffd4ad;
     }
-    
-    .info-section {
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #f0e6d6;
+
+    .call-notice {
+        margin-top: 18px;
+        display: none;
+        justify-content: center;
     }
-    
-    .info-section h5 {
-        color: #8B0000;
-        margin-bottom: 15px;
+
+    .call-notice-pill {
+        background: #f0fff4;
+        border: 1px solid #b9ebc9;
+        color: #14733c;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-weight: 800;
     }
-    
-    .timeline {
-        position: relative;
-        padding-left: 30px;
+
+    .incoming-call-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 10001;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
     }
-    
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 10px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e0e0e0;
+
+    .incoming-call-modal {
+        width: min(460px, 94vw);
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.28);
     }
-    
-    .timeline-item {
-        position: relative;
-        margin-bottom: 30px;
+
+    .incoming-call-head {
+        background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+        color: #fff;
+        padding: 22px;
+        text-align: center;
     }
-    
-    .timeline-dot {
-        position: absolute;
-        left: -24px;
-        top: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #ccc;
+
+    .incoming-call-head h4 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 900;
     }
-    
-    .timeline-dot.active {
-        background: #4CAF50;
+
+    .incoming-call-body {
+        padding: 22px;
+        text-align: center;
     }
-    
-    .timeline-dot.current {
-        background: #FF9800;
-        box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.3);
+
+    .incoming-call-state {
+        font-size: 20px;
+        font-weight: 900;
+        color: #083b4c;
+        margin-bottom: 10px;
     }
-    
-    .timeline-content h6 {
-        margin-bottom: 5px;
+
+    .incoming-call-copy {
+        color: #5f5f5f;
+        margin-bottom: 18px;
     }
-    
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+
+    .incoming-call-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
-    
-    .info-item {
-        background: #fefcf8;
-        padding: 12px 15px;
-        border-radius: 10px;
+
+    @media (max-width: 900px) {
+        .tracker-card-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tracker-title {
+            font-size: 24px;
+        }
+
+        .tracker-subtitle {
+            font-size: 16px;
+        }
     }
-    
-    .info-item strong {
-        color: #8B0000;
-    }
-    
-    @media (max-width: 768px) {
-        .info-grid {
+
+    @media (max-width: 560px) {
+        .tracker-card-grid {
             grid-template-columns: 1fr;
+        }
+
+        .tracker-header {
+            font-size: 20px;
+        }
+
+        .eta-bubble {
+            width: 104px;
+            height: 104px;
+            font-size: 28px;
         }
     }
 </style>
 {% endblock %}
 
+
+
 {% block body %}
-<div class="container py-5">
-    <div class="detail-card">
-        <div class="detail-header">
-            <h3><i class="fas fa-truck"></i> Livraison #{{ livraison.idLivraison }}</h3>
-            <p class="mb-0">Suivi de votre colis en temps réel</p>
+<div class="tracker-page">
+    <div class="tracker-header">
+        <a href="{{ path('app_client_livraisons') }}" class="back-btn">✕</a>
+        <span>Food Tracker</span>
+    </div>
+
+    <div class="tracker-map-wrap">
+        <div id="trackerMap"></div>
+        <div class="eta-bubble" id="etaBubble">--:--</div>
+    </div>
+
+    <div class="tracker-info">
+        <div class="tracker-title">Merci pour votre commande !</div>
+        <div class="tracker-subtitle" id="trackerSubtitle">
+            Votre commande sera livrée bientôt.
         </div>
-        <div class="detail-body">
-            <!-- Informations de la commande -->
-            <div class="info-section">
-                <h5><i class="fas fa-shopping-cart"></i> Informations commande</h5>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>Numéro commande :</strong><br>
-                        #{{ commande.id }}
-                    </div>
-                    <div class="info-item">
-                        <strong>Date commande :</strong><br>
-                        {{ commande.createdAt|date('d/m/Y H:i') }}
-                    </div>
-                    <div class="info-item">
-                        <strong>Montant :</strong><br>
-                        {% if produit %}
-                            {{ produit.prix|number_format(2, ',', ' ') }} €
-                        {% else %}
-                            -
-                        {% endif %}
-                    </div>
-                    <div class="info-item">
-                        <strong>Statut commande :</strong><br>
-                        {% if commande.status == 'acceptee' %}
-                            <span class="badge bg-success">Acceptée</span>
-                        {% elseif commande.status == 'refusee' %}
-                            <span class="badge bg-danger">Refusée</span>
-                        {% elseif commande.status == 'annulee' %}
-                            <span class="badge bg-secondary">Annulée</span>
-                        {% else %}
-                            <span class="badge bg-warning">En attente</span>
-                        {% endif %}
-                    </div>
-                </div>
+
+        <div class="tracker-badges">
+            <div class="tracker-badge">
+                📦 Commande #{{ commande.id }}
             </div>
-            
-            <!-- Informations livraison -->
-            <div class="info-section">
-                <h5><i class="fas fa-map-marker-alt"></i> Informations livraison</h5>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <strong>Adresse de livraison :</strong><br>
-                        {{ livraison.adresse }}
-                    </div>
-                    <div class="info-item">
-                        <strong>Statut livraison :</strong><br>
-                        <span class="badge bg-{% if livraison.statutLivraison == 'livree' %}success{% elseif livraison.statutLivraison == 'en_cours' %}warning{% else %}secondary{% endif %}">
-                            {% if livraison.statutLivraison == 'en_cours' %}🚚 En cours
-                            {% elseif livraison.statutLivraison == 'livree' %}✅ Livrée
-                            {% elseif livraison.statutLivraison == 'annulee' %}❌ Annulée
-                            {% else %}⏳ En attente
-                            {% endif %}
-                        </span>
-                    </div>
-                    {% if livreur %}
-                    <div class="info-item">
-                        <strong>Livreur :</strong><br>
-                        {{ livreur.prenom }} {{ livreur.nom }}
-                    </div>
-                    <div class="info-item">
-                        <strong>Téléphone livreur :</strong><br>
-                        {{ livreur.telephone }}
-                    </div>
-                    {% endif %}
-                </div>
+            <div class="tracker-badge">
+                🚚 {{ livreur ? livreur.prenom ~ ' ' ~ livreur.nom : 'Livreur' }}
             </div>
-            
-            <!-- Timeline de livraison -->
-            <div class="info-section">
-                <h5><i class="fas fa-chart-line"></i> Suivi de livraison</h5>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-dot active"></div>
-                        <div class="timeline-content">
-                            <h6>Commande validée</h6>
-                            <p class="text-muted small mb-0">Votre commande a été acceptée et préparée</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot 
-                            {% if livraison.statutLivraison == 'en_cours' %}current
-                            {% elseif livraison.statutLivraison == 'livree' %}active
-                            {% endif %}">
-                        </div>
-                        <div class="timeline-content">
-                            <h6>En cours de livraison</h6>
-                            <p class="text-muted small mb-0">Votre colis est en route vers votre adresse</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot {% if livraison.statutLivraison == 'livree' %}active{% endif %}"></div>
-                        <div class="timeline-content">
-                            <h6>Livrée</h6>
-                            <p class="text-muted small mb-0">Votre colis a été livré avec succès</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Actions -->
-            <div class="text-center mt-4">
-                <a href="{{ path('app_client_livraisons') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Retour à mes livraisons
-                </a>
+            <div class="tracker-badge">
                 {% if livraison.statutLivraison == 'en_cours' %}
-                    <form action="{{ path('app_client_livraison_annuler', {id: livraison.idLivraison}) }}" method="post" style="display: inline-block;">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Annuler cette livraison ?')">
-                            <i class="fas fa-times"></i> Annuler la livraison
+                    🟠 En cours
+                {% elseif livraison.statutLivraison == 'livree' %}
+                    🟢 Livrée
+                {% elseif livraison.statutLivraison == 'annulee' %}
+                    ⚫ Annulée
+                {% else %}
+                    🔵 En attente
+                {% endif %}
+            </div>
+
+            <div class="call-notice" id="clientCallNotice">
+                <div class="call-notice-pill" id="clientCallNoticeText">Appel en cours</div>
+            </div>
+        </div>
+
+        <div class="tracker-card">
+            <div class="tracker-card-grid">
+                <div class="tracker-mini-box">
+                    <div class="tracker-mini-label">Adresse</div>
+                    <div class="tracker-mini-value">{{ livraison.adresse }}</div>
+                </div>
+
+                <div class="tracker-mini-box">
+                    <div class="tracker-mini-label">Téléphone livreur</div>
+                    <div class="tracker-mini-value">{{ livreur and livreur.telephone ? livreur.telephone : '—' }}</div>
+                </div>
+
+                <div class="tracker-mini-box">
+                    <div class="tracker-mini-label">Statut</div>
+                    <div class="tracker-mini-value">
+                        {% if livraison.statutLivraison == 'en_cours' %}
+                            En cours
+                        {% elseif livraison.statutLivraison == 'livree' %}
+                            Livrée
+                        {% elseif livraison.statutLivraison == 'annulee' %}
+                            Annulée
+                        {% else %}
+                            En attente
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="tracker-mini-box">
+                    <div class="tracker-mini-label">Date commande</div>
+                    <div class="tracker-mini-value">{{ commande.createdAt ? commande.createdAt|date('d/m/Y H:i') : '—' }}</div>
+                </div>
+            </div>
+
+            <div class="tracker-actions">
+                <a href="{{ path('app_client_livraisons') }}" class="tracker-btn tracker-btn-secondary">
+                    ← Retour
+                </a>
+
+                {% if livraison.statutLivraison == 'en_cours' %}
+                    <form action="{{ path('app_client_livraison_annuler', {id: livraison.idLivraison}) }}" method="post" style="display:inline;">
+                        <button type="submit" class="tracker-btn tracker-btn-primary" onclick="return confirm('Annuler cette livraison ?')">
+                            ✖ Annuler la livraison
                         </button>
                     </form>
                 {% endif %}
@@ -223,4 +373,607 @@
         </div>
     </div>
 </div>
+<div id="incomingCallOverlay" class="incoming-call-overlay">
+    <div class="incoming-call-modal">
+        <div class="incoming-call-head">
+            <h4><i class="fas fa-phone-volume"></i> Appel entrant</h4>
+        </div>
+
+        <div class="incoming-call-body">
+            <div class="incoming-call-state" id="incomingCallState">Le livreur vous appelle</div>
+            <div class="incoming-call-copy" id="incomingCallCopy">Accepter ou refuser l'appel directement dans l'application.</div>
+            <div class="call-notice-pill" id="clientCallTimer" style="display:inline-block; margin-bottom:18px;">00:00</div>
+
+            <div class="incoming-call-actions">
+                <button type="button" class="tracker-btn tracker-btn-primary" id="acceptIncomingCallBtn" onclick="acceptIncomingCall()">
+                    <i class="fas fa-phone"></i> Accepter
+                </button>
+
+                <button type="button" class="tracker-btn tracker-btn-secondary" id="declineIncomingCallBtn" onclick="declineIncomingCall()">
+                    <i class="fas fa-phone-slash"></i> Refuser
+                </button>
+
+                <button type="button" class="tracker-btn tracker-btn-secondary" id="endIncomingCallBtn" onclick="hangupClientCall()" style="display:none;">
+                    <i class="fas fa-xmark"></i> Terminer
+                </button>
+            </div>
+
+            <audio id="clientRemoteAudio" autoplay></audio>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+const clientLivraisonId = {{ livraison.idLivraison }};
+const clientRtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+    ]
+};
+
+const clientCallState = {
+    pc: null,
+    localStream: null,
+    pollTimer: null,
+    currentOffer: null,
+    active: false,
+    callStartedAt: null,
+    timerInterval: null,
+    ringtoneInterval: null,
+    audioContext: null,
+};
+
+function setIncomingCallState(title, copy) {
+    const titleEl = document.getElementById('incomingCallState');
+    const copyEl = document.getElementById('incomingCallCopy');
+
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+
+    if (copyEl) {
+        copyEl.textContent = copy;
+    }
+}
+
+function toggleClientCallNotice(show, text = 'Appel en cours') {
+    const wrap = document.getElementById('clientCallNotice');
+    const label = document.getElementById('clientCallNoticeText');
+
+    if (label) {
+        label.textContent = text;
+    }
+
+    if (wrap) {
+        wrap.style.display = show ? 'flex' : 'none';
+    }
+}
+
+function formatCallTimer(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    }
+
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+}
+
+function updateClientCallTimerDisplay() {
+    const el = document.getElementById('clientCallTimer');
+    if (!el) {
+        return;
+    }
+
+    if (!clientCallState.callStartedAt) {
+        el.textContent = '00:00';
+        return;
+    }
+
+    const totalSeconds = Math.max(0, Math.floor((Date.now() - clientCallState.callStartedAt) / 1000));
+    el.textContent = formatCallTimer(totalSeconds);
+}
+
+function startClientCallTimer() {
+    if (clientCallState.callStartedAt) {
+        return;
+    }
+
+    clientCallState.callStartedAt = Date.now();
+    updateClientCallTimerDisplay();
+
+    if (clientCallState.timerInterval) {
+        window.clearInterval(clientCallState.timerInterval);
+    }
+
+    clientCallState.timerInterval = window.setInterval(updateClientCallTimerDisplay, 1000);
+}
+
+function stopClientCallTimer() {
+    if (clientCallState.timerInterval) {
+        window.clearInterval(clientCallState.timerInterval);
+        clientCallState.timerInterval = null;
+    }
+
+    clientCallState.callStartedAt = null;
+    updateClientCallTimerDisplay();
+}
+
+function playRingtoneBurst() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+        return;
+    }
+
+    if (!clientCallState.audioContext) {
+        clientCallState.audioContext = new AudioContextClass();
+    }
+
+    const ctx = clientCallState.audioContext;
+    if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
+    const notes = [
+        { freq: 659.25, start: 0, duration: 0.16 },
+        { freq: 880.0, start: 0.22, duration: 0.16 },
+        { freq: 987.77, start: 0.44, duration: 0.3 }
+    ];
+
+    notes.forEach(note => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(note.freq, now + note.start);
+
+        gain.gain.setValueAtTime(0.0001, now + note.start);
+        gain.gain.exponentialRampToValueAtTime(0.08, now + note.start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + note.start + note.duration);
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+
+        oscillator.start(now + note.start);
+        oscillator.stop(now + note.start + note.duration + 0.05);
+    });
+}
+
+function startIncomingRingtone() {
+    if (clientCallState.ringtoneInterval) {
+        return;
+    }
+
+    playRingtoneBurst();
+    clientCallState.ringtoneInterval = window.setInterval(playRingtoneBurst, 1600);
+}
+
+function stopIncomingRingtone() {
+    if (clientCallState.ringtoneInterval) {
+        window.clearInterval(clientCallState.ringtoneInterval);
+        clientCallState.ringtoneInterval = null;
+    }
+}
+
+function showIncomingCallOverlay() {
+    document.getElementById('incomingCallOverlay').style.display = 'flex';
+}
+
+function hideIncomingCallOverlay() {
+    document.getElementById('incomingCallOverlay').style.display = 'none';
+}
+
+async function clientWaitForIceGatheringComplete(pc) {
+    if (pc.iceGatheringState === 'complete') {
+        return;
+    }
+
+    await new Promise(resolve => {
+        const onChange = () => {
+            if (pc.iceGatheringState === 'complete') {
+                pc.removeEventListener('icegatheringstatechange', onChange);
+                resolve();
+            }
+        };
+
+        pc.addEventListener('icegatheringstatechange', onChange);
+    });
+}
+
+async function pollClientCallState() {
+    try {
+        const response = await fetch('{{ path('app_delivery_call_poll', {id: 0}) }}'.replace('/0/', '/' + clientLivraisonId + '/') + '?role=client');
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return;
+        }
+
+        const session = data.session || {};
+        const status = session.status || 'idle';
+
+        if (status === 'ringing' && session.offer && !clientCallState.active) {
+            clientCallState.currentOffer = session.offer;
+            setIncomingCallState('Le livreur vous appelle', 'Accepter ou refuser l appel directement dans l application.');
+            document.getElementById('acceptIncomingCallBtn').style.display = 'inline-flex';
+            document.getElementById('declineIncomingCallBtn').style.display = 'inline-flex';
+            document.getElementById('endIncomingCallBtn').style.display = 'none';
+            stopClientCallTimer();
+            startIncomingRingtone();
+            showIncomingCallOverlay();
+        } else if (status === 'declined') {
+            stopIncomingRingtone();
+            hideIncomingCallOverlay();
+            toggleClientCallNotice(false);
+            cleanupClientCall(false);
+        } else if (status === 'accepted' && clientCallState.active) {
+            toggleClientCallNotice(true, 'Appel en cours avec le livreur');
+        } else if (status === 'ended') {
+            setIncomingCallState('Appel termine', 'Le livreur a raccroche.');
+            stopIncomingRingtone();
+            toggleClientCallNotice(false);
+            cleanupClientCall(false);
+            hideIncomingCallOverlay();
+        }
+    } catch (error) {
+    }
+}
+
+async function acceptIncomingCall() {
+    if (!clientCallState.currentOffer) {
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const pc = new RTCPeerConnection(clientRtcConfig);
+        const remoteAudio = document.getElementById('clientRemoteAudio');
+
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+        pc.ontrack = (event) => {
+            if (event.streams && event.streams[0]) {
+                remoteAudio.srcObject = event.streams[0];
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'connected') {
+                setIncomingCallState('En communication', 'Vous etes maintenant en appel avec le livreur.');
+                toggleClientCallNotice(true, 'Appel en cours avec le livreur');
+                startClientCallTimer();
+            } else if (['failed', 'disconnected'].includes(pc.connectionState)) {
+                setIncomingCallState('Connexion interrompue', 'Le signal audio a ete coupe.');
+            }
+        };
+
+        await pc.setRemoteDescription(clientCallState.currentOffer);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await clientWaitForIceGatheringComplete(pc);
+
+        const response = await fetch('{{ path('app_delivery_call_accept', {id: 0}) }}'.replace('/0/', '/' + clientLivraisonId + '/'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                answer: pc.localDescription
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Impossible d accepter l appel.');
+        }
+
+        clientCallState.pc = pc;
+        clientCallState.localStream = stream;
+        clientCallState.active = true;
+        stopIncomingRingtone();
+
+        document.getElementById('acceptIncomingCallBtn').style.display = 'none';
+        document.getElementById('declineIncomingCallBtn').style.display = 'none';
+        document.getElementById('endIncomingCallBtn').style.display = 'inline-flex';
+
+        setIncomingCallState('En communication', 'Vous etes maintenant en appel avec le livreur.');
+        toggleClientCallNotice(true, 'Appel en cours avec le livreur');
+        startClientCallTimer();
+    } catch (error) {
+        stopIncomingRingtone();
+        setIncomingCallState('Erreur', error.message || 'Impossible d accepter l appel.');
+    }
+}
+
+async function declineIncomingCall() {
+    try {
+        await fetch('{{ path('app_delivery_call_decline', {id: 0}) }}'.replace('/0/', '/' + clientLivraisonId + '/'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reason: 'declined_by_client'
+            })
+        });
+    } catch (error) {
+    }
+
+    stopIncomingRingtone();
+    clientCallState.currentOffer = null;
+    hideIncomingCallOverlay();
+    toggleClientCallNotice(false);
+}
+
+async function hangupClientCall() {
+    try {
+        await fetch('{{ path('app_delivery_call_hangup', {id: 0}) }}'.replace('/0/', '/' + clientLivraisonId + '/'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                role: 'client'
+            })
+        });
+    } catch (error) {
+    }
+
+    stopIncomingRingtone();
+    cleanupClientCall(false);
+    hideIncomingCallOverlay();
+    toggleClientCallNotice(false);
+}
+
+function cleanupClientCall(resetOffer = true) {
+    if (clientCallState.pc) {
+        try {
+            clientCallState.pc.close();
+        } catch (error) {
+        }
+        clientCallState.pc = null;
+    }
+
+    if (clientCallState.localStream) {
+        clientCallState.localStream.getTracks().forEach(track => track.stop());
+        clientCallState.localStream = null;
+    }
+
+    if (resetOffer) {
+        clientCallState.currentOffer = null;
+    }
+
+    clientCallState.active = false;
+    stopClientCallTimer();
+    stopIncomingRingtone();
+
+    const remoteAudio = document.getElementById('clientRemoteAudio');
+    if (remoteAudio) {
+        remoteAudio.srcObject = null;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
+    const defaultLat = 36.8065;
+    const defaultLng = 10.1815;
+    const address = {{ livraison.adresse ? livraison.adresse|json_encode|raw : '""' }};
+    const savedStartLat = {{ attribute(livraison, 'startLat') is defined and livraison.startLat is not null ? livraison.startLat : 'null' }};
+    const savedStartLng = {{ attribute(livraison, 'startLng') is defined and livraison.startLng is not null ? livraison.startLng : 'null' }};
+
+    const map = L.map('trackerMap', {
+        zoomControl: false
+    }).setView([defaultLat, defaultLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    function formatClockFromMinutes(minutes) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + Math.round(minutes));
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        return hh + ':' + mm;
+    }
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function buildFakeRoute(fromLat, fromLng, toLat, toLng) {
+        const points = [];
+        const steps = 28;
+
+        const midLat = (fromLat + toLat) / 2;
+        const midLng = (fromLng + toLng) / 2;
+
+        const curveLatOffset = (Math.random() > 0.5 ? 1 : -1) * 0.010;
+        const curveLngOffset = (Math.random() > 0.5 ? 1 : -1) * 0.010;
+
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+
+            const lat =
+                Math.pow(1 - t, 2) * fromLat +
+                2 * (1 - t) * t * (midLat + curveLatOffset) +
+                Math.pow(t, 2) * toLat;
+
+            const lng =
+                Math.pow(1 - t, 2) * fromLng +
+                2 * (1 - t) * t * (midLng + curveLngOffset) +
+                Math.pow(t, 2) * toLng;
+
+            points.push([lat, lng]);
+        }
+
+        const directDistance = haversineDistance(fromLat, fromLng, toLat, toLng);
+        const routeDistance = Math.max(2.0, directDistance * 1.25);
+        const durationMinutes = Math.max(8, routeDistance * 3.5);
+
+        return {
+            coordinates: points,
+            distanceKm: routeDistance,
+            durationMinutes: durationMinutes
+        };
+    }
+
+    async function geocodeAddress(text) {
+        if (!text || !text.trim()) return null;
+
+        try {
+            const query = encodeURIComponent(text + ', Tunisie');
+            const response = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + query, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lng: parseFloat(data[0].lon)
+                };
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+
+        return null;
+    }
+
+    let destination = await geocodeAddress(address);
+
+    if (!destination) {
+        destination = {
+            lat: defaultLat + ((Math.random() - 0.5) * 0.02),
+            lng: defaultLng + ((Math.random() - 0.5) * 0.02)
+        };
+    }
+
+    let livreurPoint;
+    if (savedStartLat !== null && savedStartLng !== null && !isNaN(savedStartLat) && !isNaN(savedStartLng)) {
+        livreurPoint = {
+            lat: parseFloat(savedStartLat),
+            lng: parseFloat(savedStartLng)
+        };
+    } else {
+        livreurPoint = {
+            lat: destination.lat - 0.03,
+            lng: destination.lng - 0.02
+        };
+    }
+
+    const routeData = buildFakeRoute(
+        livreurPoint.lat,
+        livreurPoint.lng,
+        destination.lat,
+        destination.lng
+    );
+
+    const homeIcon = L.divIcon({
+        className: '',
+        html: `
+            <div style="
+                width:34px;
+                height:34px;
+                background:#083b4c;
+                border:4px solid white;
+                border-radius:50% 50% 50% 0;
+                transform: rotate(-45deg);
+                box-shadow:0 6px 18px rgba(0,0,0,0.20);
+                position:relative;
+            ">
+                <div style="
+                    position:absolute;
+                    transform: rotate(45deg);
+                    left:8px;
+                    top:6px;
+                    color:white;
+                    font-size:15px;
+                ">🏠</div>
+            </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 34]
+    });
+
+    const livreurIcon = L.divIcon({
+        className: '',
+        html: `
+            <div style="
+                width:24px;
+                height:24px;
+                border-radius:50%;
+                background:white;
+                border:4px solid #083b4c;
+                box-shadow:0 3px 10px rgba(0,0,0,0.15);
+            "></div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    L.marker([destination.lat, destination.lng], { icon: homeIcon }).addTo(map);
+
+    const movingMarker = L.marker([livreurPoint.lat, livreurPoint.lng], { icon: livreurIcon }).addTo(map);
+
+    L.polyline(routeData.coordinates, {
+        color: '#ff7a00',
+        weight: 6,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round'
+    }).addTo(map);
+
+    const bounds = L.latLngBounds(routeData.coordinates);
+    map.fitBounds(bounds, { padding: [40, 40] });
+
+    const etaText = formatClockFromMinutes(routeData.durationMinutes);
+    document.getElementById('etaBubble').textContent = etaText;
+
+    document.getElementById('trackerSubtitle').textContent =
+        'Votre commande sera livrée aux alentours de ' + etaText + '.';
+
+    let index = 0;
+    function moveLivreur() {
+        if (index < routeData.coordinates.length) {
+            movingMarker.setLatLng(routeData.coordinates[index]);
+            index++;
+            setTimeout(moveLivreur, 260);
+        }
+    }
+    moveLivreur();
+
+    setTimeout(function () {
+        map.invalidateSize();
+    }, 300);
+
+    {% if livraison.statutLivraison == 'en_cours' %}
+    clientCallState.pollTimer = window.setInterval(pollClientCallState, 2000);
+    await pollClientCallState();
+    {% endif %}
+});
+
+window.addEventListener('beforeunload', function () {
+    if (clientCallState.pollTimer) {
+        window.clearInterval(clientCallState.pollTimer);
+    }
+});
+</script>
 {% endblock %}

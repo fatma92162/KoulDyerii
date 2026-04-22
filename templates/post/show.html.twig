@@ -1,895 +1,1418 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ post.title }} | Koul Dyeri{% endblock %}
+{% block title %}{{ post.title|censor }} | Koul Dyeri{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
-    .post-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        overflow: hidden;
-        position: relative;
-        margin-bottom: 30px;
-    }
+/* ============================================================
+   KOUL DYERI — POST DETAIL  |  Editorial Culinary Theme
+   ============================================================ */
 
-    .post-card.pinned {
-        border-left: 5px solid #5bc0de;
-        background: #f8fcff;
-    }
+:root {
+    --saffron:     #E8A040;
+    --saffron-dim: rgba(232,160,64,.12);
+    --ember:       #C04A2A;
+    --cream:       #FAF7F2;
+    --ink:         #1A1612;
+    --slate:       #5A5450;
+    --mist:        #E9E4DC;
+    --white:       #FFFFFF;
+    --pin-blue:    #2E86AB;
+    --pin-blue-dim:rgba(46,134,171,.12);
+    --success:     #2D7D46;
+    --danger:      #C04A2A;
 
-    .pin-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: #5bc0de;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        z-index: 10;
-    }
+    --r-sm:  12px;
+    --r-md:  20px;
+    --r-lg:  28px;
+    --r-xl:  40px;
 
-    .post-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 25px;
-        border-bottom: 1px solid #f0e6d6;
-    }
+    --shadow-feather: 0 2px 12px rgba(26,22,18,.06);
+    --shadow-float:   0 8px 32px rgba(26,22,18,.10);
+    --shadow-lift:    0 20px 56px rgba(26,22,18,.15);
 
-    .author-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body:    'DM Sans', sans-serif;
 
-    .author-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 18px;
-        flex-shrink: 0;
-        overflow: hidden;
-    }
+    --transition: .22s cubic-bezier(.4,0,.2,1);
+}
 
-    .author-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .post-content {
-        padding: 25px;
-        font-size: 15.5px;
-        line-height: 1.7;
-        color: #444;
-    }
+body {
+    background: var(--cream);
+    font-family: var(--font-body);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+}
 
-    .post-body {
-        margin-top: 15px;
-    }
-    .post-body img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 12px;
-    }
-    .post-body p {
-        margin-bottom: 1em;
-    }
+/* ── Page wrapper ─────────────────────────────────────────── */
+.pd-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 24px 80px;
+}
 
-    .post-image {
-        width: 100%;
-        max-height: 480px;
-        object-fit: cover;
-    }
+/* ── Back link ────────────────────────────────────────────── */
+.pd-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--slate);
+    text-decoration: none;
+    padding: 8px 18px 8px 12px;
+    border-radius: var(--r-xl);
+    border: 1.5px solid var(--mist);
+    background: var(--white);
+    transition: var(--transition);
+    margin-bottom: 28px;
+}
+.pd-back:hover {
+    border-color: var(--saffron);
+    color: var(--saffron);
+    background: var(--saffron-dim);
+    transform: translateX(-3px);
+}
 
-    .post-gif {
-        margin: 0 25px 20px;
-        text-align: center;
-    }
-    .post-gif img {
-        max-height: 300px;
-        max-width: 100%;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+/* ── Flash messages ──────────────────────────────────────── */
+.pd-flash {
+    border-radius: var(--r-md);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    font-size: .9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeSlideDown .35s ease;
+}
+.pd-flash.success { background: #E8F5ED; color: var(--success); }
+.pd-flash.danger  { background: #FBECEA; color: var(--danger);  }
 
-    .post-actions {
-        padding: 15px 25px;
-        border-top: 1px solid #f0e6d6;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-    .btn-like {
-        background: none;
-        border: 2px solid #f0e6d6;
-        border-radius: 50px;
-        padding: 8px 22px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #999;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
+/* ── Post card ────────────────────────────────────────────── */
+.post-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-float);
+    overflow: hidden;
+    border: 1px solid rgba(26,22,18,.05);
+    animation: cardReveal .45s ease both;
+}
 
-    .btn-like:hover,
-    .btn-like.reacted {
-        border-color: #FF6B6B;
-        color: #FF6B6B;
-        background: #fff0f0;
-    }
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-    .btn-pin {
-        background: none;
-        border: 2px solid #f0e6d6;
-        border-radius: 50px;
-        padding: 6px 16px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #5bc0de;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
+.post-card.pinned {
+    border-top: 4px solid var(--pin-blue);
+}
 
-    .btn-pin:hover {
-        border-color: #5bc0de;
-        color: #5bc0de;
-        background: #f0f8ff;
-    }
+/* ── Pin badge ────────────────────────────────────────────── */
+.pin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--pin-blue);
+    color: var(--white);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    position: absolute;
+    top: 0;
+    right: 28px;
+}
 
-    .btn-pin.pinned {
-        border-color: #5bc0de;
-        color: white;
-        background: #5bc0de;
-    }
+/* ── Post header ─────────────────────────────────────────── */
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--mist);
+    position: relative;
+    flex-wrap: wrap;
+    gap: 16px;
+}
 
-    .btn-signal {
-        background: none;
-        border: 2px solid #f0e6d6;
-        border-radius: 50px;
-        padding: 7px 18px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #d9534f;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .btn-signal:hover {
-        border-color: #d9534f;
-        background: #fff0f0;
-    }
+.author-block {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
 
-    .comment-card {
-        background: white;
-        border-radius: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        transition: all 0.2s ease;
-    }
+.author-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--saffron) 0%, var(--ember) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(232,160,64,.35);
+}
+.author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.author-avatar span { color: var(--white); font-weight: 700; font-size: 20px; }
 
-    .comment-card:hover {
-        transform: translateX(4px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    }
+.author-name {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+}
+.post-meta {
+    font-size: .75rem;
+    color: var(--slate);
+    margin-top: 2px;
+}
 
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px 10px;
-    }
+/* ── Header controls ─────────────────────────────────────── */
+.header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
-    .comment-body {
-        padding: 0 20px 15px;
-        font-size: 15px;
-        line-height: 1.6;
-    }
-    .comment-body p {
-        margin-bottom: 0.5em;
-    }
+.btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-body);
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: var(--r-xl);
+    border: 1.5px solid var(--mist);
+    background: var(--white);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    color: var(--slate);
+    white-space: nowrap;
+}
+.btn-pill:hover {
+    border-color: var(--saffron);
+    color: var(--saffron);
+    background: var(--saffron-dim);
+}
+.btn-pill.pinned {
+    border-color: var(--pin-blue);
+    background: var(--pin-blue);
+    color: var(--white);
+}
+.btn-pill.pinned:hover {
+    background: #256f90;
+    border-color: #256f90;
+}
 
-    .comment-gif {
-        margin-top: 10px;
-        max-height: 150px;
-        overflow: hidden;
-        border-radius: 12px;
-    }
-    .comment-gif img {
-        max-height: 150px;
-        width: auto;
-        border-radius: 8px;
-    }
+.btn-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid var(--mist);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--slate);
+    font-size: .9rem;
+}
+.btn-icon:hover {
+    border-color: var(--saffron);
+    color: var(--saffron);
+    background: var(--saffron-dim);
+}
 
-    .comment-like {
-        padding: 12px 20px;
-        border-top: 1px solid #f0e6d6;
-    }
+/* ── Dropdown actions ────────────────────────────────────── */
+.dropdown-menu {
+    border-radius: var(--r-sm);
+    border: 1px solid var(--mist);
+    box-shadow: var(--shadow-float);
+    padding: 6px;
+    min-width: 160px;
+}
+.dropdown-item {
+    border-radius: 8px;
+    font-size: .88rem;
+    padding: 9px 14px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+.dropdown-item:hover { background: var(--cream); }
 
-    .btn-comment-like {
-        background: none;
-        border: none;
-        font-size: 14px;
-        color: #999;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 50px;
-        transition: all 0.2s ease;
-    }
+/* ── Post body ───────────────────────────────────────────── */
+.post-content {
+    padding: 32px 28px 20px;
+}
 
-    .btn-comment-like:hover,
-    .btn-comment-like.reacted {
-        background: #fff0f0;
-        color: #FF6B6B;
-    }
+.post-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 20px;
+}
 
-    .btn-reply {
-        background: none;
-        border: none;
-        color: #5bc0de;
-        font-size: 13px;
-        cursor: pointer;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .btn-reply:hover {
-        color: #FF6B6B;
-        text-decoration: underline;
-    }
+.post-body {
+    font-size: 1.02rem;
+    line-height: 1.8;
+    color: var(--slate);
+    font-weight: 300;
+}
+.post-body strong { font-weight: 600; color: var(--ink); }
+.post-body em     { font-style: italic; font-family: var(--font-display); }
+.post-body ul     { margin: 14px 0; padding-left: 22px; }
+.post-body li     { margin: 6px 0; }
 
-    .reply-form-container {
-        margin-left: 40px;
-        margin-top: 10px;
-    }
+/* ── Media ───────────────────────────────────────────────── */
+.post-image {
+    width: 100%;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: var(--r-md);
+    margin-top: 24px;
+    cursor: zoom-in;
+    transition: opacity var(--transition), transform var(--transition);
+    display: block;
+}
+.post-image:hover { opacity: .96; transform: scale(1.005); }
 
-    .comment-actions button {
-        background: none;
-        border: none;
-        font-size: 15px;
-        padding: 6px 8px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
+.post-gif {
+    text-align: center;
+    margin-top: 24px;
+}
+.post-gif img {
+    max-height: 300px;
+    max-width: 100%;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-feather);
+}
 
-    .btn-edit-comment { color: #f0ad4e; }
-    .btn-edit-comment:hover { color: #ec971f; background: #fff8f0; }
+/* ── Hashtags ────────────────────────────────────────────── */
+.hashtag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+}
+.hashtag-pill {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--pin-blue);
+    background: var(--pin-blue-dim);
+    border: 1px solid transparent;
+    padding: 5px 14px;
+    border-radius: var(--r-xl);
+    text-decoration: none;
+    transition: var(--transition);
+}
+.hashtag-pill:hover {
+    background: var(--pin-blue);
+    color: var(--white);
+}
 
-    .btn-delete-comment { color: #d9534f; }
-    .btn-delete-comment:hover { color: #c9302c; background: #fff0f0; }
+/* ── Reaction bar ─────────────────────────────────────────── */
+.post-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 18px 28px 22px;
+    border-top: 1px solid var(--mist);
+    align-items: center;
+}
 
-    .alert {
-        padding: 12px 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    .alert-danger {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    .form-control.is-invalid {
-        border-color: #dc3545;
-        background-color: #fff0f0;
-    }
-    .invalid-feedback {
-        color: #dc3545;
-        font-size: 13px;
-        margin-top: 5px;
-        display: block;
-    }
+/* Reaction dropdown */
+.reaction-wrap { position: relative; display: inline-block; }
 
-    .btn-gif {
-        background: #f0f0f0;
-        border: 1px solid #ddd;
-        border-radius: 20px;
-        padding: 8px 16px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-top: 5px;
-    }
-    .btn-gif:hover {
-        background: #e0e0e0;
-    }
-    .gif-preview {
-        margin-top: 10px;
-        display: inline-block;
-        position: relative;
-    }
-    .gif-preview img {
-        max-height: 100px;
-        border-radius: 8px;
-    }
-    .remove-gif {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: red;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        font-size: 12px;
-        line-height: 1;
-    }
-    .gif-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.7);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-    .gif-modal-content {
-        background: white;
-        border-radius: 20px;
-        width: 90%;
-        max-width: 600px;
-        max-height: 80vh;
-        overflow: auto;
-        padding: 20px;
-    }
-    .gif-search-input {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #f0e6d6;
-        border-radius: 30px;
-        margin-bottom: 15px;
-    }
-    .gif-results {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 10px;
-        max-height: 50vh;
-        overflow-y: auto;
-    }
-    .gif-item {
-        cursor: pointer;
-        border-radius: 10px;
-        overflow: hidden;
-        transition: transform 0.2s;
-    }
-    .gif-item:hover {
-        transform: scale(1.05);
-    }
-    .gif-item img {
-        width: 100%;
-        height: auto;
-    }
+.btn-react {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--slate);
+    background: var(--cream);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-react:hover, .btn-react.active {
+    border-color: var(--saffron);
+    color: var(--ember);
+    background: var(--saffron-dim);
+}
 
-    .post-hashtags {
-        margin: 15px 25px 0;
-    }
-    .hashtag-link {
-        background: #f0e6d6;
-        color: #8B4513;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        text-decoration: none;
-        transition: all 0.2s;
-        display: inline-block;
-    }
-    .hashtag-link:hover {
-        background: #FF6B6B;
-        color: white;
-    }
-    
-    /* Style pour le texte formaté */
-    .post-body strong, .comment-body strong {
-        font-weight: 700;
-        color: #333;
-    }
-    .post-body em, .comment-body em {
-        font-style: italic;
-        color: #555;
-    }
-    .post-body ul, .comment-body ul {
-        margin: 10px 0;
-        padding-left: 20px;
-    }
-    .post-body li, .comment-body li {
-        margin: 5px 0;
-    }
+.reaction-palette {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    display: none;
+    gap: 4px;
+    align-items: center;
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 8px 12px;
+    box-shadow: var(--shadow-float);
+    border: 1px solid var(--mist);
+    z-index: 200;
+    animation: paletteIn .18s ease;
+}
+.reaction-palette.open { display: flex; }
+
+@keyframes paletteIn {
+    from { opacity: 0; transform: translateY(6px) scale(.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.r-emoji {
+    font-size: 1.5rem;
+    padding: 4px 7px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
+    line-height: 1;
+}
+.r-emoji:hover { transform: scale(1.3); background: var(--cream); }
+
+/* Favourite */
+.btn-fav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .88rem;
+    font-weight: 600;
+    color: #C9A227;
+    background: #FFF9EC;
+    border: 1.5px solid #EDD98A;
+    border-radius: var(--r-xl);
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-fav:hover, .btn-fav.active {
+    background: #C9A227;
+    border-color: #C9A227;
+    color: var(--white);
+}
+
+/* Signal / Contact */
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--slate);
+    background: var(--white);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+.btn-ghost:hover             { border-color: var(--slate); background: var(--cream); }
+.btn-ghost.danger:hover      { border-color: var(--danger); color: var(--danger); background: #FBECEA; }
+.btn-ghost.contact:hover     { border-color: var(--pin-blue); color: var(--pin-blue); background: var(--pin-blue-dim); }
+
+/* ===== BOUTON RÉSUMÉ ===== */
+.btn-summarize {
+    background: none;
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 9px 20px;
+    font-size: .88rem;
+    font-weight: 600;
+    color: #6c5ce7;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-summarize:hover {
+    border-color: #6c5ce7;
+    color: #6c5ce7;
+    background: rgba(108,92,231,0.1);
+    transform: translateY(-1px);
+}
+
+/* ===== STYLES DICTÉE VOCALE ===== */
+.microphone-btn {
+    background: var(--white);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 9px 16px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--slate);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.microphone-btn:hover {
+    border-color: var(--saffron);
+    color: var(--saffron);
+    background: var(--saffron-dim);
+}
+.microphone-btn.recording {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+    color: white;
+    animation: pulse 1.2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+/* ── Comments section ─────────────────────────────────────── */
+.comments-section {
+    margin-top: 44px;
+}
+
+.section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--mist);
+}
+.section-title {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+.comment-count-badge {
+    background: var(--saffron-dim);
+    color: var(--saffron);
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 3px 11px;
+    border-radius: var(--r-xl);
+    border: 1px solid rgba(232,160,64,.25);
+}
+
+/* ── Comment card ─────────────────────────────────────────── */
+.comment-card {
+    background: var(--white);
+    border-radius: var(--r-md);
+    border: 1px solid var(--mist);
+    margin-bottom: 16px;
+    transition: var(--transition);
+    animation: cardReveal .35s ease both;
+}
+.comment-card:hover {
+    border-color: var(--saffron);
+    box-shadow: var(--shadow-feather);
+    transform: translateX(3px);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px 8px;
+}
+.comment-author-block {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+.c-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--saffron), var(--ember));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.c-avatar img  { width: 100%; height: 100%; object-fit: cover; }
+.c-avatar span { color: var(--white); font-weight: 700; font-size: 15px; }
+.c-name        { font-weight: 600; font-size: .9rem; color: var(--ink); }
+.c-date        { font-size: .7rem; color: var(--slate); margin-top: 1px; }
+
+.c-actions { display: flex; gap: 6px; align-items: center; }
+.btn-c-edit   { background: none; border: none; color: #C9A227; cursor: pointer; font-size: .85rem; padding: 4px 6px; border-radius: 6px; transition: var(--transition); text-decoration: none; }
+.btn-c-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-size: .85rem; padding: 4px 6px; border-radius: 6px; transition: var(--transition); }
+.btn-c-edit:hover, .btn-c-delete:hover { background: var(--cream); }
+
+.comment-body {
+    padding: 4px 18px 14px;
+    font-size: .92rem;
+    line-height: 1.65;
+    color: var(--slate);
+}
+.comment-gif { margin-top: 10px; }
+.comment-gif img { max-height: 140px; border-radius: var(--r-sm); }
+
+.comment-foot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px 14px;
+    border-top: 1px solid var(--mist);
+}
+.btn-c-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--slate);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 12px;
+    border-radius: var(--r-xl);
+    transition: var(--transition);
+}
+.btn-c-like:hover, .btn-c-like.reacted {
+    background: rgba(200,60,60,.08);
+    color: #C83C3C;
+}
+.btn-c-reply {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--pin-blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 12px;
+    border-radius: var(--r-xl);
+    transition: var(--transition);
+}
+.btn-c-reply:hover { background: var(--pin-blue-dim); }
+
+/* ── Reply indent ────────────────────────────────────────── */
+.replies-wrap { margin-left: 40px; margin-top: 8px; }
+.reply-form-wrap {
+    margin: 8px 0 14px 40px;
+    background: var(--cream);
+    border-radius: var(--r-md);
+    padding: 14px;
+    border: 1px solid var(--mist);
+    display: none;
+    animation: fadeSlideDown .2s ease;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-comments {
+    text-align: center;
+    padding: 52px 20px;
+    background: var(--white);
+    border-radius: var(--r-lg);
+    border: 1.5px dashed var(--mist);
+    color: var(--slate);
+}
+.empty-comments .ic { font-size: 2.8rem; opacity: .4; display: block; margin-bottom: 12px; }
+.empty-comments p   { font-size: .95rem; }
+
+/* ── Comment form card ───────────────────────────────────── */
+.comment-form-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    margin-top: 32px;
+    box-shadow: var(--shadow-feather);
+    border: 1px solid var(--mist);
+}
+.comment-form-card .cf-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 18px;
+}
+
+/* ── Form controls ───────────────────────────────────────── */
+.form-control {
+    font-family: var(--font-body);
+    font-size: .93rem;
+    color: var(--ink);
+    background: var(--cream);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-sm);
+    padding: 12px 16px;
+    width: 100%;
+    resize: vertical;
+    transition: var(--transition);
+    outline: none;
+}
+.form-control:focus {
+    border-color: var(--saffron);
+    background: var(--white);
+    box-shadow: 0 0 0 3px var(--saffron-dim);
+}
+.form-control.is-invalid { border-color: var(--danger); }
+.invalid-feedback { font-size: .8rem; color: var(--danger); margin-top: 5px; }
+.field-hint        { font-size: .78rem; color: var(--slate); margin-top: 6px; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary-kd {
+    font-family: var(--font-body);
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--saffron) 0%, var(--ember) 100%);
+    border: none;
+    border-radius: var(--r-xl);
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(232,160,64,.3);
+}
+.btn-primary-kd:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(232,160,64,.4);
+}
+
+.btn-secondary-sm {
+    font-family: var(--font-body);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--slate);
+    background: var(--cream);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-secondary-sm:hover { border-color: var(--slate); background: var(--mist); }
+
+.btn-gif-pick {
+    font-family: var(--font-body);
+    font-size: .82rem;
+    font-weight: 500;
+    color: var(--slate);
+    background: var(--cream);
+    border: 1.5px solid var(--mist);
+    border-radius: var(--r-xl);
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.btn-gif-pick:hover { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-dim); }
+
+/* ── GIF modal ───────────────────────────────────────────── */
+.gif-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,18,.6);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.gif-modal.open { display: flex; animation: fadeSlideDown .2s ease; }
+
+.gif-modal-inner {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    width: min(540px, 92vw);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lift);
+}
+.gif-modal-inner h5 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 16px;
+}
+.gif-search-input {
+    font-family: var(--font-body);
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--mist);
+    font-size: .92rem;
+    outline: none;
+    background: var(--cream);
+    transition: var(--transition);
+    margin-bottom: 16px;
+}
+.gif-search-input:focus { border-color: var(--saffron); background: var(--white); box-shadow: 0 0 0 3px var(--saffron-dim); }
+
+.gif-results {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.gif-results::-webkit-scrollbar { width: 5px; }
+.gif-results::-webkit-scrollbar-track { background: var(--cream); border-radius: 10px; }
+.gif-results::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 10px; }
+
+.gif-item img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+.gif-item img:hover { transform: scale(1.04); border-color: var(--saffron); }
+
+.gif-preview-row {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+.gif-preview-row.show { display: flex; }
+.gif-preview-thumb {
+    height: 64px;
+    border-radius: var(--r-sm);
+    object-fit: cover;
+}
+.btn-remove-gif {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: .8rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ── Login prompt ─────────────────────────────────────────── */
+.login-prompt {
+    background: var(--white);
+    border-radius: var(--r-md);
+    padding: 20px 24px;
+    margin-top: 24px;
+    border: 1px dashed var(--mist);
+    text-align: center;
+    font-size: .92rem;
+    color: var(--slate);
+}
+.login-prompt a { color: var(--saffron); font-weight: 600; text-decoration: none; }
+.login-prompt a:hover { text-decoration: underline; }
+
+/* ── Scrollbar global ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 10px; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .pd-wrapper   { padding: 20px 16px 60px; }
+    .post-header  { flex-direction: column; align-items: flex-start; }
+    .post-title   { font-size: 1.5rem; }
+    .replies-wrap, .reply-form-wrap { margin-left: 16px; }
+    .gif-results  { grid-template-columns: repeat(2, 1fr); }
+    .btn-summarize { padding: 6px 14px; font-size: .8rem; }
+    .microphone-btn { padding: 6px 12px; font-size: .9rem; }
+}
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
+<div class="pd-wrapper">
 
-            <a href="{{ path('app_posts_index') }}" class="btn btn-outline-secondary mb-4">
-                <i class="fas fa-arrow-left"></i> Retour au fil d'actualité
-            </a>
+    <!-- Back -->
+    <a href="{{ path('app_posts_index') }}" class="pd-back">
+        <i class="fas fa-arrow-left"></i> {{ 'posts.back_to_feed'|trans }}
+    </a>
 
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
+    <!-- Flash messages -->
+    {% for msg in app.flashes('success') %}
+        <div class="pd-flash success"><i class="fas fa-check-circle"></i> {{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+        <div class="pd-flash danger"><i class="fas fa-exclamation-circle"></i> {{ msg }}</div>
+    {% endfor %}
 
-            <!-- Carte du Post -->
-            <div class="post-card {% if post.isPinned %}pinned{% endif %}">
-                {% if post.isPinned %}
-                    <div class="pin-badge">
-                        <i class="fas fa-thumbtack"></i> Épinglé
-                    </div>
-                {% endif %}
+    <!-- ═══════════ POST CARD ═══════════ -->
+    <div class="post-card {% if post.isPinned %}pinned{% endif %} position-relative">
 
-                <div class="post-header">
-                    <div class="author-info">
-                        <div class="author-avatar">
-                            {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
-                                <img src="{{ post.utilisateur.photo }}" alt="Photo">
-                            {% else %}
-                                <strong>{{ post.utilisateur.nom|first|upper }}</strong>
-                            {% endif %}
-                        </div>
-                        <div>
-                            <strong>{{ post.utilisateur.nom }}</strong>
-                            <small class="text-muted d-block">{{ post.createdAt|date('d/m/Y à H:i') }}</small>
-                        </div>
-                    </div>
+        {% if post.isPinned %}
+            <div class="pin-badge"><i class="fas fa-thumbtack"></i> {{ 'post_pinned'|trans }}</div>
+        {% endif %}
 
-                    <div class="d-flex gap-2">
-                        {% if app.user %}
-                            <button class="btn-pin {% if post.isPinned %}pinned{% endif %}" 
-                                    onclick="togglePin({{ post.id }})"
-                                    id="pin-btn-{{ post.id }}">
-                                <i class="fas fa-thumbtack"></i>
-                                <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
-                            </button>
-                        {% endif %}
-
-                        {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" style="width: 38px; height: 38px;">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ path('app_post_edit', {id: post.id}) }}">
-                                            <i class="fas fa-edit text-warning"></i> Modifier
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer cette publication ?')">
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="post-content">
-                    <h2 class="mb-3">{{ post.title }}</h2>
-                    <div class="post-body">
-                        {# ✅ AFFICHAGE CORRIGÉ - Sans balises HTML visibles #}
-                        {% if post.content %}
-                            {{ post.content|striptags('<strong><em><ul><li><br><p>')|raw|nl2br }}
-                        {% else %}
-                            <p class="text-muted">Aucun contenu</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Affichage des hashtags -->
-                {% if post.hashtags|length > 0 %}
-                    <div class="post-hashtags">
-                        {% for hashtag in post.hashtags %}
-                            <a href="{{ path('app_posts_hashtag', {name: hashtag.name}) }}" class="hashtag-link me-1">
-                                #{{ hashtag.name }}
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                {% if post.gifUrl %}
-                    <div class="post-gif">
-                        <img src="{{ post.gifUrl }}" alt="GIF animé" class="img-fluid">
-                    </div>
-                {% endif %}
-
-                {% if post.imagePath %}
-                    <img src="{{ post.imagePath }}" class="post-image" alt="Image du post">
-                {% endif %}
-
-                <div class="post-actions">
-                    <button class="btn-like {% if userLikedPost %}reacted{% endif %}"
-                            onclick="togglePostLike({{ post.id }})"
-                            id="post-like-btn-{{ post.id }}">
-                        <span id="post-like-emoji-{{ post.id }}">{% if userLikedPost %}❤️{% else %}👍{% endif %}</span>
-                        <span id="post-like-count-{{ post.id }}">{{ postLikesCount|default(0) }}</span>
-                    </button>
-
-                    <!-- Bouton Signaler (uniquement pour les utilisateurs connectés non auteurs) -->
-                    {% if app.user and app.user.idUtilisateur != post.utilisateur.idUtilisateur %}
-                        <button class="btn-signal" onclick="signalPost({{ post.id }})">
-                            <i class="fas fa-flag"></i> Signaler
-                        </button>
+        <!-- Header -->
+        <div class="post-header">
+            <div class="author-block">
+                <div class="author-avatar">
+                    {% if post.utilisateur.photo is defined and post.utilisateur.photo %}
+                        <img src="{{ post.utilisateur.photo }}" alt="">
+                    {% else %}
+                        <span>{{ post.utilisateur.nom|first|upper }}</span>
                     {% endif %}
+                </div>
+                <div>
+                    <div class="author-name">{{ post.utilisateur.nom }}</div>
+                    <div class="post-meta">{{ post.createdAt|date('d/m/Y à H:i') }}</div>
                 </div>
             </div>
 
-            <!-- ========== SECTION COMMENTAIRES AVEC RÉPONSES ========== -->
-            {% import _self as commentMacro %}
+            <div class="header-controls">
+                {% if app.user %}
+                    <button class="btn-pill {% if post.isPinned %}pinned{% endif %}"
+                            onclick="togglePin({{ post.id }})"
+                            id="pin-btn-{{ post.id }}">
+                        <i class="fas fa-thumbtack"></i>
+                        <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'post_unpin'|trans : 'post_pin'|trans }}</span>
+                    </button>
+                {% endif %}
 
-            {% macro renderComment(commentaire, userLikedComments, commentLikesCount, postId) %}
-                <div class="comment-card" id="comment-{{ commentaire.id }}">
-                    <div class="comment-header">
-                        <div class="d-flex align-items-center">
-                            <div class="author-avatar" style="width: 38px; height: 38px; font-size: 16px;">
-                                {% if commentaire.utilisateur.photo is defined and commentaire.utilisateur.photo %}
-                                    <img src="{{ commentaire.utilisateur.photo }}" alt="">
-                                {% else %}
-                                    <strong>{{ commentaire.utilisateur.nom|first|upper }}</strong>
-                                {% endif %}
-                            </div>
-                            <div class="ms-3">
-                                <strong>{{ commentaire.utilisateur.nom }}</strong>
-                                <small class="text-muted d-block">{{ commentaire.createdAt|date('d/m/Y à H:i') }}</small>
-                            </div>
-                        </div>
-
-                        {% if app.user and (commentaire.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
-                            <div class="comment-actions">
-                                <a href="{{ path('app_comment_edit', {id: commentaire.id}) }}" class="btn-edit-comment" title="Modifier">
-                                    <i class="fas fa-edit"></i>
+                {% if app.user and (post.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                    <div class="dropdown">
+                        <button class="btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ path('app_post_edit', {id: post.id}) }}">
+                                    <i class="fas fa-edit" style="color:#C9A227"></i> {{ 'common.edit'|trans }}
                                 </a>
-                                <form method="post" action="{{ path('app_comment_delete', {id: commentaire.id}) }}" 
-                                      onsubmit="return confirm('Supprimer ce commentaire ?')" style="display: inline;">
-                                    <button type="submit" class="btn-delete-comment" title="Supprimer">
-                                        <i class="fas fa-trash"></i>
+                            </li>
+                            <li>
+                                <form method="post" action="{{ path('app_post_delete', {id: post.id}) }}"
+                                      onsubmit="return confirm('{{ 'post_delete_confirm'|trans }}')">
+                                    <button type="submit" class="dropdown-item text-danger w-100 border-0 bg-transparent">
+                                        <i class="fas fa-trash"></i> {{ 'common.delete'|trans }}
                                     </button>
                                 </form>
-                            </div>
-                        {% endif %}
+                            </li>
+                        </ul>
                     </div>
-
-                    <div class="comment-body">
-                        {# ✅ AFFICHAGE CORRIGÉ DES COMMENTAIRES #}
-                        {{ commentaire.content|striptags('<strong><em><br>')|raw|nl2br }}
-                        {% if commentaire.gifUrl %}
-                            <div class="comment-gif mt-2">
-                                <img src="{{ commentaire.gifUrl }}" alt="GIF" class="img-fluid rounded">
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="comment-like d-flex gap-3 align-items-center">
-                        <button class="btn-comment-like {% if userLikedComments[commentaire.id] is defined and userLikedComments[commentaire.id] %}reacted{% endif %}"
-                                onclick="toggleCommentLike({{ commentaire.id }})"
-                                id="comment-like-btn-{{ commentaire.id }}">
-                            <i class="fas fa-heart"></i>
-                            <span id="comment-like-count-{{ commentaire.id }}">{{ commentLikesCount[commentaire.id]|default(0) }}</span>
-                        </button>
-                        {% if app.user %}
-                            <button class="btn-reply" onclick="showReplyForm({{ commentaire.id }})">
-                                <i class="fas fa-reply"></i> Répondre
-                            </button>
-                        {% endif %}
-                    </div>
-
-                    {# Formulaire de réponse (caché) #}
-                    <div id="reply-form-{{ commentaire.id }}" class="reply-form-container" style="display: none;">
-                        <form method="post" action="{{ path('app_post_comment', {id: postId}) }}" class="reply-form">
-                            <input type="hidden" name="parent_id" value="{{ commentaire.id }}">
-                            <textarea name="content" rows="2" class="form-control" placeholder="Écrivez votre réponse..." required></textarea>
-                            <div class="mt-2 d-flex gap-2">
-                                <button type="button" class="btn btn-sm btn-secondary" onclick="hideReplyForm({{ commentaire.id }})">Annuler</button>
-                                <button type="submit" class="btn btn-sm btn-primary">Répondre</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    {# Affichage récursif des réponses #}
-                    {% if commentaire.replies is defined and commentaire.replies|length > 0 %}
-                        <div class="replies" style="margin-left: 40px; margin-top: 10px;">
-                            {% for reponse in commentaire.replies %}
-                                {{ _self.renderComment(reponse, userLikedComments, commentLikesCount, postId) }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endmacro %}
-
-            <h4 class="mb-3 mt-4">💬 Commentaires ({{ commentaires|filter(c => c.parent is null)|length }})</h4>
-
-            {% for commentaire in commentaires %}
-                {% if commentaire.parent is null %}
-                    {{ commentMacro.renderComment(commentaire, userLikedComments, commentLikesCount, post.id) }}
                 {% endif %}
-            {% else %}
-                <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm">
-                    <i class="fas fa-comment-dots fa-3x mb-3 opacity-50"></i>
-                    <p class="mb-0">Soyez le premier à commenter cette publication !</p>
-                </div>
-            {% endfor %}
+            </div>
+        </div>
 
-            <!-- Formulaire pour ajouter un commentaire principal (sans parent) avec GIF -->
+        <!-- Content -->
+        <div class="post-content">
+            <h1 class="post-title">{{ post.title|censor }}</h1>
+            <div class="post-body">
+                {% if post.content %}
+                    {{ post.content|censor|striptags('<strong><em><ul><li><br><p>')|raw|nl2br }}
+                {% else %}
+                    <p style="color:var(--slate);font-style:italic">{{ 'posts.empty_content'|trans }}</p>
+                {% endif %}
+            </div>
+
+            {% if post.hashtags|length > 0 %}
+                <div class="hashtag-row">
+                    {% for hashtag in post.hashtags %}
+                        <a href="{{ path('app_posts_hashtag', {name: hashtag.name}) }}" class="hashtag-pill">
+                            #{{ hashtag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if post.gifUrl %}
+                <div class="post-gif">
+                    <img src="{{ post.gifUrl }}" alt="{{ 'posts.gif_alt'|trans }}" class="img-fluid">
+                </div>
+            {% endif %}
+
+            {% if post.imagePath %}
+                <img src="{{ post.imagePath }}" class="post-image" alt="{{ 'posts.image_alt'|trans }}"
+                     onclick="this.requestFullscreen()">
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="post-actions">
+
+            <!-- Reactions -->
+            <div class="reaction-wrap" id="rw-{{ post.id }}">
+                <button class="btn-react" id="reaction-btn-{{ post.id }}"
+                        onclick="togglePalette({{ post.id }})">
+                    {% set total = reactionsCount.like + reactionsCount.love + reactionsCount.haha + reactionsCount.sad + reactionsCount.angry %}
+                    {% if userReaction == 'love' %}❤️
+                    {% elseif userReaction == 'haha' %}😂
+                    {% elseif userReaction == 'sad' %}😢
+                    {% elseif userReaction == 'angry' %}😠
+                    {% else %}👍{% endif %}
+                    <span id="reaction-total-{{ post.id }}">{{ total }}</span>
+                </button>
+                <div class="reaction-palette" id="reaction-palette-{{ post.id }}">
+                    <span class="r-emoji" onclick="sendReaction({{ post.id }}, 'like')">👍</span>
+                    <span class="r-emoji" onclick="sendReaction({{ post.id }}, 'love')">❤️</span>
+                    <span class="r-emoji" onclick="sendReaction({{ post.id }}, 'haha')">😂</span>
+                    <span class="r-emoji" onclick="sendReaction({{ post.id }}, 'sad')">😢</span>
+                    <span class="r-emoji" onclick="sendReaction({{ post.id }}, 'angry')">😠</span>
+                </div>
+            </div>
+
             {% if app.user %}
-                <div class="card shadow-sm mt-4">
-                    <div class="card-body">
-                        <h5 class="mb-3">Ajouter un commentaire</h5>
-                        <form method="post" action="{{ path('app_post_comment', {id: post.id}) }}" novalidate>
-                            <div class="mb-3">
-                                <textarea name="content" 
-                                          class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
-                                          rows="4" 
-                                          placeholder="Écrivez votre commentaire ici..." 
-                                          required>{{ formData.content|default('') }}</textarea>
-                                {% if errors.content is defined %}
-                                    <div class="invalid-feedback">{{ errors.content }}</div>
-                                {% else %}
-                                    <small class="text-muted">Le commentaire doit contenir entre 2 et 1000 caractères.</small>
-                                {% endif %}
-                            </div>
+                <button class="btn-fav {% if isFavori %}active{% endif %}"
+                        onclick="toggleFavori({{ post.id }})"
+                        id="favori-btn-{{ post.id }}">
+                    <i class="fas fa-star"></i>
+                    <span id="favori-text-{{ post.id }}">{{ isFavori ? 'posts.actions.favori_remove'|trans : 'posts.actions.favori_add'|trans }}</span>
+                </button>
+            {% endif %}
 
-                            <input type="hidden" name="gif_url" id="gif_url" value="{{ formData.gif_url|default('') }}">
+            {% if app.user and app.user.idUtilisateur != post.utilisateur.idUtilisateur %}
+                <a href="{{ path('app_messages_conversation', {id: post.utilisateur.idUtilisateur}) }}"
+                   class="btn-ghost contact">
+                    <i class="fas fa-envelope"></i> {{ 'posts.actions.contact'|trans }}
+                </a>
+                <button class="btn-ghost danger" onclick="signalPost({{ post.id }})">
+                    <i class="fas fa-flag"></i> {{ 'posts.actions.report'|trans }}
+                </button>
+            {% endif %}
 
-                            <div class="mb-2">
-                                <button type="button" class="btn-gif" id="openGifBtn">
-                                    <i class="fas fa-grin-tears"></i> Choisir un GIF
-                                </button>
-                            </div>
-
-                            <div id="gifPreviewContainer" class="gif-preview" style="display: none;">
-                                <img id="gifPreviewImg" src="" alt="GIF">
-                                <button type="button" class="remove-gif" id="removeGifBtn">×</button>
-                            </div>
-
-                            <div id="gifModal" class="gif-modal">
-                                <div class="gif-modal-content">
-                                    <h5>Rechercher un GIF</h5>
-                                    <input type="text" id="gifSearch" class="gif-search-input" placeholder="Ex: rigolade, chat, bonjour...">
-                                    <div id="gifResults" class="gif-results">
-                                        <p class="text-muted">Recherchez un GIF...</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary mt-3">Publier le commentaire</button>
-                        </form>
-                    </div>
-                </div>
-            {% else %}
-                <div class="alert alert-info mt-4 text-center">
-                    <i class="fas fa-info-circle"></i> 
-                    <a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a> pour pouvoir commenter.
-                </div>
+            {# ===== BOUTON RÉSUMÉ ===== #}
+            {% if post.content|censor|length > 200 %}
+                <button class="btn-summarize"
+                        data-content="{{ post.content|censor|escape('html_attr') }}"
+                        onclick="summarizePost(this)">
+                    <i class="fas fa-robot"></i> {{ 'posts.actions.summarize'|trans }}
+                </button>
             {% endif %}
 
         </div>
     </div>
+    <!-- /POST CARD -->
+
+
+    <!-- ═══════════ COMMENTS ═══════════ -->
+    <div class="comments-section">
+        <div class="section-header">
+            <h3 class="section-title">{{ 'posts.comments.title'|trans }}</h3>
+            <span class="comment-count-badge">{{ commentaires|filter(c => c.parent is null)|length }}</span>
+        </div>
+
+        {% import _self as cm %}
+
+        {% macro renderComment(commentaire, userLikedComments, commentLikesCount, postId) %}
+            <div class="comment-card" id="comment-{{ commentaire.id }}">
+
+                <div class="comment-header">
+                    <div class="comment-author-block">
+                        <div class="c-avatar">
+                            {% if commentaire.utilisateur.photo is defined and commentaire.utilisateur.photo %}
+                                <img src="{{ commentaire.utilisateur.photo }}" alt="">
+                            {% else %}
+                                <span>{{ commentaire.utilisateur.nom|first|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="c-name">{{ commentaire.utilisateur.nom }}</div>
+                            <div class="c-date">{{ commentaire.createdAt|date('d/m/Y à H:i') }}</div>
+                        </div>
+                    </div>
+
+                    {% if app.user and (commentaire.utilisateur.idUtilisateur == app.user.idUtilisateur or (app.user.role ?? '') == 'admin') %}
+                        <div class="c-actions">
+                            <a href="{{ path('app_comment_edit', {id: commentaire.id}) }}"
+                               class="btn-c-edit" title="{{ 'common.edit'|trans }}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_comment_delete', {id: commentaire.id}) }}"
+                                  onsubmit="return confirm('{{ 'posts.comments.delete_confirm'|trans }}')"
+                                  style="display:inline">
+                                <button type="submit" class="btn-c-delete" title="{{ 'common.delete'|trans }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="comment-body">
+                    {{ commentaire.content|censor|striptags('<strong><em><br>')|raw|nl2br }}
+                    {% if commentaire.gifUrl %}
+                        <div class="comment-gif">
+                            <img src="{{ commentaire.gifUrl }}" alt="GIF" style="max-height:130px;border-radius:10px;">
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="comment-foot">
+                    <button class="btn-c-like {% if userLikedComments[commentaire.id] is defined and userLikedComments[commentaire.id] %}reacted{% endif %}"
+                            onclick="toggleCommentLike({{ commentaire.id }})"
+                            id="comment-like-btn-{{ commentaire.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span id="comment-like-count-{{ commentaire.id }}">{{ commentLikesCount[commentaire.id]|default(0) }}</span>
+                    </button>
+                    {% if app.user %}
+                        <button class="btn-c-reply" onclick="showReply({{ commentaire.id }})">
+                            <i class="fas fa-reply"></i> {{ 'posts.comments.reply'|trans }}
+                        </button>
+                    {% endif %}
+                </div>
+
+                <!-- Reply form -->
+                <div id="reply-form-{{ commentaire.id }}" class="reply-form-wrap">
+                    <form method="post" action="{{ path('app_post_comment', {id: postId}) }}" enctype="multipart/form-data">
+                        <input type="hidden" name="parent_id" value="{{ commentaire.id }}">
+                        <textarea name="content" rows="2" class="form-control"
+                                  placeholder="{{ 'posts.comments.reply_placeholder'|trans }}" required></textarea>
+                        <div class="mt-2 d-flex gap-2">
+                            <button type="button" class="btn-secondary-sm"
+                                    onclick="hideReply({{ commentaire.id }})">{{ 'common.cancel'|trans }}</button>
+                            <button type="submit" class="btn-primary-kd" style="padding:8px 20px;font-size:.82rem">{{ 'posts.comments.reply'|trans }}</button>
+                        </div>
+                    </form>
+                </div>
+
+                {% if commentaire.replies is defined and commentaire.replies|length > 0 %}
+                    <div class="replies-wrap">
+                        {% for reply in commentaire.replies %}
+                            {{ _self.renderComment(reply, userLikedComments, commentLikesCount, postId) }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+            </div>
+        {% endmacro %}
+
+        {% for commentaire in commentaires %}
+            {% if commentaire.parent is null %}
+                {{ cm.renderComment(commentaire, userLikedComments, commentLikesCount, post.id) }}
+            {% endif %}
+        {% else %}
+            <div class="empty-comments">
+                <span class="ic">💬</span>
+                <p>{{ 'posts.comments.empty'|trans }}</p>
+            </div>
+        {% endfor %}
+
+
+        <!-- Comment form avec DICTÉE VOCALE (remplace l'upload audio) -->
+        {% if app.user %}
+            <div class="comment-form-card">
+                <div class="cf-title">{{ 'posts.comments.add_title'|trans }}</div>
+
+                <form method="post" action="{{ path('app_post_comment', {id: post.id}) }}" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">{{ 'posts.comments.your_comment_label'|trans }}</label>
+                        <div class="d-flex gap-2 align-items-start">
+                            <textarea name="content"
+                                      id="commentContent"
+                                      class="form-control {% if errors.content is defined %}is-invalid{% endif %}"
+                                      rows="4"
+                                      placeholder="{{ 'posts.comments.placeholder'|trans }}"
+                                      required>{{ formData.content|default('') }}</textarea>
+                            <button type="button" id="dictateBtn" class="microphone-btn" title="{{ 'posts.comments.dictate'|trans }}">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        {% if errors.content is defined %}
+                            <div class="invalid-feedback">{{ errors.content }}</div>
+                        {% else %}
+                            <p class="field-hint">{{ 'posts.comments.hint'|trans }}</p>
+                        {% endif %}
+                    </div>
+
+                    <input type="hidden" name="gif_url" id="gif_url" value="{{ formData.gif_url|default('') }}">
+
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <button type="button" class="btn-gif-pick" id="openGifBtn">
+                            <i class="fas fa-grin-tears"></i> {{ 'posts.comments.add_gif'|trans }}
+                        </button>
+
+                        <div class="gif-preview-row" id="gifPreviewRow">
+                            <img id="gifPreviewImg" src="" alt="GIF" class="gif-preview-thumb">
+                            <button type="button" class="btn-remove-gif" id="removeGifBtn">
+                                <i class="fas fa-times-circle"></i> {{ 'common.remove'|trans }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary-kd mt-4">
+                        <i class="fas fa-paper-plane"></i> {{ 'posts.comments.submit'|trans }}
+                    </button>
+                </form>
+            </div>
+
+        {% else %}
+            <div class="login-prompt">
+                <i class="fas fa-lock" style="margin-right:6px;opacity:.5"></i>
+                <a href="{{ path('app_login') }}">{{ 'posts.comments.login_link'|trans }}</a> {{ 'posts.comments.login_suffix'|trans }}
+            </div>
+        {% endif %}
+
+    </div>
+    <!-- /COMMENTS -->
+
 </div>
 
+<!-- GIF Modal -->
+<div class="gif-modal" id="gifModal">
+    <div class="gif-modal-inner">
+        <h5><i class="fas fa-film" style="color:var(--saffron);margin-right:8px"></i>{{ 'posts.gif.title'|trans }}</h5>
+        <input type="text" id="gifSearch" class="gif-search-input" placeholder="{{ 'posts.gif.search_placeholder'|trans }}">
+        <div id="gifResults" class="gif-results">
+            <p style="grid-column:1/-1;text-align:center;color:var(--slate);font-size:.88rem;padding:20px 0">
+                {{ 'posts.gif.empty_prompt'|trans }}
+            </p>
+        </div>
+    </div>
+</div>
+
+
 <script>
-// ========== FONCTIONS POUR LES LIKES, ÉPINGLAGE ==========
-function togglePostLike(postId) {
-    fetch(`/posts/${postId}/like`, {
+const postShowI18n = {
+    reportConfirm: "{{ 'posts.report_confirm'|trans|e('js') }}",
+    gifMinChars: "{{ 'posts.gif.min_chars'|trans|e('js') }}",
+    gifSearching: "{{ 'posts.gif.searching'|trans|e('js') }}",
+    gifNoResults: "{{ 'posts.gif.no_results'|trans|e('js') }}",
+    gifEmptyPrompt: "{{ 'posts.gif.empty_prompt'|trans|e('js') }}",
+    dictationError: "{{ 'posts.comments.dictation_error'|trans|e('js') }}",
+    dictationUnsupported: "{{ 'posts.comments.dictation_unsupported'|trans|e('js') }}",
+    error: "{{ 'common.error'|trans|e('js') }}",
+    connectionError: "{{ 'common.connection_error'|trans|e('js') }}"
+};
+
+/* ═══════ REACTIONS ═══════ */
+function togglePalette(id) {
+    const p = document.getElementById('reaction-palette-' + id);
+    p.classList.toggle('open');
+}
+function sendReaction(postId, type) {
+    fetch(`/posts/${postId}/react`, {
         method: 'POST',
-        headers: { 
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type: 'like' })
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            const countEl = document.getElementById('post-like-count-' + postId);
-            const emojiEl = document.getElementById('post-like-emoji-' + postId);
-            const btn = document.getElementById('post-like-btn-' + postId);
-            if (countEl) countEl.textContent = data.count;
-            if (emojiEl && btn) {
-                if (data.liked) {
-                    emojiEl.textContent = '❤️';
-                    btn.classList.add('reacted');
-                } else {
-                    emojiEl.textContent = '👍';
-                    btn.classList.remove('reacted');
-                }
-            }
+    .then(r => r.json())
+    .then(d => {
+        if (!d.success) return;
+        const total = d.counts.like + d.counts.love + d.counts.haha + d.counts.sad + d.counts.angry;
+        const span = document.getElementById('reaction-total-' + postId);
+        if (span) span.textContent = total;
+        const btn = document.getElementById('reaction-btn-' + postId);
+        if (btn) {
+            const map = { love:'❤️', haha:'😂', sad:'😢', angry:'😠' };
+            const emoji = map[d.userReaction] || '👍';
+            btn.innerHTML = `${emoji} <span id="reaction-total-${postId}">${total}</span>`;
         }
-    })
-    .catch(err => console.error('Erreur like post:', err));
+        document.getElementById('reaction-palette-' + postId)?.classList.remove('open');
+    });
 }
 
-function toggleCommentLike(commentId) {
-    fetch(`/posts/comment/${commentId}/like`, {
-        method: 'POST',
-        headers: { 
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type: 'like' })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            const countEl = document.getElementById('comment-like-count-' + commentId);
-            const btn = document.getElementById('comment-like-btn-' + commentId);
-            if (countEl) countEl.textContent = data.count;
-            if (btn && data.liked) {
-                btn.classList.add('reacted');
-            } else if (btn) {
-                btn.classList.remove('reacted');
-            }
-        }
-    })
-    .catch(err => console.error('Erreur like commentaire:', err));
-}
-
-function togglePin(postId) {
-    fetch(`/posts/${postId}/pin`, {
+/* ═══════ FAVOURITES ═══════ */
+function toggleFavori(id) {
+    fetch(`/posts/${id}/favori`, {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message || 'Une erreur est survenue');
-        }
+    .then(r => r.json())
+    .then(d => { if (d.success) location.reload(); else alert(d.message || postShowI18n.error); });
+}
+
+/* ═══════ COMMENT LIKE ═══════ */
+function toggleCommentLike(id) {
+    fetch(`/posts/comment/${id}/like`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'like' })
     })
-    .catch(err => {
-        console.error('Erreur pin:', err);
-        alert('Erreur de connexion');
+    .then(r => r.json())
+    .then(d => {
+        if (!d.success) return;
+        const cnt = document.getElementById('comment-like-count-' + id);
+        const btn = document.getElementById('comment-like-btn-' + id);
+        if (cnt) cnt.textContent = d.count;
+        if (btn) btn.classList.toggle('reacted', !!d.liked);
     });
 }
 
-// ========== FONCTIONS POUR LES RÉPONSES ==========
-function showReplyForm(commentId) {
-    const formDiv = document.getElementById('reply-form-' + commentId);
-    if (formDiv) formDiv.style.display = 'block';
-}
-function hideReplyForm(commentId) {
-    const formDiv = document.getElementById('reply-form-' + commentId);
-    if (formDiv) formDiv.style.display = 'none';
+/* ═══════ PIN ═══════ */
+function togglePin(id) {
+    fetch(`/posts/${id}/pin`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(d => { if (d.success) location.reload(); else alert(d.message || postShowI18n.error); });
 }
 
-// ========== FONCTION SIGNALER ==========
-function signalPost(postId) {
-    if (confirm('Signaler cette publication ?')) {
-        fetch(`/posts/${postId}/signal`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
+/* ═══════ REPLY FORMS ═══════ */
+function showReply(id) {
+    const el = document.getElementById('reply-form-' + id);
+    if (el) { el.style.display = 'block'; el.querySelector('textarea')?.focus(); }
+}
+function hideReply(id) {
+    const el = document.getElementById('reply-form-' + id);
+    if (el) el.style.display = 'none';
+}
+
+/* ═══════ SIGNAL ═══════ */
+function signalPost(id) {
+    if (!confirm(postShowI18n.reportConfirm)) return;
+    fetch(`/posts/${id}/signal`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(d => {
+        alert(d.message);
+        if (d.success && d.deleted) location.href = "{{ path('app_posts_index') }}";
+    });
+}
+
+/* ═══════ GIF PICKER ═══════ */
+const GIPHY_KEY = 'zG36o0wRo5KYA5d6RkTYynPz1HuEIRpc';
+const gifModal     = document.getElementById('gifModal');
+const gifSearch    = document.getElementById('gifSearch');
+const gifResults   = document.getElementById('gifResults');
+const gifUrlInput  = document.getElementById('gif_url');
+const gifPreviewRow = document.getElementById('gifPreviewRow');
+const gifPreviewImg = document.getElementById('gifPreviewImg');
+let gifTimer;
+
+document.getElementById('openGifBtn')?.addEventListener('click', () => {
+    gifModal.classList.add('open');
+    gifSearch.focus();
+});
+gifModal?.addEventListener('click', e => {
+    if (e.target === gifModal) gifModal.classList.remove('open');
+});
+gifSearch?.addEventListener('input', function () {
+    clearTimeout(gifTimer);
+    const q = this.value.trim();
+    if (q.length < 2) { gifResults.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--slate);font-size:.88rem;padding:20px 0">' + postShowI18n.gifMinChars + '</p>'; return; }
+    gifResults.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--slate);font-size:.88rem;padding:20px 0">' + postShowI18n.gifSearching + '</p>';
+    gifTimer = setTimeout(() => {
+        fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=12&rating=g&lang=fr`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.data.length) { gifResults.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--slate)">' + postShowI18n.gifNoResults + '</p>'; return; }
+                gifResults.innerHTML = '';
+                data.data.forEach(g => {
+                    const d = document.createElement('div');
+                    d.className = 'gif-item';
+                    const img = document.createElement('img');
+                    img.src = g.images.fixed_height_small.url;
+                    img.dataset.url = g.images.original.url;
+                    img.addEventListener('click', () => {
+                        gifUrlInput.value = img.dataset.url;
+                        gifPreviewImg.src = img.src;
+                        gifPreviewRow.classList.add('show');
+                        gifModal.classList.remove('open');
+                        gifSearch.value = '';
+                        gifResults.innerHTML = '';
+                    });
+                    d.appendChild(img);
+                    gifResults.appendChild(d);
+                });
+            });
+    }, 380);
+});
+document.getElementById('removeGifBtn')?.addEventListener('click', () => {
+    gifUrlInput.value = '';
+    gifPreviewImg.src = '';
+    gifPreviewRow.classList.remove('show');
+});
+if (gifUrlInput?.value) {
+    gifPreviewImg.src = gifUrlInput.value;
+    gifPreviewRow.classList.add('show');
+}
+
+/* ═══════ DICTÉE VOCALE (SPEECH-TO-TEXT) ═══════ */
+const dictateBtn = document.getElementById('dictateBtn');
+const commentTextarea = document.getElementById('commentContent');
+let recognition = null;
+let isListening = false;
+
+if (dictateBtn && commentTextarea) {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        dictateBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+                return;
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                if (data.deleted) {
-                    window.location.href = "{{ path('app_posts_index') }}";
-                }
-            } else {
-                alert(data.message);
+            recognition.start();
+            dictateBtn.classList.add('recording');
+            dictateBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
+            isListening = true;
+        });
+
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
             }
-        })
-        .catch(err => console.error('Erreur signalement:', err));
+            const currentText = commentTextarea.value;
+            commentTextarea.value = currentText + (currentText ? ' ' : '') + transcript;
+        };
+
+        recognition.onerror = (event) => {
+            console.error(postShowI18n.dictationError, event.error);
+            alert(postShowI18n.dictationError);
+            stopDictation();
+        };
+
+        recognition.onend = () => {
+            stopDictation();
+        };
+
+        function stopDictation() {
+            isListening = false;
+            dictateBtn.classList.remove('recording');
+            dictateBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        }
+    } else {
+        dictateBtn.style.display = 'none';
+        console.warn(postShowI18n.dictationUnsupported);
     }
 }
 
-// ========== SÉLECTEUR GIF (GIPHY API) ==========
-const GIPHY_API_KEY = 'zG36o0wRo5KYA5d6RkTYynPz1HuEIRpc';
-
-const openBtn = document.getElementById('openGifBtn');
-const modal = document.getElementById('gifModal');
-const searchInput = document.getElementById('gifSearch');
-const resultsDiv = document.getElementById('gifResults');
-const gifUrlInput = document.getElementById('gif_url');
-const previewContainer = document.getElementById('gifPreviewContainer');
-const previewImg = document.getElementById('gifPreviewImg');
-const removeBtn = document.getElementById('removeGifBtn');
-
-let searchTimeout;
-
-if (openBtn) {
-    openBtn.addEventListener('click', () => {
-        modal.style.display = 'flex';
-        searchInput.focus();
-    });
-}
-if (modal) {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
-}
-if (searchInput) {
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        const query = this.value.trim();
-        if (query.length < 2) {
-            resultsDiv.innerHTML = '<p class="text-muted">Saisissez au moins 2 caractères...</p>';
-            return;
-        }
-        searchTimeout = setTimeout(() => {
-            resultsDiv.innerHTML = '<div class="text-center">Recherche...</div>';
-            fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=12&rating=g&lang=fr`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.data.length === 0) {
-                        resultsDiv.innerHTML = '<p class="text-muted">Aucun GIF trouvé</p>';
-                        return;
-                    }
-                    resultsDiv.innerHTML = '';
-                    data.data.forEach(gif => {
-                        const gifUrl = gif.images.original.url;
-                        const thumbnail = gif.images.fixed_height_small.url;
-                        const div = document.createElement('div');
-                        div.className = 'gif-item';
-                        div.innerHTML = `<img src="${thumbnail}" data-url="${gifUrl}">`;
-                        div.querySelector('img').addEventListener('click', () => {
-                            gifUrlInput.value = gifUrl;
-                            previewImg.src = thumbnail;
-                            previewContainer.style.display = 'inline-block';
-                            modal.style.display = 'none';
-                            searchInput.value = '';
-                            resultsDiv.innerHTML = '<p class="text-muted">Recherchez un GIF...</p>';
-                        });
-                        resultsDiv.appendChild(div);
-                    });
-                })
-                .catch(err => {
-                    console.error('Erreur GIPHY:', err);
-                    resultsDiv.innerHTML = '<p class="text-danger">Erreur de chargement</p>';
-                });
-        }, 400);
-    });
-}
-if (removeBtn) {
-    removeBtn.addEventListener('click', () => {
-        gifUrlInput.value = '';
-        previewContainer.style.display = 'none';
-        previewImg.src = '';
-    });
-}
-if (gifUrlInput && gifUrlInput.value) {
-    previewImg.src = gifUrlInput.value;
-    previewContainer.style.display = 'inline-block';
-}
+/* ═══════ Close reaction palette on outside click ═══════ */
+document.addEventListener('click', e => {
+    if (!e.target.closest('.reaction-wrap')) {
+        document.querySelectorAll('.reaction-palette').forEach(p => p.classList.remove('open'));
+    }
+});
 </script>
 {% endblock %}

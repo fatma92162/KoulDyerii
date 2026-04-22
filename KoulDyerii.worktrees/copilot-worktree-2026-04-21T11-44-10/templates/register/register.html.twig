@@ -1,0 +1,407 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FECB6E 50%, #FF8E53 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.08"><path fill="white" d="M20,20 L80,20 L80,80 L20,80 Z"/><circle cx="50" cy="50" r="8" fill="white"/></svg>');
+        background-repeat: repeat;
+        pointer-events: none;
+    }
+
+    .register-container {
+        width: 100%;
+        max-width: 650px;
+        padding: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .register-card {
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        animation: fadeInUp 0.7s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .register-header {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        padding: 35px 30px;
+        text-align: center;
+    }
+
+    .logo-icon {
+        font-size: 45px;
+        margin-bottom: 10px;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .register-header h1 {
+        color: white;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 2px;
+    }
+
+    .register-header h1 span {
+        color: #FECB6E;
+    }
+
+    .register-header p {
+        color: #fff9e6;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    .register-body {
+        padding: 35px;
+        background: white;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group label .required {
+        color: #FF6B6B;
+        margin-left: 3px;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        font-size: 14px;
+        background: #fefcf8;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-select {
+        padding: 12px 15px 12px 45px;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+    }
+
+    .is-invalid {
+        border-color: #FF6B6B !important;
+        background-color: #fff0f0 !important;
+    }
+
+    .error-message {
+        color: #FF6B6B;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .text-muted {
+        color: #999;
+        font-size: 11px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+    }
+
+    .alert {
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        animation: shake 0.5s ease;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .login-link {
+        text-align: center;
+        padding: 20px 35px 30px;
+        border-top: 1px solid #f0e6d6;
+        background: #fefcf8;
+    }
+
+    .login-link a {
+        color: #FF6B6B;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .col {
+        flex: 1;
+    }
+
+    @media (max-width: 600px) {
+        .row {
+            flex-direction: column;
+            gap: 0;
+        }
+        .register-container {
+            padding: 15px;
+        }
+        .register-header {
+            padding: 25px 20px;
+        }
+        .register-header h1 {
+            font-size: 26px;
+        }
+        .register-body {
+            padding: 25px;
+        }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="logo-icon">🍽️</div>
+            <h1>KOUL <span>DYERI</span></h1>
+            <p>Créez votre compte et rejoignez-nous !</p>
+        </div>
+
+        <div class="register-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+
+            <form method="post" novalidate enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>👤 Nom <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="icon">👤</span>
+                                <input type="text" name="nom" class="form-control {% if errors.nom is defined %}is-invalid{% endif %}" 
+                                       value="{{ formData.nom|default('') }}" placeholder="Votre nom">
+                            </div>
+                            {% if errors.nom is defined %}
+                                <span class="error-message">{{ errors.nom }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📧 Email <span class="required">*</span></label>
+                    <div class="input-group">
+                        <span class="icon">✉️</span>
+                        <input type="email" name="email" class="form-control {% if errors.email is defined %}is-invalid{% endif %}" 
+                               value="{{ formData.email|default('') }}" placeholder="exemple@email.com">
+                    </div>
+                    {% if errors.email is defined %}
+                        <span class="error-message">{{ errors.email }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>🔒 Mot de passe <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="icon">🔐</span>
+                                <input type="password" name="password" class="form-control {% if errors.password is defined %}is-invalid{% endif %}" 
+                                       placeholder="••••••••">
+                            </div>
+                            {% if errors.password is defined %}
+                                <span class="error-message">{{ errors.password }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>🔒 Confirmer <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="icon">🔐</span>
+                                <input type="password" name="confirm_password" class="form-control {% if errors.confirm_password is defined %}is-invalid{% endif %}" 
+                                       placeholder="••••••••">
+                            </div>
+                            {% if errors.confirm_password is defined %}
+                                <span class="error-message">{{ errors.confirm_password }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>📍 Gouvernorat</label>
+                            <div class="input-group">
+                                <span class="icon">📍</span>
+                                <select name="region" class="form-select {% if errors.region is defined %}is-invalid{% endif %}">
+                                    <option value="">Sélectionnez votre gouvernorat</option>
+                                    {% for gov in gouvernorats %}
+                                        <option value="{{ gov }}" {% if formData.region|default('') == gov %}selected{% endif %}>{{ gov }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if errors.region is defined %}
+                                <span class="error-message">{{ errors.region }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>👑 Rôle <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="icon">👑</span>
+                                <select name="role" class="form-select {% if errors.role is defined %}is-invalid{% endif %}">
+                                    <option value="user" {% if formData.role|default('user') == 'user' %}selected{% endif %}>Utilisateur</option>
+                                    <option value="admin" {% if formData.role|default('') == 'admin' %}selected{% endif %}>Administrateur</option>
+                                </select>
+                            </div>
+                            {% if errors.role is defined %}
+                                <span class="error-message">{{ errors.role }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🎂 Date de naissance</label>
+                    <div class="input-group">
+                        <span class="icon">🎂</span>
+                        <input type="date" name="dateNaissance" class="form-control {% if errors.dateNaissance is defined %}is-invalid{% endif %}" 
+                               value="{{ formData.dateNaissance|default('') }}">
+                    </div>
+                    {% if errors.dateNaissance is defined %}
+                        <span class="error-message">{{ errors.dateNaissance }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>🖼️ Photo de profil</label>
+                    <div class="input-group">
+                        <span class="icon">🖼️</span>
+                        <input type="file" name="photo" class="form-control {% if errors.photo is defined %}is-invalid{% endif %}" 
+                               accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                    </div>
+                    <small class="text-muted">Formats acceptés : JPG, PNG, GIF, WEBP (Max 2 Mo)</small>
+                    {% if errors.photo is defined %}
+                        <span class="error-message">{{ errors.photo }}</span>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-register">
+                    ✨ S'inscrire ✨
+                </button>
+            </form>
+        </div>
+
+        <div class="login-link">
+            <p>Déjà inscrit ? <a href="{{ path('app_login') }}">Connectez-vous ici</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

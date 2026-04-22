@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\FormationRepository;
 
@@ -30,6 +29,9 @@ class Formation
     #[ORM\Column(name: 'statut', type: 'string', length: 50, nullable: true)]
     private ?string $statut = null;
 
+    #[ORM\OneToOne(mappedBy: 'formation', targetEntity: Quiz::class, cascade: ['persist', 'remove'])]
+    private ?Quiz $quiz = null;
+
     // Getters
     public function getIdFormation(): ?int { return $this->idFormation; }
     public function getTitre(): ?string { return $this->titre; }
@@ -37,6 +39,7 @@ class Formation
     public function getPrix(): ?float { return $this->prix; }
     public function getIdVendeuse(): ?int { return $this->idVendeuse; }
     public function getStatut(): ?string { return $this->statut; }
+    public function getQuiz(): ?Quiz { return $this->quiz; }
 
     // Setters
     public function setIdFormation(?int $idFormation): self { $this->idFormation = $idFormation; return $this; }
@@ -45,4 +48,15 @@ class Formation
     public function setPrix(?float $prix): self { $this->prix = $prix; return $this; }
     public function setIdVendeuse(?int $idVendeuse): self { $this->idVendeuse = $idVendeuse; return $this; }
     public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
+
+    public function setQuiz(?Quiz $quiz): self
+    {
+        if ($quiz !== null && $quiz->getFormation() !== $this) {
+            $quiz->setFormation($this);
+        }
+
+        $this->quiz = $quiz;
+
+        return $this;
+    }
 }

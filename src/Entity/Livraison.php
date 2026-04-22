@@ -65,6 +65,33 @@ class Livraison
         $this->idCommande = $idCommande;
         return $this;
     }
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $startLat;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $startLng;
+
+    public function getStartLat(): ?float
+    {
+        return $this->startLat;
+    }
+
+    public function setStartLat(?float $startLat): self
+    {
+        $this->startLat = $startLat;
+        return $this;
+    }
+
+    public function getStartLng(): ?float
+    {
+        return $this->startLng;
+    }
+
+    public function setStartLng(?float $startLng): self
+    {
+        $this->startLng = $startLng;
+        return $this;
+    }
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $idLivreur = null;

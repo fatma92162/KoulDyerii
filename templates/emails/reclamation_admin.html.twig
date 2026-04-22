@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle réclamation</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f0e8; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #8B0000, #A52A2A); padding: 30px; text-align: center; color: white;">
+            <h1 style="margin: 0;">📢 Nouvelle Réclamation</h1>
+            <p style="margin: 10px 0 0;">Ticket #{{ ticketId }}</p>
+        </div>
+        <div style="padding: 30px;">
+            <p><strong>👤 De :</strong> {{ emailUtilisateur }}</p>
+            <p><strong>📧 Pour :</strong> {{ emailDestinataire }}</p>
+            <p><strong>🏷️ Type :</strong> {{ type }}</p>
+            <p><strong>📝 Sujet :</strong> {{ sujet }}</p>
+            <p><strong>📅 Date :</strong> {{ date|date('d/m/Y H:i') }}</p>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <h3 style="color: #8B0000; margin-top: 0;">📄 Description</h3>
+                <p>{{ description|nl2br }}</p>
+            </div>
+            
+            {% if user %}
+            <div style="background: #e8f4f8; padding: 15px; border-radius: 10px;">
+                <h3 style="color: #8B0000; margin-top: 0;">👤 Informations utilisateur</h3>
+                <p><strong>Nom :</strong> {{ user.nom }}</p>
+                <p><strong>Email :</strong> {{ user.email }}</p>
+                <p><strong>Rôle :</strong> {{ user.role }}</p>
+            </div>
+            {% endif %}
+            
+            <p style="margin-top: 20px;">Cordialement,<br><strong>Système Koul Dyeri</strong></p>
+        </div>
+    </div>
+</body>
+</html>

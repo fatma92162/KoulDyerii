@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Koul Dyeri{% endblock %}</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🍽️</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    {% block stylesheets %}{% endblock %}
+
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #FF8E53;
+        }
+
+        body {
+            font-family: 'Poppins', system-ui, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FECB6E 50%, #FF8E53 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(255, 107, 107, 0.08);
+        }
+
+        .profile-avatar-nav {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .profile-avatar-nav:hover { transform: scale(1.08); }
+
+        .profile-avatar-nav img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .dropdown-menu-custom {
+            position: absolute;
+            top: 75px;
+            right: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            width: 290px;
+            display: none;
+            z-index: 1050;
+            overflow: hidden;
+        }
+
+        .dropdown-menu-custom.show { display: block; }
+
+        .dropdown-header {
+            padding: 25px 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-avatar {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 4px solid white;
+        }
+
+        .dropdown-item {
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #444;
+            text-decoration: none;
+        }
+
+        .dropdown-item:hover {
+            background: #fff8f0;
+            color: var(--primary);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1040;
+            display: none;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: #eee;
+            margin: 8px 0;
+        }
+        
+        .container-main {
+            min-height: calc(100vh - 80px);
+            padding: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+                🍽️ <span>KOUL DYERI</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-1">
+                    {% if app.user %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_home') }}"><i class="fas fa-home"></i> Accueil</a>
+                        </li>
+                        {% if app.user.role is defined and app.user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_utilisateur_liste') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_posts_index') }}"><i class="fas fa-newspaper"></i> Publications</a>
+                        </li>
+
+                        <!-- Avatar -->
+                        <li class="nav-item ms-3">
+                            <div class="profile-avatar-nav" onclick="toggleDropdown()">
+                                {% if app.user.photo is defined and app.user.photo %}
+                                    <img src="{{ app.user.photo }}" alt="Profil">
+                                {% else %}
+                                    <span style="color: white; font-weight: 600;">
+                                        {{ app.user.nom|first|upper|default('K') }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-gradient ms-2" href="{{ path('app_register') }}">
+                                <i class="fas fa-user-plus"></i> Inscription
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleDropdown()"></div>
+
+    <!-- Dropdown Profil -->
+    <div class="dropdown-menu-custom" id="dropdownMenu">
+        <div class="dropdown-header">
+            <div class="dropdown-avatar">
+                {% if app.user and app.user.photo is defined and app.user.photo %}
+                    <img src="{{ app.user.photo }}" alt="">
+                {% elseif app.user %}
+                    <span style="font-size: 36px; color: white;">
+                        {{ app.user.nom|first|upper }}
+                    </span>
+                {% else %}
+                    <span style="font-size: 36px; color: white;">🍽️</span>
+                {% endif %}
+            </div>
+            {% if app.user %}
+                <div class="dropdown-name">{{ app.user.nom }}</div>
+                <div class="dropdown-email">{{ app.user.email|default('') }}</div>
+            {% endif %}
+        </div>
+
+        {% if app.user %}
+            <a href="{{ path('app_mon_profil') }}" class="dropdown-item">
+                <i class="fas fa-user"></i> Mon profil
+            </a>
+            <a href="{{ path('app_utilisateur_editer', {id: app.user.idUtilisateur}) }}" class="dropdown-item">
+                <i class="fas fa-edit"></i> Modifier mon profil
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="{{ path('app_logout') }}" class="dropdown-item text-danger">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="container-main">
+        <div class="container">
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+
+    {% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            const overlay = document.getElementById('overlay');
+            if (dropdown && overlay) {
+                dropdown.classList.toggle('show');
+                overlay.classList.toggle('show');
+            }
+        }
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('dropdownMenu');
+                const overlay = document.getElementById('overlay');
+                if (dropdown && overlay) {
+                    dropdown.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+            }
+        });
+
+        // Fermer en cliquant en dehors
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const overlay = document.getElementById('overlay');
+            const avatar = document.querySelector('.profile-avatar-nav');
+
+            if (!avatar || !dropdown) return;
+
+            if (!avatar.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        });
+    </script>
+    {% endblock %}
+
+</body>
+</html>

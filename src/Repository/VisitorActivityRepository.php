@@ -83,4 +83,46 @@ class VisitorActivityRepository extends ServiceEntityRepository
             'total' => $total,
         ];
     }
+
+    public function countUniqueVisitorsByRouteAndMinutes(string $routeName, int $minutes = 1440): int
+    {
+        $threshold = new \DateTime(sprintf('-%d minutes', $minutes));
+
+        return (int) $this->createQueryBuilder('v')
+            ->select('COUNT(DISTINCT v.sessionId)')
+            ->andWhere('v.lastSeen >= :threshold')
+            ->andWhere('v.routeName = :routeName')
+            ->setParameter('threshold', $threshold)
+            ->setParameter('routeName', $routeName)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getSourceStatsByRouteAndMinutes(string $routeName, int $minutes = 1440): array
+    {
+        $threshold = new \DateTime(sprintf('-%d minutes', $minutes));
+
+        $rows = $this->createQueryBuilder('v')
+            ->select('v.sourcePlatform AS platform, COUNT(DISTINCT v.sessionId) AS total')
+            ->andWhere('v.lastSeen >= :threshold')
+            ->andWhere('v.routeName = :routeName')
+            ->setParameter('threshold', $threshold)
+            ->setParameter('routeName', $routeName)
+            ->groupBy('v.sourcePlatform')
+            ->orderBy('total', 'DESC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $platform = $row['platform'] ?: 'direct';
+            $result[] = [
+                'platform' => $platform,
+                'total' => (int) $row['total'],
+            ];
+        }
+
+        return $result;
+    }
 }

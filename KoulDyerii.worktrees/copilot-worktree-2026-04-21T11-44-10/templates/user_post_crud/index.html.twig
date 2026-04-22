@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes articles{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">📄 Mes articles</h1>
+        <a href="{{ path('user_post_new') }}" class="btn btn-red">➕ Nouvel article</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par titre ou contenu..." value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-red w-100">Rechercher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th><a href="{{ path('user_post_index', {search: search, sort: 'id', order: (sort == 'id' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">ID {% if sort == 'id' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th><a href="{{ path('user_post_index', {search: search, sort: 'title', order: (sort == 'title' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">Titre {% if sort == 'title' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Contenu</th>
+                <th><a href="{{ path('user_post_index', {search: search, sort: 'created_at', order: (sort == 'created_at' and order == 'ASC') ? 'DESC' : 'ASC'}) }}">Date {% if sort == 'created_at' %}{{ order == 'ASC' ? '▲' : '▼' }}{% endif %}</a></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.content|slice(0, 80) }}...{% if post.content|length > 80 %}…{% endif %}</td>
+                <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
+                <td>
+                    <a href="{{ path('user_post_show', {'id': post.id}) }}" class="btn btn-sm btn-outline-info">Voir</a>
+                    <a href="{{ path('user_post_edit', {'id': post.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                    <form method="post" action="{{ path('user_post_delete', {'id': post.id}) }}" style="display:inline-block">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">Aucun article trouvé</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('user_forum') }}" class="btn btn-secondary mt-3">← Retour au forum</a>
+</div>
+{% endblock %}

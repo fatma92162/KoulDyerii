@@ -1,0 +1,329 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Gestion des Collaborations - Admin{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        padding: 30px 0;
+        color: white;
+        margin-bottom: 30px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        border-top: 4px solid;
+    }
+
+    .stat-card.validee {
+        border-top-color: #28a745;
+    }
+
+    .stat-card.refusee {
+        border-top-color: #dc3545;
+    }
+
+    .stat-card.annulee {
+        border-top-color: #6c757d;
+    }
+
+    .stat-number {
+        font-size: 28px;
+        font-weight: 800;
+        color: #8B0000;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #666;
+        margin-top: 8px;
+    }
+
+    .filters {
+        background: #FFF8F0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #E8D5B7;
+    }
+
+    .collaboration-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+    .collaboration-table table {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .collaboration-table th {
+        background: linear-gradient(135deg, #f5f5f5 0%, #ececec 100%);
+        border-bottom: 2px solid #E8D5B7;
+        padding: 15px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .collaboration-table td {
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .collaboration-table tbody tr:hover {
+        background: #FFF8F0;
+    }
+
+    .collaboration-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .collaboration-badge.validee {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .collaboration-badge.refusee {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .collaboration-badge.annulee {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .collaboration-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: #e9ecef;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 11px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-refuser {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-refuser:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .btn-valider {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-valider:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-link"></i> Gestion des Collaborations</h1>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# Statistiques #}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card validee">
+            <div class="stat-number">{{ stats.validee }}</div>
+            <div class="stat-label">Validée(s)</div>
+        </div>
+        <div class="stat-card refusee">
+            <div class="stat-number">{{ stats.refusee }}</div>
+            <div class="stat-label">Refusée(s)</div>
+        </div>
+        <div class="stat-card annulee">
+            <div class="stat-number">{{ stats.annulee }}</div>
+            <div class="stat-label">Annulée(s)</div>
+        </div>
+    </div>
+
+    {# Filtres #}
+    <div class="filters">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Rechercher par partenaire ou produit..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="validee" {% if statutFiltre == 'validee' %}selected{% endif %}>Validée</option>
+                    <option value="refusee" {% if statutFiltre == 'refusee' %}selected{% endif %}>Refusée</option>
+                    <option value="annulee" {% if statutFiltre == 'annulee' %}selected{% endif %}>Annulée</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{{ path('app_admin_collaborations_index') }}" class="btn btn-secondary w-100 mt-2">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {# Tableau des collaborations #}
+    {% if collaborations|length > 0 %}
+        <div class="collaboration-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Partenaire</th>
+                        <th>Produit</th>
+                        <th>Prix</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for collab in collaborations %}
+                    <tr>
+                        <td>
+                            {% if collab.produit.photo %}
+                                <img src="{{ collab.produit.photo }}" alt="{{ collab.produit.nom }}" class="collaboration-image">
+                            {% else %}
+                                <div class="collaboration-image" style="display:flex;align-items:center;justify-content:center;font-size:20px;">🛍️</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ collab.partenaire.nom }}</strong>
+                            <br>
+                            <small class="text-muted">{{ collab.partenaire.type }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ collab.produit.nom }}</strong>
+                            <br>
+                            <small class="text-muted">{{ collab.produit.description|slice(0, 50) }}{% if collab.produit.description|length > 50 %}…{% endif %}</small>
+                        </td>
+                        <td>
+                            <strong>{{ collab.produit.prix|number_format(2, ',', ' ') }} €</strong>
+                        </td>
+                        <td>
+                            <span class="collaboration-badge collaboration-badge-{{ collab.statut }}">
+                                {% if collab.statut == 'validee' %}
+                                    <i class="fas fa-check"></i> Validée
+                                {% elseif collab.statut == 'refusee' %}
+                                    <i class="fas fa-times"></i> Refusée
+                                {% elseif collab.statut == 'annulee' %}
+                                    <i class="fas fa-ban"></i> Annulée
+                                {% else %}
+                                    {{ collab.statut }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ collab.createdAt|date('d/m/Y H:i') }}</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if collab.statut == 'validee' %}
+                                    <form action="{{ path('app_admin_collaboration_refuser', {collaborationId: collab.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir refuser cette collaboration ?');">
+                                        <button type="submit" class="btn-sm btn-refuser" title="Refuser">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                {% elseif collab.statut == 'refusee' %}
+                                    <form action="{{ path('app_admin_collaboration_valider', {collaborationId: collab.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir valider cette collaboration ?');">
+                                        <button type="submit" class="btn-sm btn-valider" title="Valider">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🔗</div>
+            <h4>Aucune collaboration trouvée</h4>
+            <p>Il n'y a aucune collaboration correspondant à vos critères de recherche.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Les actions sont gérées par les formulaires avec confirmations
+});
+</script>
+{% endblock %}

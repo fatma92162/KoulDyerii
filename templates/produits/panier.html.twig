@@ -53,6 +53,17 @@
         text-align: center;
         margin: 0 auto;
     }
+
+    .code-section {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .code-section .input-group {
+        max-width: 400px;
+    }
 </style>
 {% endblock %}
 
@@ -68,14 +79,14 @@
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
 
     {% for message in app.flashes('error') %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
 
@@ -109,7 +120,7 @@
                                 {{ item.produit.description|slice(0, 80) }}{% if item.produit.description|length > 80 %}...{% endif %}
                             </p>
                             <small class="text-muted">
-                                Prix unitaire : {{ item.produit.prix|number_format(2, ',', ' ') }} €
+                                Prix unitaire : {{ item.produit.prix|number_format(2, ',', ' ') }} TND
                             </small>
                         </div>
 
@@ -126,7 +137,7 @@
                         </div>
 
                         <div class="col-md-2 text-center">
-                            <strong class="fs-5">{{ item.sousTotal|number_format(2, ',', ' ') }} €</strong>
+                            <strong class="fs-5">{{ item.sousTotal|number_format(2, ',', ' ') }} TND</strong>
                         </div>
 
                         <div class="col-md-3 text-center">
@@ -141,12 +152,51 @@
             </div>
         {% endfor %}
 
+        <!-- Section Code de réduction -->
+        <div class="card panier-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="code-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                                <div>
+                                    <i class="fas fa-ticket-alt fa-2x" style="color: #8B0000;"></i>
+                                    <h5 class="d-inline-block ms-2 mb-0">Code de réduction</h5>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" id="codeReduction" class="form-control" placeholder="Entrez votre code promo..." style="border-radius: 50px 0 0 50px;">
+                                    <button class="btn btn-theme" id="appliquerCodeBtn" style="border-radius: 0 50px 50px 0;">
+                                        <i class="fas fa-check"></i> Appliquer
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="codeMessage" class="alert mt-2" style="display: none;"></div>
+                            <div id="reductionInfo" style="display: none;">
+                                <div class="alert alert-success d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-gift"></i> 
+                                        <span id="reductionTexte"></span>
+                                    </div>
+                                    <button id="retirerCodeBtn" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-times"></i> Retirer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card panier-card mt-4">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-md-4">
                         <div class="panier-total">
-                            Total : {{ total|number_format(2, ',', ' ') }} €
+                            Total : <span id="totalCommande">{{ total|number_format(2, ',', ' ') }}</span> TND
+                        </div>
+                        <div id="reductionDetail" class="text-success mt-2" style="display: none;">
+                            <i class="fas fa-tag"></i> Réduction : -<span id="reductionMontant">0</span> TND
                         </div>
                     </div>
 
@@ -173,6 +223,7 @@
     {% endif %}
 </div>
 
+<!-- Modal commande -->
 <div class="modal fade" id="commandePanierModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -186,44 +237,30 @@
             <form method="post" action="{{ path('app_panier_commander') }}" id="panierCommandeForm">
                 <div class="modal-body">
                     <input type="hidden" name="abandoned_draft_id" id="abandoned_draft_id">
+                    <input type="hidden" name="code_reduction" id="codeReductionHidden" value="">
 
                     <div class="mb-3">
                         <label class="form-label">Nom complet</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            name="customer_name"
-                            id="draft_customer_name"
-                            value="{{ app.user ? app.user.nom : '' }}"
-                            required
-                        >
+                        <input type="text" class="form-control" name="customer_name" id="draft_customer_name" value="{{ app.user ? app.user.nom : '' }}" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Téléphone</label>
-                        <input
-                            type="tel"
-                            class="form-control"
-                            name="phone"
-                            id="draft_phone"
-                            pattern="[0-9+\-\s]+"
-                            required
-                        >
+                        <input type="tel" class="form-control" name="phone" id="draft_phone" pattern="[0-9+\-\s]+" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Adresse de livraison</label>
-                        <textarea
-                            class="form-control"
-                            name="location"
-                            id="draft_location"
-                            rows="3"
-                            required
-                        ></textarea>
+                        <textarea class="form-control" name="location" id="draft_location" rows="3" required></textarea>
                     </div>
 
                     <div class="alert alert-light">
-                        <strong>Total panier :</strong> {{ total|number_format(2, ',', ' ') }} €
+                        <strong>Total panier :</strong> <span id="modalTotal">{{ total|number_format(2, ',', ' ') }}</span> TND
+                        <div id="modalReduction" style="display: none;">
+                            <hr>
+                            <strong>Réduction :</strong> -<span id="modalReductionMontant">0</span> TND<br>
+                            <strong>Total après réduction :</strong> <span id="modalTotalApresReduction">{{ total|number_format(2, ',', ' ') }}</span> TND
+                        </div>
                     </div>
 
                     <div class="alert alert-info">
@@ -248,6 +285,120 @@
 </div>
 
 <script>
+// Gestion du code de réduction
+let codeApplique = false;
+let reductionValue = 0;
+
+const codeInput = document.getElementById('codeReduction');
+const appliquerBtn = document.getElementById('appliquerCodeBtn');
+const codeMessage = document.getElementById('codeMessage');
+const reductionInfo = document.getElementById('reductionInfo');
+const reductionTexte = document.getElementById('reductionTexte');
+const retirerCodeBtn = document.getElementById('retirerCodeBtn');
+const totalCommandeSpan = document.getElementById('totalCommande');
+const reductionDetail = document.getElementById('reductionDetail');
+const reductionMontantSpan = document.getElementById('reductionMontant');
+const modalTotal = document.getElementById('modalTotal');
+const modalReduction = document.getElementById('modalReduction');
+const modalReductionMontant = document.getElementById('modalReductionMontant');
+const modalTotalApresReduction = document.getElementById('modalTotalApresReduction');
+const codeReductionHidden = document.getElementById('codeReductionHidden');
+
+let totalOriginal = parseFloat('{{ total }}');
+
+function showMessage(message, type) {
+    codeMessage.textContent = message;
+    codeMessage.className = `alert alert-${type}`;
+    codeMessage.style.display = 'block';
+    setTimeout(() => {
+        codeMessage.style.display = 'none';
+    }, 5000);
+}
+
+function updateTotalDisplay() {
+    let nouveauTotal = totalOriginal;
+    if (codeApplique) {
+        nouveauTotal = totalOriginal - reductionValue;
+    }
+    totalCommandeSpan.textContent = nouveauTotal.toFixed(2);
+    modalTotal.textContent = nouveauTotal.toFixed(2);
+    modalTotalApresReduction.textContent = nouveauTotal.toFixed(2);
+}
+
+// Appliquer un code - CORRECTION AVEC credentials
+if (appliquerBtn) {
+    appliquerBtn.addEventListener('click', async () => {
+        const code = codeInput.value.trim().toUpperCase();
+        if (!code) {
+            showMessage('Veuillez entrer un code', 'danger');
+            return;
+        }
+        
+        try {
+            const response = await fetch('{{ path('app_panier_appliquer_code') }}', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin',  // ← ESSENTIEL : envoie les cookies de session
+                body: JSON.stringify({ code: code, montant_total: totalOriginal })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                codeApplique = true;
+                reductionValue = data.reduction;
+                showMessage(data.message, 'success');
+                reductionInfo.style.display = 'block';
+                reductionTexte.textContent = `Code "${code}" appliqué : ${data.reduction}TND de réduction`;
+                reductionDetail.style.display = 'block';
+                reductionMontantSpan.textContent = data.reduction;
+                modalReduction.style.display = 'block';
+                modalReductionMontant.textContent = data.reduction;
+                codeReductionHidden.value = code;
+                codeInput.disabled = true;
+                appliquerBtn.disabled = true;
+                updateTotalDisplay();
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showMessage('Erreur lors de l\'application du code', 'danger');
+        }
+    });
+}
+
+// Retirer un code - CORRECTION AVEC credentials
+if (retirerCodeBtn) {
+    retirerCodeBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('{{ path('app_panier_retirer_code') }}', { 
+                method: 'POST',
+                credentials: 'same-origin'  // ← ESSENTIEL : envoie les cookies de session
+            });
+            const data = await response.json();
+            if (data.success) {
+                codeApplique = false;
+                reductionValue = 0;
+                reductionInfo.style.display = 'none';
+                reductionDetail.style.display = 'none';
+                modalReduction.style.display = 'none';
+                codeReductionHidden.value = '';
+                codeInput.disabled = false;
+                appliquerBtn.disabled = false;
+                codeInput.value = '';
+                updateTotalDisplay();
+                showMessage('Code de réduction retiré', 'info');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+        }
+    });
+}
+
+// Sauvegarde du brouillon
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('commandePanierModal');
     const customerNameInput = document.getElementById('draft_customer_name');
@@ -302,7 +453,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (saveTimeout) {
             clearTimeout(saveTimeout);
         }
-
         saveTimeout = setTimeout(saveDraft, 800);
     }
 

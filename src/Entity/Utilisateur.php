@@ -41,25 +41,24 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true, name: 'empreinte')]
     private ?string $empreinte = null;
 
-    // RELATION VERS POINTS SOLDE
+    // ✅ RELATION VERS POINTS SOLDE
     #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: Pointssolde::class, cascade: ['persist', 'remove'])]
     private ?Pointssolde $pointsSolde = null;
 
-    // Permission d'épingler
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private ?bool $can_pin = false;
+    // ✅ Champs pour connexion Google
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $googleId = null;
 
-    // Téléphone pour déblocage SMS
-    #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    private ?string $telephone = null;
-
-    // ✅ Date de fin de bannissement (null = pas banni)
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $banned_until = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $googleAvatar = null;
 
     // ✅ Version du token pour déconnexion multi-appareils
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $tokenVersion = 0;
+
+    // ✅ BANNISSEMENT
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $banned_until = null;
 
     // Propriété virtuelle pour les points
     private ?int $pointsFidelite = null;
@@ -68,7 +67,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     
     public function __construct()
     {
-        $this->can_pin = false;
+        $this->tokenVersion = 0;
     }
 
     // ========== GETTERS ET SETTERS ==========
@@ -200,31 +199,51 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // GETTER ET SETTER POUR CAN_PIN
-    public function getCanPin(): ?bool
+    // ========== GETTERS ET SETTERS POUR GOOGLE ==========
+
+    public function getGoogleId(): ?string
     {
-        return $this->can_pin;
+        return $this->googleId;
     }
 
-    public function setCanPin(bool $can_pin): self
+    public function setGoogleId(?string $googleId): self
     {
-        $this->can_pin = $can_pin;
+        $this->googleId = $googleId;
         return $this;
     }
 
-    // GETTER ET SETTER POUR TELEPHONE
-    public function getTelephone(): ?string
+    public function getGoogleAvatar(): ?string
     {
-        return $this->telephone;
+        return $this->googleAvatar;
     }
 
-    public function setTelephone(?string $telephone): self
+    public function setGoogleAvatar(?string $googleAvatar): self
     {
-        $this->telephone = $telephone;
+        $this->googleAvatar = $googleAvatar;
         return $this;
     }
 
-    // ✅ BANNISSEMENT
+    // ========== GETTERS ET SETTERS POUR TOKEN VERSION ==========
+
+    public function getTokenVersion(): int
+    {
+        return $this->tokenVersion;
+    }
+
+    public function setTokenVersion(int $tokenVersion): self
+    {
+        $this->tokenVersion = $tokenVersion;
+        return $this;
+    }
+
+    public function incrementTokenVersion(): self
+    {
+        $this->tokenVersion++;
+        return $this;
+    }
+
+    // ========== GETTERS ET SETTERS POUR BANNISSEMENT ==========
+
     public function getBannedUntil(): ?\DateTimeInterface
     {
         return $this->banned_until;
@@ -242,24 +261,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             return false;
         }
         return $this->banned_until > new \DateTime();
-    }
-
-    // ✅ VERSION DU TOKEN (pour déconnexion multi-appareils)
-    public function getTokenVersion(): int
-    {
-        return $this->tokenVersion;
-    }
-
-    public function setTokenVersion(int $tokenVersion): self
-    {
-        $this->tokenVersion = $tokenVersion;
-        return $this;
-    }
-
-    public function incrementTokenVersion(): self
-    {
-        $this->tokenVersion++;
-        return $this;
     }
 
     // ========== MÉTHODES REQUISES PAR UserInterface ==========

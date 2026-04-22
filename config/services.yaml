@@ -1,45 +1,156 @@
 # config/services.yaml
 
 parameters:
+    # Paramètres First Delivery
+    first_delivery.base_url: '%env(FIRST_DELIVERY_BASE_URL)%'
+    first_delivery.token: '%env(FIRST_DELIVERY_TOKEN)%'
+    app.public_base_url: '%env(PUBLIC_BASE_URL)%'
+    calendly.partenaire_url: '%env(CALENDLY_PARTENAIRE_URL)%'
+    mapbox.api_key: '%env(MAPBOX_API_KEY)%'
+    spoonacular.api_key: '%env(SPOONACULAR_API_KEY)%'
+    hubspot.access_token: '%env(HUBSPOT_ACCESS_TOKEN)%'
+    brevo.api_key: '%env(BREVO_API_KEY)%'
+    brevo.list_id: '%env(int:BREVO_LIST_ID)%'
+    stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
+
+    cal_api_key: '%env(CAL_API_KEY)%'
+    cal_username: '%env(CAL_USERNAME)%'
+    cal_team_slug: '%env(default::CAL_TEAM_SLUG)%'
+    cal_organization_slug: '%env(default::CAL_ORGANIZATION_SLUG)%'
+    cal_event_type_slug: '%env(CAL_EVENT_TYPE_SLUG)%'
+    cal_timezone: '%env(CAL_TIMEZONE)%'
+    cal_api_version_slots: '%env(CAL_API_VERSION_SLOTS)%'
+    cal_api_version_bookings: '%env(CAL_API_VERSION_BOOKINGS)%'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    # Auto-load des classes
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Service/FirstDeliveryService.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-
-    # ✅ Définition de votre extension Twig pour la censure
+    # ========== EXTENSIONS TWIG ==========
     App\Twig\CensorshipExtension:
         tags: ['twig.extension']
 
-    # ✅ Service pour les tentatives de connexion (blocage après 3 échecs)
+    App\Twig\MessageExtension:
+        tags: ['twig.extension']
+
+    App\Twig\NotificationExtension:
+        tags: ['twig.extension']
+
+    # ========== SERVICES DE SÉCURITÉ ==========
     App\Security\LoginAttemptService:
         arguments:
             $cache: '@cache.app'
 
-    # ✅ Écouteur d'échec de connexion
     App\Security\LoginFailureListener:
         tags:
             - { name: kernel.event_subscriber }
 
-    # ✅ Vérificateur d'utilisateur (bloque l'authentification si trop d'échecs)
     App\Security\LoginBlockedChecker:
         tags:
             - { name: security.user_checker }
 
-    # ✅ Écouteur de succès de connexion (réinitialise le compteur)
     App\Security\LoginSuccessListener:
         tags:
             - { name: kernel.event_subscriber }
+
+    App\Security\BannedUserChecker:
+        tags:
+            - { name: security.user_checker }
+
+    # ========== LISTENERS ==========
+    App\EventListener\LocaleListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 20 }
+
+    # ========== SERVICES ==========
+    App\Service\NotificationService: ~
+
+    # ========== GEMINI CLIENT ==========
+    Gemini\Client:
+        factory: ['Gemini', 'client']
+        arguments:
+            - '%env(GEMINI_API_KEY)%'
+
+    # ========== SERVICES IA ==========
+    App\Service\AIAssistant:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+            $httpClient: '@http_client'
+
+    App\Service\AiReplyService: ~
+
+    # ========== CLIENT HTTP ==========
+    Symfony\Contracts\HttpClient\HttpClientInterface:
+        alias: 'http_client'
+        public: true
+
+    # ========== REPOSITORIES ==========
+    App\Repository\HistoriqueConnexionRepository:
+        arguments:
+            - '@Doctrine\Persistence\ManagerRegistry'
+
+    # ========== FIRST DELIVERY SERVICE ==========
+    App\Service\FirstDeliveryService:
+        autowire: false
+        autoconfigure: false
+        arguments:
+            $baseUrl: '%first_delivery.base_url%'
+            $token: '%first_delivery.token%'
+
+    App\Service\CertificateService:
+        arguments:
+            $publicBaseUrl: '%app.public_base_url%'
+
+    App\Service\ExternalIntegrationService:
+        arguments:
+            $mapboxApiKey: '%mapbox.api_key%'
+            $spoonacularApiKey: '%spoonacular.api_key%'
+
+    App\Service\PartnerLeadSyncService:
+        arguments:
+            $hubspotAccessToken: '%hubspot.access_token%'
+            $brevoApiKey: '%brevo.api_key%'
+            $brevoListId: '%brevo.list_id%'
+
+    # ========== AUTRES SERVICES ==========
+    App\Service\PointsFideliteService: ~
+
+    App\Service\UtilisateurService: ~
+
+    # ========== GOOGLE OAUTH CONTROLLER ==========
+    App\Controller\GoogleController:
+        arguments:
+            $clientId: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
+            $clientSecret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
+            $redirectUri: '%env(OAUTH_GOOGLE_REDIRECT_URI)%'
+        tags: ['controller.service_arguments']
+
+    App\Controller\PartenaireController:
+        bind:
+            $calApiKey: '%cal_api_key%'
+            $calUsername: '%cal_username%'
+            $calTeamSlug: '%cal_team_slug%'
+            $calOrganizationSlug: '%cal_organization_slug%'
+            $calEventTypeSlug: '%cal_event_type_slug%'
+            $calTimezone: '%cal_timezone%'
+            $calApiVersionSlots: '%cal_api_version_slots%'
+            $calApiVersionBookings: '%cal_api_version_bookings%'
+
+    App\Controller\AdminPartenaireController:
+        bind:
+            $calendlyPartenaireUrl: '%calendly.partenaire_url%'
+            $mapboxApiKey: '%mapbox.api_key%'
+
+    App\Controller\AdminFormationController:
+        bind:
+            $stripePublicKey: '%stripe.public_key%'

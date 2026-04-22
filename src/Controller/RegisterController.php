@@ -25,12 +25,30 @@ class RegisterController extends AbstractController
 
         // Liste des 24 gouvernorats de Tunisie
         $gouvernorats = [
-            'Tunis', 'Ariana', 'Ben Arous', 'Manouba',
-            'Nabeul', 'Zaghouan', 'Bizerte', 'Béja',
-            'Jendouba', 'Le Kef', 'Siliana', 'Sousse',
-            'Monastir', 'Mahdia', 'Sfax', 'Kairouan',
-            'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine',
-            'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'
+            'Tunis',
+            'Ariana',
+            'Ben Arous',
+            'Manouba',
+            'Nabeul',
+            'Zaghouan',
+            'Bizerte',
+            'Béja',
+            'Jendouba',
+            'Le Kef',
+            'Siliana',
+            'Sousse',
+            'Monastir',
+            'Mahdia',
+            'Sfax',
+            'Kairouan',
+            'Kasserine',
+            'Sidi Bouzid',
+            'Gabès',
+            'Médenine',
+            'Tataouine',
+            'Gafsa',
+            'Tozeur',
+            'Kébili'
         ];
 
         if ($request->isMethod('POST')) {
@@ -41,7 +59,7 @@ class RegisterController extends AbstractController
             $region = $request->request->get('region');
             $role = $request->request->get('role', 'user');
             $dateNaissance = $request->request->get('dateNaissance');
-            
+
             $photoFile = $request->files->get('photo');
             $photoPath = null;
 
@@ -115,7 +133,8 @@ class RegisterController extends AbstractController
                     $errors['photo'] = 'Le fichier ne doit pas dépasser 2 Mo';
                 } else {
                     $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profiles';
-                    if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+                    if (!file_exists($uploadDir))
+                        mkdir($uploadDir, 0777, true);
                     $extension = $photoFile->guessExtension();
                     $newFileName = uniqid() . '_' . time() . '.' . $extension;
                     $photoFile->move($uploadDir, $newFileName);
@@ -141,7 +160,7 @@ class RegisterController extends AbstractController
                 // 🔐 Connexion automatique - méthode standard
                 $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
                 $this->container->get('security.token_storage')->setToken($token);
-                
+
                 // Sauvegarde du token en session (nécessaire pour la persistance)
                 $request->getSession()->set('_security_main', serialize($token));
 

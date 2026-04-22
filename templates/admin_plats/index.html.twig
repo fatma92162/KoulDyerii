@@ -1,0 +1,198 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Tous les plats — Administration{% endblock %}
+
+{% block admin_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">🍽️ Gestion de tous les plats</h3>
+    <a href="{{ path('app_admin_plats_pending') }}" class="btn btn-warning position-relative">
+        <i class="fas fa-clock me-1"></i> En attente
+        {% if stats.en_attente > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ stats.en_attente }}
+            </span>
+        {% endif %}
+    </a>
+</div>
+
+{# ── Stats ── #}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <a href="{{ path('app_admin_plats_index') }}" class="text-decoration-none">
+            <div class="card text-center border-0 shadow-sm h-100 {{ not statutFiltre ? 'border border-primary' : '' }}">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold">{{ stats.total }}</div>
+                    <div class="text-muted small">Tous</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('app_admin_plats_index', {statut: 'en_attente'}) }}" class="text-decoration-none">
+            <div class="card text-center border-0 shadow-sm h-100 border-start border-4 border-warning">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-warning">{{ stats.en_attente }}</div>
+                    <div class="text-muted small">⏳ En attente</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('app_admin_plats_index', {statut: 'accepte'}) }}" class="text-decoration-none">
+            <div class="card text-center border-0 shadow-sm h-100 border-start border-4 border-success">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-success">{{ stats.accepte }}</div>
+                    <div class="text-muted small">✅ Approuvés</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('app_admin_plats_index', {statut: 'refuse'}) }}" class="text-decoration-none">
+            <div class="card text-center border-0 shadow-sm h-100 border-start border-4 border-danger">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-danger">{{ stats.refuse }}</div>
+                    <div class="text-muted small">❌ Rejetés</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+{# ── Table ── #}
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            {% if statutFiltre == 'en_attente' %}⏳ En attente
+            {% elseif statutFiltre == 'accepte' %}✅ Approuvés
+            {% elseif statutFiltre == 'refuse' %}❌ Rejetés
+            {% else %}📋 Tous les plats
+            {% endif %}
+        </h5>
+        <span class="badge bg-light text-dark">{{ plats|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if plats|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="60">Photo</th>
+                        <th>Nom</th>
+                        <th>Partenaire</th>
+                        <th>Prix</th>
+                        <th>Statut</th>
+                        <th>🔥 Ventes</th>
+                        <th>Best-seller</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for plat in plats %}
+                <tr>
+                    <td>
+                        {% if plat.image %}
+                            <img src="{{ plat.image }}" alt="{{ plat.nom }}"
+                                 class="rounded" style="width:44px;height:44px;object-fit:cover;">
+                        {% else %}
+                            <div class="rounded bg-light d-flex align-items-center justify-content-center"
+                                 style="width:44px;height:44px;font-size:20px;">🍽️</div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ plat.nom }}</strong></td>
+                    <td>
+                        {% if plat.partenaire %}
+                            {{ plat.partenaire.nom }}
+                        {% else %}
+                            <span class="text-muted">ID: {{ plat.idPartenaire }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">{{ plat.prix ? plat.prix|number_format(2, ',', ' ') ~ ' €' : '—' }}</td>
+                    <td>
+                        <span class="badge
+                            {% if plat.statut == 'accepte' %}bg-success
+                            {% elseif plat.statut == 'refuse' %}bg-danger
+                            {% else %}bg-warning text-dark
+                            {% endif %}">
+                            {% if plat.statut == 'accepte' %}✅ Approuvé
+                            {% elseif plat.statut == 'refuse' %}❌ Rejeté
+                            {% else %}⏳ En attente{% endif %}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ plat.salesCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if plat.isBestSeller %}
+                            <span class="badge" style="background:#FF6B00;">🔥 Best-seller</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm js-spoonacular" data-query="{{ plat.nom|e('html_attr') }}" title="Suggestions Spoonacular">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                        {% if plat.statut == 'en_attente' %}
+                            <form action="{{ path('app_admin_plat_approve', {id: plat.id}) }}"
+                                  method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm" title="Approuver">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form action="{{ path('app_admin_plat_reject', {id: plat.id}) }}"
+                                  method="post" class="d-inline ms-1">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Rejeter">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-muted small">Traité</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <p>Aucun plat trouvé.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.js-spoonacular').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+        const query = btn.dataset.query || '';
+        if (!query) {
+            alert('Nom de plat introuvable.');
+            return;
+        }
+        btn.disabled = true;
+        const old = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+            const response = await fetch('{{ path('app_integrations_spoonacular_search') }}?query=' + encodeURIComponent(query) + '&limit=3');
+            const data = await response.json();
+            if (!response.ok || !data.ok || !Array.isArray(data.data) || data.data.length === 0) {
+                alert(data.message || 'Aucune suggestion trouvée.');
+                return;
+            }
+            const names = data.data.map((x) => x.title).filter(Boolean).join('\n• ');
+            alert('Suggestions pour "' + query + '"\n• ' + names);
+        } catch (e) {
+            alert('Erreur réseau Spoonacular.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = old;
+        }
+    });
+});
+</script>
+
+{% endblock %}

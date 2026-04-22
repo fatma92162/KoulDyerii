@@ -1,0 +1,412 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Produits - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root{
+    --kd-primary:#8B0000;
+    --kd-primary-2:#A52A2A;
+    --kd-bg:#fff8f4;
+    --kd-card:#fff;
+    --kd-text:#2b1a17;
+    --kd-muted:#7c6259;
+    --kd-border:#ead9d2;
+    --kd-shadow:0 16px 40px rgba(92,64,51,.08);
+}
+
+body{
+    background: var(--kd-bg);
+}
+
+.custom-page-shell{
+    padding: 28px 0 50px;
+}
+
+.custom-stage{
+    display:grid;
+    gap:22px;
+}
+
+.custom-hero,
+.custom-featured,
+.custom-bundles,
+.custom-testimonials,
+.custom-cta{
+    background:#fff;
+    border:1px solid var(--kd-border);
+    border-radius:26px;
+    box-shadow: var(--kd-shadow);
+    overflow:hidden;
+}
+
+.custom-style-premium .custom-hero{
+    background: linear-gradient(135deg,#8B0000 0%,#A52A2A 100%);
+    color:#fff;
+}
+
+.custom-style-clean .custom-hero{
+    background:#fff;
+    color:var(--kd-text);
+}
+
+.custom-style-conversion .custom-hero{
+    background: linear-gradient(135deg,#1b1b1b 0%, #4b1f1f 100%);
+    color:#fff;
+}
+
+.custom-hero-inner{
+    padding:28px;
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:20px;
+    align-items:center;
+}
+
+.custom-hero-copy h1{
+    margin:0 0 12px;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    line-height:1.05;
+    font-weight:900;
+}
+
+.custom-hero-copy p{
+    margin:0 0 16px;
+    line-height:1.7;
+    color: inherit;
+    opacity:.9;
+}
+
+.custom-hero-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.custom-btn{
+    border:none;
+    border-radius:999px;
+    padding:12px 18px;
+    font-weight:900;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+.custom-style-premium .custom-btn.primary,
+.custom-style-conversion .custom-btn.primary{
+    background:#fff;
+    color:#8B0000;
+}
+
+.custom-style-clean .custom-btn.primary{
+    background:linear-gradient(135deg,#8B0000 0%,#A52A2A 100%);
+    color:#fff;
+}
+
+.custom-btn.secondary{
+    background:#f3e4dd;
+    color:#8B0000;
+}
+
+.custom-hero-visual{
+    min-height:260px;
+    border-radius:22px;
+    overflow:hidden;
+    background:#f4dfd7;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.custom-hero-visual img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.section-head{
+    padding:18px 22px;
+    border-bottom:1px solid var(--kd-border);
+    font-size:1.2rem;
+    font-weight:900;
+    color:var(--kd-text);
+}
+
+.featured-grid{
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px;
+}
+
+.product-card{
+    background:#fff;
+    border:1px solid var(--kd-border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 8px 24px rgba(92,64,51,.06);
+    transition:.25s ease;
+    cursor:pointer;
+}
+
+.product-card:hover{
+    transform:translateY(-4px);
+}
+
+.product-card img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+}
+
+.product-fallback{
+    width:100%;
+    height:180px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#f2dfd7 0%,#fff7f2 100%);
+    color:#8B0000;
+    font-size:34px;
+}
+
+.product-card-body{
+    padding:14px;
+}
+
+.product-card-body h5{
+    margin:0 0 8px;
+    font-size:1rem;
+    font-weight:900;
+    color:var(--kd-text);
+}
+
+.product-card-body p{
+    margin:0 0 10px;
+    color:var(--kd-muted);
+    font-size:13px;
+    line-height:1.6;
+}
+
+.product-price{
+    color:#8B0000;
+    font-weight:900;
+    font-size:1.15rem;
+}
+
+.bundle-grid{
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px;
+}
+
+.bundle-card{
+    border:1px solid var(--kd-border);
+    border-radius:18px;
+    background:#fffaf7;
+    padding:18px;
+    text-align:center;
+}
+
+.bundle-card strong{
+    display:block;
+    margin-bottom:8px;
+    color:#5C4033;
+}
+
+.bundle-card span{
+    display:block;
+    font-size:13px;
+    color:#8a6a60;
+    margin-bottom:10px;
+}
+
+.bundle-card b{
+    color:#8B0000;
+    font-size:1.1rem;
+}
+
+.testimonials-grid{
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+}
+
+.quote-card{
+    border:1px solid var(--kd-border);
+    border-radius:18px;
+    background:#fff;
+    padding:16px;
+}
+
+.quote-card p{
+    margin:0 0 10px;
+    color:#5f4b45;
+    line-height:1.6;
+}
+
+.quote-card strong{
+    color:#8B0000;
+    font-size:13px;
+}
+
+.custom-cta-inner{
+    padding:28px;
+    text-align:center;
+    background:linear-gradient(135deg,#8B0000 0%,#A52A2A 100%);
+    color:#fff;
+}
+
+.custom-cta-inner h3{
+    margin:0 0 10px;
+    font-weight:900;
+    font-size:2rem;
+}
+
+.custom-cta-inner p{
+    margin:0 0 16px;
+    opacity:.9;
+}
+
+.hidden-block-note{
+    padding:20px;
+    text-align:center;
+    color:#8a6a60;
+}
+
+@media (max-width: 991px){
+    .custom-hero-inner,
+    .featured-grid,
+    .bundle-grid,
+    .testimonials-grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+{% set featured = produits|first %}
+{% set order = customThemeConfig.order|default(['hero', 'featured', 'bundles', 'testimonials', 'cta']) %}
+{% set styleClass = 'custom-style-' ~ (customThemeConfig.style|default('premium')) %}
+
+<div class="container custom-page-shell {{ styleClass }}">
+    <div class="custom-stage">
+        {% for block in order %}
+            {% if block == 'hero' %}
+                <section class="custom-hero">
+                    <div class="custom-hero-inner">
+                        <div class="custom-hero-copy">
+                            <h1>{{ customThemeConfig.title|default('My custom layout') }}</h1>
+                            <p>Découvrez une mise en page personnalisée créée depuis l’admin, visible côté utilisateur avec vos vrais produits.</p>
+                            <div class="custom-hero-actions">
+                                <a href="#customProducts" class="custom-btn primary">
+                                    <i class="fas fa-eye"></i> Voir les produits
+                                </a>
+                                <a href="{{ path('app_panier_index') }}" class="custom-btn secondary">
+                                    <i class="fas fa-shopping-cart"></i> Voir le panier
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="custom-hero-visual">
+                            {% if featured and featured.photo %}
+                                <img src="{{ featured.photo }}" alt="{{ featured.nom }}">
+                            {% else %}
+                                <i class="fas fa-utensils fa-4x"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if block == 'featured' %}
+                <section class="custom-featured" id="customProducts">
+                    <div class="section-head">Produits mis en avant</div>
+                    <div class="featured-grid">
+                        {% for produit in produits|slice(0, 6) %}
+                            <div class="product-card">
+                                {% if produit.photo %}
+                                    <img src="{{ produit.photo }}" alt="{{ produit.nom }}">
+                                {% else %}
+                                    <div class="product-fallback">
+                                        <i class="fas fa-box-open"></i>
+                                    </div>
+                                {% endif %}
+
+                                <div class="product-card-body">
+                                    <h5>{{ produit.nom }}</h5>
+                                    <p>{{ produit.description|default('Sans description')|slice(0, 90) }}{% if produit.description and produit.description|length > 90 %}...{% endif %}</p>
+                                    <div class="product-price">{{ produit.prix|number_format(2, ',', ' ') }} TND</div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="hidden-block-note">Aucun produit disponible.</div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if block == 'bundles' %}
+                {% if customThemeConfig.showBundles|default(true) %}
+                    <section class="custom-bundles">
+                        <div class="section-head">Bundles / Offres</div>
+                        <div class="bundle-grid">
+                            <div class="bundle-card">
+                                <strong>Pack 2</strong>
+                                <span>Réduction volume</span>
+                                <b>-10%</b>
+                            </div>
+                            <div class="bundle-card">
+                                <strong>Pack 3</strong>
+                                <span>Offre plus agressive</span>
+                                <b>2 + 1</b>
+                            </div>
+                            <div class="bundle-card">
+                                <strong>Pack Best Deal</strong>
+                                <span>Bloc qui pousse la conversion</span>
+                                <b>59,90 TND</b>
+                            </div>
+                        </div>
+                    </section>
+                {% endif %}
+            {% endif %}
+
+            {% if block == 'testimonials' %}
+                {% if customThemeConfig.showTestimonials|default(true) %}
+                    <section class="custom-testimonials">
+                        <div class="section-head">Avis clients</div>
+                        <div class="testimonials-grid">
+                            <div class="quote-card">
+                                <p>“Très bon produit, belle présentation et achat plus convaincant.”</p>
+                                <strong>Client satisfait</strong>
+                            </div>
+                            <div class="quote-card">
+                                <p>“Le design donne beaucoup plus envie de commander.”</p>
+                                <strong>Client fidèle</strong>
+                            </div>
+                        </div>
+                    </section>
+                {% endif %}
+            {% endif %}
+
+            {% if block == 'cta' %}
+                <section class="custom-cta">
+                    <div class="custom-cta-inner">
+                        <h3>Prêt à commander ?</h3>
+                        <p>Votre thème personnalisé est maintenant visible côté utilisateur.</p>
+                        <a href="{{ path('app_panier_index') }}" class="custom-btn primary">
+                            <i class="fas fa-bolt"></i> Commander maintenant
+                        </a>
+                    </div>
+                </section>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

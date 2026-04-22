@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-start">
+        <h1>{{ post.title }}</h1>
+        <div>
+            <a href="{{ path('admin_post_edit', {'id': post.id}) }}" class="btn btn-warning btn-sm">✏️ Modifier l'article</a>
+            {{ include('post_crud/_delete_form.html.twig') }}
+        </div>
+    </div>
+
+    <p>{{ post.content|nl2br }}</p>
+    <small class="text-muted">Posté le {{ post.createdAt|date('d/m/Y H:i') }}</small>
+
+    <hr>
+
+    <h3>Commentaires</h3>
+    {% for commentaire in post.commentaires %}
+        <div class="card mt-2">
+            <div class="card-body">
+                <p>{{ commentaire.content }}</p>
+                <div class="d-flex justify-content-between">
+                    <small>Par {{ commentaire.utilisateur ? commentaire.utilisateur.email : 'Anonyme' }}, le {{ commentaire.createdAt|date('d/m/Y H:i') }}</small>
+                    <div>
+                        <a href="{{ path('admin_commentaire_edit', {'id': commentaire.id}) }}" class="btn btn-sm btn-secondary">Modifier</a>
+                        {{ include('commentaire_crud/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Soyez le premier à commenter.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h4>Ajouter un commentaire</h4>
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        {{ form_widget(form) }}
+        <button class="btn btn-primary mt-2">Envoyer</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('forum_list') }}" class="btn btn-secondary mt-3">← Retour au forum</a>
+{% endblock %}

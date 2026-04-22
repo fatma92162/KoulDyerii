@@ -1,6 +1,6 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block admin_title %}Modifier la publication{% endblock %}
+{% block admin_title %}{{ 'admin.posts.edit_page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -107,12 +107,12 @@
 {% block admin_content %}
 <div class="admin-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>✏️ {{ titre|default('Modifier la publication') }}</h3>
+        <h3>✏️ {{ titre|default('admin.posts.edit_heading'|trans) }}</h3>
         {# Utilisez l'une de ces 3 options - décommentez celle qui fonctionne #}
         
         {# Option 1: Retour à la page de détail du post #}
         <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour
+            <i class="fas fa-arrow-left"></i> {{ 'common.back'|trans }}
         </a>
         
         {# Option 2: Retour à la liste (si la route existe) #}
@@ -132,48 +132,48 @@
 
     <div class="form-card">
         <div class="form-header">
-            <h3>Modifier votre publication</h3>
+            <h3>{{ 'admin.posts.edit_form_title'|trans }}</h3>
         </div>
 
         <div class="form-body">
             <form method="post" action="{{ path('app_admin_post_edit', {id: post.id}) }}" novalidate>
                 <div class="mb-4">
-                    <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                    <label for="title" class="form-label">{{ 'posts.form.title_label'|trans }} <span class="text-danger">*</span></label>
                     <input type="text" 
                            class="form-control {% if errors.title is defined %}is-invalid{% endif %}" 
                            id="title" 
                            name="title" 
                            value="{{ formData.title|default(post.title) }}"
-                           placeholder="Titre de la publication..."
+                           placeholder="{{ 'admin.posts.form.title_placeholder'|trans }}"
                            required>
                     {% if errors.title is defined %}
                         <div class="invalid-feedback">{{ errors.title }}</div>
                     {% else %}
-                        <small class="help-text">Le titre doit contenir entre 3 et 100 caractères.</small>
+                        <small class="help-text">{{ 'admin.posts.form.title_help'|trans }}</small>
                     {% endif %}
                 </div>
 
                 <div class="mb-4">
-                    <label for="content" class="form-label">Contenu <span class="text-danger">*</span></label>
+                    <label for="content" class="form-label">{{ 'posts.form.content_label'|trans }} <span class="text-danger">*</span></label>
                     <textarea class="form-control {% if errors.content is defined %}is-invalid{% endif %}" 
                               id="content" 
                               name="content" 
                               rows="10" 
-                              placeholder="Contenu de la publication..."
+                              placeholder="{{ 'admin.posts.form.content_placeholder'|trans }}"
                               required>{{ formData.content|default(post.content) }}</textarea>
                     {% if errors.content is defined %}
                         <div class="invalid-feedback">{{ errors.content }}</div>
                     {% else %}
-                        <small class="help-text">Le contenu doit contenir entre 10 et 5000 caractères.</small>
+                        <small class="help-text">{{ 'admin.posts.form.content_help'|trans }}</small>
                     {% endif %}
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mt-5">
                     <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Annuler
+                        <i class="fas fa-times"></i> {{ 'common.cancel'|trans }}
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Enregistrer les modifications
+                        <i class="fas fa-save"></i> {{ 'common.save_changes'|trans }}
                     </button>
                 </div>
             </form>

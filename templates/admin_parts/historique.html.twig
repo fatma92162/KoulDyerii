@@ -1,0 +1,71 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Historique des actions{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <h3>📜 Historique</h3>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <select name="entity_type" class="form-select">
+                <option value="">Tous les types</option>
+                {% for type in entityTypes %}
+                    <option value="{{ type }}" {{ app.request.query.get('entity_type') == type ? 'selected' : '' }}>
+                        {{ type|capitalize }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="action" class="form-select">
+                <option value="">Toutes les actions</option>
+                {% for act in actions %}
+                    <option value="{{ act }}" {{ app.request.query.get('action') == act ? 'selected' : '' }}>
+                        {{ act|capitalize }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ path('app_admin_historique_index') }}" class="btn btn-secondary">Réinitialiser</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Utilisateur</th>
+                    <th>Action</th>
+                    <th>Type</th>
+                    <th>ID entité</th>
+                    <th>Détails</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in historiques %}
+                    <tr>
+                        <td>{{ h.createdAt|date('d/m/Y H:i:s') }}</td>
+                        <td>{{ h.user ? h.user.nom : 'Système' }}</td>
+                        <td>
+                            <span class="badge {% if h.action == 'create' %}bg-success{% elseif h.action == 'update' %}bg-warning{% elseif h.action == 'delete' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ h.action|upper }}
+                            </span>
+                        </td>
+                        <td>{{ h.entityType }}</td>
+                        <td>{{ h.entityId }}</td>
+                        <td>{{ h.details|default('-') }}</td>
+                        <td>{{ h.ipAddress|default('-') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7">Aucun historique trouvé.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

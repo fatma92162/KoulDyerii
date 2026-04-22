@@ -59,11 +59,14 @@
         border-radius: 50px;
         padding: 10px 20px;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
     
     .btn-reset:hover {
         background: #D4A574;
         color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
     }
     
     .formation-card {
@@ -119,6 +122,24 @@
         gap: 8px;
         flex-wrap: wrap;
     }
+
+    .btn-action-group .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.4rem 0.75rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-group .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+
+    .btn-action-group .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
     
     .btn-inscrits {
         background: #17a2b8;
@@ -129,6 +150,24 @@
     .btn-inscrits:hover {
         background: #138496;
         transform: translateY(-2px);
+    }
+
+    .admin-card .btn-primary,
+    .admin-card .btn-secondary,
+    .admin-card .btn-warning,
+    .admin-card .btn-danger {
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+    }
+
+    .admin-card .btn-primary:hover,
+    .admin-card .btn-secondary:hover,
+    .admin-card .btn-warning:hover,
+    .admin-card .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
     }
     
     .empty-state {
@@ -155,6 +194,15 @@
         </a>
     </div>
 
+    <div class="alert {{ stripeConfigured ? 'alert-success' : 'alert-warning' }} mb-4">
+        <strong>Stripe:</strong>
+        {% if stripeConfigured %}
+            Paiement client configuré.
+        {% else %}
+            Clé publique Stripe manquante. Les paiements formation côté client peuvent échouer.
+        {% endif %}
+    </div>
+
     <!-- Cartes statistiques -->
     <div class="stats-cards">
         <div class="stat-card {% if statutFiltre == '' %}active{% endif %}" onclick="filterByStatut('')">
@@ -172,6 +220,14 @@
         <div class="stat-card {% if statutFiltre == 'annule' %}active{% endif %}" onclick="filterByStatut('annule')">
             <div class="stat-number">{{ stats.annule|default(0) }}</div>
             <div class="stat-label">❌ Annulées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.payantes|default(0) }}</div>
+            <div class="stat-label">💳 Payantes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.gratuites|default(0) }}</div>
+            <div class="stat-label">🆓 Gratuites</div>
         </div>
     </div>
 
@@ -254,6 +310,16 @@
                             <a href="{{ path('app_admin_formations_inscriptions', {id: formation.idFormation}) }}" class="btn btn-sm btn-inscrits">
                                 <i class="fas fa-users"></i> Inscrits
                             </a>
+                            <form action="{{ path('app_admin_formations_generate_quiz_ai', {id: formation.idFormation}) }}" method="post" style="display: inline-block;">
+                                <input type="hidden" name="duration" value="{{ formation.quiz ? formation.quiz.duration : 240 }}">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-robot"></i> Generate Quiz with AI
+                                </button>
+                            </form>
+                            <form action="{{ path('app_admin_formations_quiz_duration', {id: formation.idFormation}) }}" method="post" class="d-flex gap-1">
+                                <input type="number" min="30" step="30" name="duration" value="{{ formation.quiz ? formation.quiz.duration : 240 }}" class="form-control form-control-sm" style="width: 110px;">
+                                <button type="submit" class="btn btn-sm btn-secondary">Timer</button>
+                            </form>
                             <form action="{{ path('app_admin_formations_delete', {id: formation.idFormation}) }}" method="post" style="display: inline-block;">
                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette formation ?')">
                                     <i class="fas fa-trash"></i> Supprimer

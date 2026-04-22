@@ -6,14 +6,21 @@ namespace App\Controller;
 use App\Entity\Post;
 use App\Entity\Commentaire;
 use App\Entity\Reaction;
+use App\Entity\AdminNotification;
 use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\ReactionRepository;
+use App\Repository\UtilisateurRepository;
+use App\Repository\HistoriqueRepository;
+use App\Service\AiReplyService;
+use App\Service\HistoriqueService;
+use App\Service\AdminNotificationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/posts')]
@@ -24,7 +31,12 @@ class AdminPostController extends AbstractController
         private PostRepository $postRepository,
         private CommentaireRepository $commentaireRepository,
         private ReactionRepository $reactionRepository,
-        private Connection $connection
+        private Connection $connection,
+        private AiReplyService $aiReplyService,
+        private UtilisateurRepository $utilisateurRepository,
+        private HistoriqueService $historiqueService,
+        private HistoriqueRepository $historiqueRepository,
+        private AdminNotificationService $adminNotif
     ) {}
 
     private function checkAdmin(): void
@@ -35,7 +47,7 @@ class AdminPostController extends AbstractController
         }
     }
 
-    // ✅ Liste des publications + données pour les graphiques
+    // ✅ Liste des publications + données pour les graphiques + sidebar notifications
     #[Route('/', name: 'app_admin_posts_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
@@ -99,7 +111,7 @@ class AdminPostController extends AbstractController
             }
         }
 
-        // ---------- Données pour les graphiques (nécessaires pour la modale) ----------
+        // ---------- Données pour les graphiques ----------
         $sqlPosts = "SELECT DATE(created_at) as date, COUNT(*) as count FROM post WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY date ASC";
         $postsData = $this->connection->executeQuery($sqlPosts)->fetchAllAssociative();
         $postsDates = array_column($postsData, 'date');
@@ -133,6 +145,14 @@ class AdminPostController extends AbstractController
         $avgComments = $totalPostsCount > 0 ? round($totalComments / $totalPostsCount, 2) : 0;
         $avgLikes = $totalPostsCount > 0 ? round($totalLikes / $totalPostsCount, 2) : 0;
 
+        // --- Récupération des notifications pour la sidebar ---
+        $notifications = $this->entityManager
+            ->getRepository(AdminNotification::class)
+            ->findBy([], ['createdAt' => 'DESC'], 20);
+        $unreadCount = $this->entityManager
+            ->getRepository(AdminNotification::class)
+            ->count(['isRead' => false]);
+
         return $this->render('admin_posts/index.html.twig', [
             'posts' => $posts,
             'likesCount' => $likesCount,
@@ -156,6 +176,86 @@ class AdminPostController extends AbstractController
             'totalLikes' => $totalLikes,
             'avgComments' => $avgComments,
             'avgLikes' => $avgLikes,
+            // Variables pour les notifications
+            'notifications' => $notifications,
+            'unreadNotificationsCount' => $unreadCount,
+        ]);
+    }
+
+    // ✅ EXPORT CSV
+    #[Route('/export', name: 'app_admin_posts_export', methods: ['GET'])]
+    public function exportPosts(Request $request): Response
+    {
+        $this->checkAdmin();
+
+        $search = $request->query->get('search', '');
+        $sort = $request->query->get('sort', 'recent');
+
+        $qb = $this->postRepository->createQueryBuilder('p')
+            ->leftJoin('p.utilisateur', 'u')
+            ->addSelect('u');
+
+        if (!empty($search)) {
+            $qb->andWhere('p.title LIKE :search OR p.content LIKE :search OR u.nom LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        switch ($sort) {
+            case 'oldest':
+                $qb->orderBy('p.created_at', 'ASC');
+                break;
+            case 'popular':
+                $qb->leftJoin('p.commentaires', 'c')
+                   ->groupBy('p.id')
+                   ->orderBy('COUNT(c.id)', 'DESC');
+                break;
+            case 'pinned':
+                $qb->orderBy('p.is_pinned', 'DESC')->addOrderBy('p.created_at', 'DESC');
+                break;
+            default:
+                $qb->orderBy('p.created_at', 'DESC');
+                break;
+        }
+
+        $posts = $qb->getQuery()->getResult();
+
+        $data = [];
+        foreach ($posts as $post) {
+            $title = str_replace(["\r\n", "\n", "\r"], ' ', $post->getTitle());
+            $content = strip_tags($post->getContent());
+            $content = str_replace(["\r\n", "\n", "\r"], ' ', $content);
+            $author = str_replace(["\r\n", "\n", "\r"], ' ', $post->getUtilisateur()->getNom());
+
+            $data[] = [
+                'ID' => $post->getId(),
+                'Titre' => $title,
+                'Contenu' => $content,
+                'Auteur' => $author,
+                'Date création' => $post->getCreatedAt()->format('d/m/Y H:i'),
+                'Commentaires' => $post->getCommentaires()->count(),
+                'Likes' => $this->reactionRepository->countByPost($post->getId()),
+                'Signalements' => $post->getSignalementCount(),
+                'Épinglé' => $post->isPinned() ? 'Oui' : 'Non',
+                'Image' => $post->getImagePath() ? 'Oui' : 'Non',
+            ];
+        }
+
+        $handle = fopen('php://temp', 'r+');
+        fwrite($handle, "\xEF\xBB\xBF");
+        $headers = array_keys($data[0] ?? []);
+        fputcsv($handle, $headers, "\t");
+        foreach ($data as $row) {
+            fputcsv($handle, $row, "\t");
+        }
+        rewind($handle);
+        $csvContent = stream_get_contents($handle);
+        fclose($handle);
+
+        $filename = 'export_posts_' . date('Y-m-d_His') . '.csv';
+
+        return new Response($csvContent, 200, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -301,6 +401,18 @@ class AdminPostController extends AbstractController
         $this->entityManager->persist($post);
         $this->entityManager->flush();
 
+        // 📜 Historique : création du post
+        $this->historiqueService->log(
+            'create',
+            'post',
+            $post->getId(),
+            $user,
+            "Titre: {$post->getTitle()}"
+        );
+
+        // 📢 Notification admin : nouveau post
+        $this->adminNotif->notifyNewPost($post->getId(), $post->getTitle());
+
         $this->addFlash('success', '✅ Votre publication a été créée avec succès !');
         return $this->redirectToRoute('app_admin_posts_index');
     }
@@ -324,6 +436,9 @@ class AdminPostController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            $oldTitle = $post->getTitle();
+            $oldContent = $post->getContent();
+
             $title = trim($request->request->get('title'));
             $content = trim($request->request->get('content'));
             $deleteImage = $request->request->get('delete_image');
@@ -399,6 +514,19 @@ class AdminPostController extends AbstractController
 
             $this->entityManager->flush();
 
+            // 📜 Historique : modification du post
+            $details = "Ancien titre: {$oldTitle} → Nouveau: {$title}";
+            if ($oldContent !== $content) {
+                $details .= " | Contenu modifié";
+            }
+            $this->historiqueService->log(
+                'update',
+                'post',
+                $post->getId(),
+                $user,
+                $details
+            );
+
             $this->addFlash('success', '✅ Publication modifiée avec succès !');
             return $this->redirectToRoute('app_admin_posts_index');
         }
@@ -429,6 +557,15 @@ class AdminPostController extends AbstractController
             return $this->redirectToRoute('app_admin_posts_index');
         }
 
+        // 📜 Historique : suppression du post (avant suppression)
+        $this->historiqueService->log(
+            'delete',
+            'post',
+            $post->getId(),
+            $user,
+            "Titre: {$post->getTitle()}"
+        );
+
         foreach ($post->getCommentaires() as $commentaire) {
             $this->entityManager->remove($commentaire);
         }
@@ -451,8 +588,19 @@ class AdminPostController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Post non trouvé'], 404);
         }
 
-        $post->setIsPinned(!$post->isPinned());
+        $oldState = $post->isPinned();
+        $post->setIsPinned(!$oldState);
         $this->entityManager->flush();
+
+        // 📜 Historique : épinglage / désépinglage
+        $user = $this->getUser();
+        $this->historiqueService->log(
+            'pin',
+            'post',
+            $post->getId(),
+            $user,
+            $post->isPinned() ? 'Post épinglé' : 'Post désépinglé'
+        );
 
         return $this->json([
             'success' => true,
@@ -461,7 +609,7 @@ class AdminPostController extends AbstractController
         ]);
     }
 
-    // ✅ Voir un post avec ses commentaires et likes
+    // ✅ Voir un post avec ses commentaires, likes et historique
     #[Route('/{id}/show', name: 'app_admin_post_show', methods: ['GET'])]
     public function show(int $id): Response
     {
@@ -473,8 +621,9 @@ class AdminPostController extends AbstractController
             return $this->redirectToRoute('app_admin_posts_index');
         }
 
+        // Charger uniquement les commentaires racine (sans parent)
         $commentaires = $this->commentaireRepository->findBy(
-            ['post' => $post], 
+            ['post' => $post, 'parent' => null],
             ['created_at' => 'ASC']
         );
         
@@ -488,7 +637,10 @@ class AdminPostController extends AbstractController
         
         $commentLikesCount = [];
         $userLikedComments = [];
-        foreach ($commentaires as $commentaire) {
+        
+        // Récupération récursive de tous les commentaires pour compter les likes (y compris les réponses)
+        $allComments = $this->commentaireRepository->findBy(['post' => $post]);
+        foreach ($allComments as $commentaire) {
             $commentLikesCount[$commentaire->getId()] = $this->reactionRepository->countByCommentaire($commentaire->getId());
             if ($user) {
                 $userLikedComments[$commentaire->getId()] = $this->reactionRepository->userHasReacted(
@@ -497,17 +649,30 @@ class AdminPostController extends AbstractController
             }
         }
 
+        // 📜 Récupérer l'historique lié à ce post et à ses commentaires
+        $historique = $this->historiqueRepository->createQueryBuilder('h')
+            ->where('h.entityType = :typePost AND h.entityId = :postId')
+            ->orWhere('h.entityType = :typeComment AND h.entityId IN (:commentIds)')
+            ->setParameter('typePost', 'post')
+            ->setParameter('postId', $post->getId())
+            ->setParameter('typeComment', 'comment')
+            ->setParameter('commentIds', array_map(fn($c) => $c->getId(), $allComments))
+            ->orderBy('h.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
         return $this->render('admin_posts/show.html.twig', [
             'post' => $post,
             'commentaires' => $commentaires,
             'postLikesCount' => $postLikesCount,
             'userLikedPost' => $userLikedPost,
             'commentLikesCount' => $commentLikesCount,
-            'userLikedComments' => $userLikedComments
+            'userLikedComments' => $userLikedComments,
+            'historique' => $historique
         ]);
     }
 
-    // ✅ Ajouter un commentaire
+    // ✅ Ajouter un commentaire ou une réponse (avec gestion parent_id)
     #[Route('/{id}/comment', name: 'app_admin_post_comment', methods: ['POST'])]
     public function comment(int $id, Request $request): Response
     {
@@ -521,6 +686,7 @@ class AdminPostController extends AbstractController
         }
 
         $content = trim($request->request->get('content'));
+        $parentId = $request->request->get('parent_id');
         $errors = [];
         $formData = ['content' => $content];
 
@@ -533,15 +699,16 @@ class AdminPostController extends AbstractController
         }
 
         if (!empty($errors)) {
-            $commentaires = $this->commentaireRepository->findBy(['post' => $post], ['created_at' => 'ASC']);
+            // Recharger la page avec les erreurs
+            $commentaires = $this->commentaireRepository->findBy(['post' => $post, 'parent' => null], ['created_at' => 'ASC']);
             $postLikesCount = $this->reactionRepository->countByPost($id);
             $commentLikesCount = [];
             $userLikedComments = [];
-            foreach ($commentaires as $commentaire) {
-                $commentLikesCount[$commentaire->getId()] = $this->reactionRepository->countByCommentaire($commentaire->getId());
+            foreach ($commentaires as $c) {
+                $commentLikesCount[$c->getId()] = $this->reactionRepository->countByCommentaire($c->getId());
                 if ($user) {
-                    $userLikedComments[$commentaire->getId()] = $this->reactionRepository->userHasReacted(
-                        $user->getIdUtilisateur(), null, $commentaire->getId()
+                    $userLikedComments[$c->getId()] = $this->reactionRepository->userHasReacted(
+                        $user->getIdUtilisateur(), null, $c->getId()
                     );
                 }
             }
@@ -558,16 +725,65 @@ class AdminPostController extends AbstractController
             ]);
         }
 
+        // Création du commentaire
         $commentaire = new Commentaire();
         $commentaire->setContent($content);
         $commentaire->setUtilisateur($user);
         $commentaire->setPost($post);
         $commentaire->setCreatedAt(new \DateTime());
 
+        if ($parentId) {
+            $parentCommentaire = $this->commentaireRepository->find($parentId);
+            if ($parentCommentaire) {
+                $commentaire->setParent($parentCommentaire);
+            }
+        }
+
         $this->entityManager->persist($commentaire);
         $this->entityManager->flush();
 
-        $this->addFlash('success', '✅ Votre commentaire a été ajouté !');
+        // 📜 Historique : ajout d'un commentaire
+        $this->historiqueService->log(
+            'comment',
+            'comment',
+            $commentaire->getId(),
+            $user,
+            "Post #{$post->getId()} : {$content}"
+        );
+
+        // 📢 Notification admin : commentaire important (si critères remplis)
+        $this->adminNotif->notifyImportantComment($commentaire->getId(), $content, $post->getId());
+
+        // Génération de la réponse automatique par IA (optionnel)
+        $botUser = $this->utilisateurRepository->findOneBy(['email' => 'bot@example.com']);
+        if (!$botUser) {
+            $botUser = $user;
+        }
+
+        $aiReply = $this->aiReplyService->generateReply($content, $post->getTitle());
+        if ($aiReply) {
+            $reply = new Commentaire();
+            $reply->setContent($aiReply);
+            $reply->setUtilisateur($botUser);
+            $reply->setPost($post);
+            $reply->setCreatedAt(new \DateTime());
+            $this->entityManager->persist($reply);
+            $this->entityManager->flush();
+
+            // 📜 Historique : réponse IA
+            $this->historiqueService->log(
+                'comment',
+                'comment',
+                $reply->getId(),
+                $botUser,
+                "Réponse IA à commentaire #{$commentaire->getId()} : {$aiReply}"
+            );
+
+            $this->addFlash('success', '✅ Votre commentaire a été ajouté, et une réponse automatique a été générée.');
+        } else {
+            $this->addFlash('success', '✅ Votre commentaire a été ajouté.');
+        }
+
         return $this->redirectToRoute('app_admin_post_show', ['id' => $id]);
     }
 
@@ -595,6 +811,14 @@ class AdminPostController extends AbstractController
             $this->entityManager->remove($existingReaction);
             $this->entityManager->flush();
             $likesCount = $this->reactionRepository->countByPost($id);
+            // 📜 Historique : unlike
+            $this->historiqueService->log(
+                'like',
+                'post',
+                $post->getId(),
+                $user,
+                "A retiré son like"
+            );
             return $this->json(['success' => true, 'liked' => false, 'count' => $likesCount]);
         } else {
             $reaction = new Reaction();
@@ -606,6 +830,14 @@ class AdminPostController extends AbstractController
             $this->entityManager->persist($reaction);
             $this->entityManager->flush();
             $likesCount = $this->reactionRepository->countByPost($id);
+            // 📜 Historique : like
+            $this->historiqueService->log(
+                'like',
+                'post',
+                $post->getId(),
+                $user,
+                "A aimé la publication"
+            );
             return $this->json(['success' => true, 'liked' => true, 'count' => $likesCount]);
         }
     }
@@ -634,6 +866,14 @@ class AdminPostController extends AbstractController
             $this->entityManager->remove($existingReaction);
             $this->entityManager->flush();
             $likesCount = $this->reactionRepository->countByCommentaire($id);
+            // 📜 Historique : unlike commentaire
+            $this->historiqueService->log(
+                'like',
+                'comment',
+                $commentaire->getId(),
+                $user,
+                "A retiré son like du commentaire"
+            );
             return $this->json(['success' => true, 'liked' => false, 'count' => $likesCount]);
         } else {
             $reaction = new Reaction();
@@ -645,6 +885,14 @@ class AdminPostController extends AbstractController
             $this->entityManager->persist($reaction);
             $this->entityManager->flush();
             $likesCount = $this->reactionRepository->countByCommentaire($id);
+            // 📜 Historique : like commentaire
+            $this->historiqueService->log(
+                'like',
+                'comment',
+                $commentaire->getId(),
+                $user,
+                "A aimé le commentaire"
+            );
             return $this->json(['success' => true, 'liked' => true, 'count' => $likesCount]);
         }
     }
@@ -692,6 +940,7 @@ class AdminPostController extends AbstractController
             return $this->redirectToRoute('app_admin_post_show', ['id' => $commentaire->getPost()->getId()]);
         }
 
+        $oldContent = $commentaire->getContent();
         $content = trim($request->request->get('content'));
         $errors = [];
         $formData = ['content' => $content];
@@ -715,6 +964,15 @@ class AdminPostController extends AbstractController
         $commentaire->setContent($content);
         $this->entityManager->flush();
 
+        // 📜 Historique : modification du commentaire
+        $this->historiqueService->log(
+            'update',
+            'comment',
+            $commentaire->getId(),
+            $user,
+            "Ancien: {$oldContent} → Nouveau: {$content}"
+        );
+
         $this->addFlash('success', '✅ Commentaire modifié avec succès !');
         return $this->redirectToRoute('app_admin_post_show', ['id' => $commentaire->getPost()->getId()]);
     }
@@ -737,6 +995,15 @@ class AdminPostController extends AbstractController
             return $this->redirectToRoute('app_admin_post_show', ['id' => $commentaire->getPost()->getId()]);
         }
 
+        // 📜 Historique : suppression du commentaire
+        $this->historiqueService->log(
+            'delete',
+            'comment',
+            $commentaire->getId(),
+            $user,
+            "Contenu: {$commentaire->getContent()}"
+        );
+
         $postId = $commentaire->getPost()->getId();
         $this->entityManager->remove($commentaire);
         $this->entityManager->flush();
@@ -754,8 +1021,51 @@ class AdminPostController extends AbstractController
         if (!$post) {
             return $this->json(['success' => false, 'message' => 'Post non trouvé'], 404);
         }
+        $oldCount = $post->getSignalementCount();
         $post->setSignalementCount(0);
         $this->entityManager->flush();
+
+        // 📜 Historique : réinitialisation des signalements
+        $user = $this->getUser();
+        $this->historiqueService->log(
+            'signal',
+            'post',
+            $post->getId(),
+            $user,
+            "Réinitialisation des signalements (était {$oldCount})"
+        );
+
         return $this->json(['success' => true]);
+    }
+
+    // ⭐ Liste des notifications administrateur (page dédiée, optionnelle)
+    #[Route('/notifications', name: 'app_admin_notifications', methods: ['GET'])]
+    public function notifications(): Response
+    {
+        $this->checkAdmin();
+
+        $notifications = $this->entityManager
+            ->getRepository(AdminNotification::class)
+            ->findBy([], ['createdAt' => 'DESC']);
+
+        return $this->render('admin_parts/notifications.html.twig', [
+            'notifications' => $notifications,
+        ]);
+    }
+
+    // ⭐ Marquer une notification comme lue (AJAX)
+    #[Route('/notifications/mark-read/{id}', name: 'app_admin_notification_mark_read', methods: ['POST'])]
+    public function markNotificationRead(int $id): JsonResponse
+    {
+        $this->checkAdmin();
+
+        $notif = $this->entityManager->getRepository(AdminNotification::class)->find($id);
+        if ($notif) {
+            $notif->setIsRead(true);
+            $this->entityManager->flush();
+            return $this->json(['success' => true]);
+        }
+
+        return $this->json(['success' => false], 404);
     }
 }

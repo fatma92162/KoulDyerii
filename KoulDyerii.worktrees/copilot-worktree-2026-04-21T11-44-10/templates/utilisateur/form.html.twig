@@ -1,0 +1,322 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }} | Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .form-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 40px;
+        padding: 40px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.7s ease-out;
+        max-width: 700px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0e6d6;
+    }
+    
+    .form-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 5px;
+    }
+    
+    .form-header p {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-group label .required {
+        color: #FF6B6B;
+        margin-left: 3px;
+    }
+    
+    .input-group {
+        position: relative;
+    }
+    
+    .input-group .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+    }
+    
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        font-size: 14px;
+        background: #fefcf8;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+    
+    .form-select {
+        padding: 12px 15px 12px 45px;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.15);
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+    }
+    
+    .btn-cancel {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: #666;
+        border: 2px solid #f0e6d6;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    
+    .btn-cancel:hover {
+        background: #f0e6d6;
+        color: #333;
+    }
+    
+    .row {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .col {
+        flex: 1;
+    }
+    
+    .alert {
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        animation: shake 0.5s ease;
+    }
+    
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-danger {
+        background: #fff0f0;
+        color: #FF6B6B;
+        border: 1px solid #ffd4d4;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    @media (max-width: 600px) {
+        .row {
+            flex-direction: column;
+            gap: 0;
+        }
+        .form-card {
+            padding: 30px 25px;
+        }
+        .form-header h2 {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>{{ titre }}</h2>
+            <p>Veuillez remplir les informations ci-dessous</p>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        {# Formulaire - action différente selon création ou modification #}
+        {% if utilisateur %}
+            <form method="post" action="/utilisateur/{{ utilisateur.idUtilisateur }}/update" enctype="multipart/form-data">
+        {% else %}
+            <form method="post" action="/utilisateur/create" enctype="multipart/form-data">
+        {% endif %}
+        
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label>👤 NOM <span class="required">*</span></label>
+                        <div class="input-group">
+                            <span class="icon">👤</span>
+                            <input type="text" name="nom" class="form-control" 
+                                   value="{{ utilisateur ? utilisateur.nom : '' }}" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📧 EMAIL <span class="required">*</span></label>
+                <div class="input-group">
+                    <span class="icon">✉️</span>
+                    <input type="email" name="email" class="form-control" 
+                           value="{{ utilisateur ? utilisateur.email : '' }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label>🔒 MOT DE PASSE {{ utilisateur ? '(laisser vide pour ne pas changer)' : '*' }}</label>
+                        <div class="input-group">
+                            <span class="icon">🔐</span>
+                            <input type="password" name="motDePasse" class="form-control" 
+                                   placeholder="••••••••" {{ not utilisateur ? 'required' : '' }}>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label>🔒 CONFIRMER</label>
+                        <div class="input-group">
+                            <span class="icon">🔐</span>
+                            <input type="password" name="confirm_password" class="form-control" 
+                                   placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label>📍 GOUVERNORAT</label>
+                        <div class="input-group">
+                            <span class="icon">📍</span>
+                            <select name="region" class="form-select">
+                                <option value="">Sélectionnez votre gouvernorat</option>
+                                {% set gouvernorats = ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili'] %}
+                                {% for gov in gouvernorats %}
+                                    <option value="{{ gov }}" {% if utilisateur and utilisateur.region == gov %}selected{% endif %}>{{ gov }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>🎂 DATE DE NAISSANCE</label>
+                <div class="input-group">
+                    <span class="icon">🎂</span>
+                    <input type="date" name="dateNaissance" class="form-control" 
+                           value="{{ utilisateur and utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>🖼️ PHOTO DE PROFIL</label>
+                <div class="input-group">
+                    <span class="icon">🖼️</span>
+                    <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+                </div>
+                <small class="text-muted">Formats acceptés : JPG, PNG, GIF, WEBP (Max 2 Mo)</small>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                ✨ ENREGISTRER ✨
+            </button>
+            
+            <a href="{{ path('app_home') }}" class="btn-cancel">
+                ⬅️ ANNULER
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -5,214 +5,1972 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-    .section-card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 30px;
-        border: 1px solid var(--beige-fonce);
+:root {
+    --bordeaux: #8B0000;
+    --bordeaux-clair: #B22222;
+    --beige: #fffaf7;
+    --beige-2: #fff3ec;
+    --beige-fonce: #ecd8cf;
+    --texte: #241818;
+    --muted: #6f5851;
+    --card-shadow: 0 8px 24px rgba(139, 0, 0, 0.08);
+}
+
+.barcode-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #8B0000, #B22222);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 18px rgba(139, 0, 0, 0.18);
+}
+
+.barcode-btn i {
+    font-size: 18px;
+}
+
+.barcode-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(139, 0, 0, 0.25);
+}
+
+.call-btn {
+    background: linear-gradient(135deg, #0f8b4c, #19a55a);
+    box-shadow: 0 6px 18px rgba(15, 139, 76, 0.22);
+}
+
+.call-btn:hover {
+    box-shadow: 0 10px 22px rgba(15, 139, 76, 0.3);
+}
+
+.barcode-btn:active {
+    transform: scale(0.95);
+}
+
+.delivery-shell {
+    color: var(--texte);
+}
+
+.delivery-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.delivery-topbar h3 {
+    margin: 0;
+    font-weight: 800;
+    color: var(--bordeaux);
+}
+
+.btn-livreur {
+    background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(139, 0, 0, 0.14);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.btn-livreur:hover {
+    color: white;
+    transform: translateY(-2px);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    border-radius: 22px;
+    padding: 22px;
+    color: var(--texte);
+    position: relative;
+    overflow: hidden;
+    min-height: 145px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--beige-fonce);
+    background: linear-gradient(180deg, #fff 0%, #fff7f2 100%);
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -60px;
+    top: -40px;
+    border-radius: 50%;
+    background: rgba(139,0,0,0.04);
+}
+
+.stat-bordeaux,
+.stat-blue,
+.stat-green,
+.stat-red {
+    background: linear-gradient(180deg, #fff 0%, #fff5ef 100%);
+}
+
+.stat-title {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.stat-value {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 10px;
+    color: var(--bordeaux);
+}
+
+.stat-subvalue {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--texte);
+}
+
+.top-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.dark-card {
+    background: linear-gradient(180deg, #fff 0%, #fff8f4 100%);
+    border: 1px solid var(--beige-fonce);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.dark-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--beige-fonce);
+    color: var(--bordeaux);
+    font-weight: 800;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #fff;
+}
+
+.dark-card-body {
+    padding: 20px;
+    color: var(--texte);
+}
+
+.performance-legend {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    color: var(--texte);
+}
+
+.performance-bar {
+    width: 100%;
+    height: 44px;
+    background: #f6e8e2;
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+}
+
+.performance-delivered {
+    height: 100%;
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    display: flex;
+    align-items: center;
+    color: #fff;
+    font-weight: 800;
+    padding-left: 14px;
+    transition: width 0.35s ease;
+    white-space: nowrap;
+}
+
+.performance-pending {
+    height: 100%;
+    background: #f3d6d6;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: #8B0000;
+    font-weight: 800;
+    padding-right: 14px;
+    transition: width 0.35s ease;
+    white-space: nowrap;
+}
+
+.gauge-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    position: relative;
+}
+
+.gauge {
+    width: 250px;
+    height: 125px;
+    border-top-left-radius: 250px;
+    border-top-right-radius: 250px;
+    border: 20px solid #f1ded6;
+    border-bottom: 0;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.gauge::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -20px;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 90px;
+    background: #fff3ec;
+    border-top-left-radius: 180px;
+    border-top-right-radius: 180px;
+}
+
+.gauge-text {
+    position: absolute;
+    text-align: center;
+    top: 56%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.gauge-text .big {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--bordeaux);
+}
+
+.gauge-text .small {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 700;
+}
+
+.gauge-dot {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.gauge-dot.left {
+    left: 14%;
+    bottom: 23%;
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+}
+
+.gauge-dot.right {
+    right: 14%;
+    bottom: 23%;
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+}
+
+.filters-card {
+    background: #fffaf7;
+    border: 1px solid var(--beige-fonce);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(139, 0, 0, 0.05);
+}
+
+.filters-card .form-control,
+.filters-card .form-select {
+    background: #fff;
+    border: 1px solid #e3cfc7;
+    color: var(--texte);
+    border-radius: 14px;
+    height: 48px;
+}
+
+.filters-card .form-control::placeholder {
+    color: #9a7f75;
+}
+
+.btn-reset {
+    background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    width: 100%;
+}
+
+.btn-reset:hover {
+    color: #fff;
+    opacity: 0.95;
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.panel-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--beige-fonce);
+    box-shadow: 0 8px 20px rgba(139, 0, 0, 0.06);
+}
+
+.panel-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--beige-fonce);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--bordeaux);
+    background: #fff;
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.livreur-card {
+    background: #fffaf7;
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 14px;
+    border: 1px solid var(--beige-fonce);
+    transition: all 0.3s ease;
+}
+
+.livreur-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+}
+
+.livreur-dispo {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.disponible { background: #4CAF50; }
+.indisponible { background: #f44336; }
+
+.small-muted {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.delivery-table-card {
+    background: linear-gradient(180deg, #fff 0%, #fff9f6 100%);
+    border: 1px solid var(--beige-fonce);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.delivery-table {
+    margin: 0;
+    color: var(--texte);
+}
+
+.delivery-table thead th {
+    background: #fff0e8;
+    color: var(--bordeaux);
+    border-bottom: 1px solid var(--beige-fonce);
+    padding: 16px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.delivery-table td {
+    padding: 15px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f2dfd7;
+    color: var(--texte);
+}
+
+.delivery-table tbody tr:hover {
+    background: #fff7f3;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.status-en_cours { background: #FF9800; color: white; }
+.status-livree { background: #4CAF50; color: white; }
+.status-en_attente { background: #2196F3; color: white; }
+.status-annulee { background: #9E9E9E; color: white; }
+
+.commande-card-modern {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--beige-fonce);
+    margin-bottom: 14px;
+    color: var(--texte);
+    box-shadow: 0 6px 16px rgba(139, 0, 0, 0.04);
+}
+
+.commande-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.commande-title {
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--bordeaux);
+}
+
+.commande-lines p {
+    margin-bottom: 7px;
+    color: var(--texte);
+}
+
+.commande-lines strong {
+    color: var(--bordeaux);
+}
+
+.inline-form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.inline-form-row .form-select {
+    min-width: 220px;
+    border-radius: 12px;
+    height: 44px;
+    border: 1px solid #ddc5bb;
+    background: #fff !important;
+    color: #111 !important;
+    font-weight: 700;
+}
+
+.inline-form-row .form-select option {
+    color: #111;
+    background: #fff;
+}
+
+.status-select {
+    background: #fff !important;
+    color: #111 !important;
+    border: 1px solid #ddc5bb !important;
+    font-weight: 700;
+}
+
+.status-select option {
+    color: #111;
+    background: #fff;
+}
+
+.action-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+    transition: all 0.25s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.secondary-btn {
+    background: linear-gradient(135deg, #9a3a3a, #b45353);
+}
+
+.history-details-row {
+    display: none;
+    background: #fff7f3;
+}
+
+.history-details-row.open {
+    display: table-row;
+}
+
+.details-box-wrap {
+    padding: 18px 0 6px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.detail-box {
+    background: #fff;
+    border: 1px solid var(--beige-fonce);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.detail-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.detail-value {
+    color: var(--texte);
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.loading-inline {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.empty-box {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8a6a60;
+}
+
+.pagination-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-top: 1px solid var(--beige-fonce);
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: var(--texte);
+    font-weight: 700;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.pagination-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #8B0000, #A52A2A);
+    transition: all 0.25s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.call-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 10001;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.call-modal {
+    width: min(460px, 94vw);
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.26);
+    overflow: hidden;
+}
+
+.call-modal-head {
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #8B0000, #B22222);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.call-modal-head h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.call-modal-body {
+    padding: 22px;
+}
+
+.call-status-box {
+    border-radius: 18px;
+    background: #fff7f2;
+    border: 1px solid var(--beige-fonce);
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.call-status-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.call-status-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--bordeaux);
+}
+
+.call-modal-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    
-    .section-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--bordeaux);
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid var(--beige-fonce);
+
+    .top-dashboard-grid,
+    .main-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .btn-livreur {
-        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 10px 20px;
+
+    .details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    
-    .btn-livreur:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .commande-card {
-        background: var(--beige-clair);
-        border-radius: 15px;
-        padding: 15px;
-        margin-bottom: 15px;
-        border: 1px solid var(--beige-fonce);
+
+    .details-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    
-    .status-en_cours { background: #FF9800; color: white; }
-    .status-livree { background: #4CAF50; color: white; }
-    .status-en_attente { background: #2196F3; color: white; }
-    
-    .livreur-card {
-        background: white;
-        border-radius: 15px;
-        padding: 15px;
-        margin-bottom: 15px;
-        border: 1px solid var(--beige-fonce);
-        transition: all 0.3s ease;
-    }
-    
-    .livreur-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    .livreur-dispo {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-    }
-    
-    .disponible { background: #4CAF50; }
-    .indisponible { background: #f44336; }
+}
 </style>
 {% endblock %}
 
 {% block admin_content %}
-<div class="admin-card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+{% set totalLivreurs = livreurs|length %}
+{% set totalCommandes = commandes|length %}
+{% set totalLivraisons = livraisons|length %}
+
+{% set enCoursCount = 0 %}
+{% set livreeCount = 0 %}
+{% set attenteCount = 0 %}
+{% set annuleeCount = 0 %}
+
+{% for livraison in livraisons %}
+    {% if livraison.statutLivraison == 'en_cours' %}
+        {% set enCoursCount = enCoursCount + 1 %}
+    {% elseif livraison.statutLivraison == 'livree' %}
+        {% set livreeCount = livreeCount + 1 %}
+    {% elseif livraison.statutLivraison == 'annulee' %}
+        {% set annuleeCount = annuleeCount + 1 %}
+    {% else %}
+        {% set attenteCount = attenteCount + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% set deliveredPercent = totalLivraisons > 0 ? ((livreeCount / totalLivraisons) * 100)|round(1) : 0 %}
+{% set pendingPercent = totalLivraisons > 0 ? (((enCoursCount + attenteCount) / totalLivraisons) * 100)|round(1) : 0 %}
+
+<div class="delivery-shell">
+    <div class="delivery-topbar">
         <h3>🚚 Gestion des livraisons</h3>
-        <a href="{{ path('app_admin_livreur_new') }}" class="btn btn-livreur">
+        <a href="/admin/livreurs" class="btn-livreur">
             <i class="fas fa-user-plus"></i> Ajouter un livreur
         </a>
     </div>
 
-    <!-- Section Livreurs disponibles -->
-    <div class="section-card">
-        <h4 class="section-title">👨‍💼 Livreurs disponibles</h4>
-        <div class="row">
-            {% for livreur in livreurs %}
-            <div class="col-md-3">
-                <div class="livreur-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>{{ livreur.prenom }} {{ livreur.nom }}</strong>
-                        <span class="livreur-dispo disponible"></span>
-                    </div>
-                    <p class="small mb-1"><i class="fas fa-phone"></i> {{ livreur.telephone }}</p>
-                    <span class="badge bg-success">Disponible</span>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12">
-                <div class="alert alert-info">Aucun livreur disponible.</div>
-            </div>
-            {% endfor %}
+    <div class="stats-grid">
+        <div class="stat-card stat-bordeaux">
+            <div class="stat-title">Livreurs disponibles</div>
+            <div class="stat-value" id="stat-livreurs">{{ totalLivreurs }}</div>
+            <div class="stat-subvalue">Gestion rapide des affectations</div>
+        </div>
+
+        <div class="stat-card stat-blue">
+            <div class="stat-title">Commandes à livrer</div>
+            <div class="stat-value" id="stat-commandes">{{ totalCommandes }}</div>
+            <div class="stat-subvalue">En attente d'affectation</div>
+        </div>
+
+        <div class="stat-card stat-green">
+            <div class="stat-title">Livraisons livrées</div>
+            <div class="stat-value" id="stat-livrees">{{ livreeCount }}</div>
+            <div class="stat-subvalue"><span id="deliveredPercentTextTop">{{ deliveredPercent }}</span>% du total</div>
+        </div>
+
+        <div class="stat-card stat-red">
+            <div class="stat-title">Livraisons en cours</div>
+            <div class="stat-value" id="stat-encours">{{ enCoursCount }}</div>
+            <div class="stat-subvalue"><span id="attenteCountTop">{{ attenteCount }}</span> en attente</div>
         </div>
     </div>
 
-    <!-- Section Commandes à livrer -->
-    <div class="section-card">
-        <h4 class="section-title">📦 Commandes à livrer</h4>
-        <div class="row">
-            {% for commande in commandes %}
-            <div class="col-md-6">
-                <div class="commande-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Commande #{{ commande.id }}</strong>
-                        <span class="status-badge status-en_attente">En attente</span>
+    <div class="top-dashboard-grid">
+        <div class="dark-card">
+            <div class="dark-card-header">
+                <span>Delivery performance</span>
+                <span>{{ totalLivraisons }} livraisons</span>
+            </div>
+            <div class="dark-card-body">
+                <div class="performance-legend">
+                    <div>Livrées <strong id="deliveredPercentLegend">{{ deliveredPercent }}%</strong></div>
+                    <div>En cours / attente <strong id="pendingPercentLegend">{{ pendingPercent }}%</strong></div>
+                </div>
+
+                <div class="performance-bar">
+                    <div class="performance-delivered" id="deliveredBar" style="width: {{ deliveredPercent }}%">
+                        <span id="deliveredPercentBar">{{ deliveredPercent }}%</span>
                     </div>
-                    <p><strong>👤 Client:</strong> {{ commande.customerName }}</p>
-                    <p><strong>📍 Adresse:</strong> {{ commande.location }}</p>
-                    <p><strong>📞 Téléphone:</strong> {{ commande.phone }}</p>
-                    <p><strong>📅 Date:</strong> {{ commande.createdAt|date('d/m/Y H:i') }}</p>
-                    
-                    <form method="post" action="{{ path('app_admin_livraison_affecter', {id: commande.id}) }}" class="mt-3">
-                        <div class="row g-2">
-                            <div class="col-8">
-                                <select name="livreur_id" class="form-select" required>
-                                    <option value="">Choisir un livreur</option>
-                                    {% for livreur in livreurs %}
-                                    <option value="{{ livreur.idLivreur }}">{{ livreur.prenom }} {{ livreur.nom }} - {{ livreur.telephone }}</option>
-                                    {% endfor %}
-                                </select>
+                    <div class="performance-pending" id="pendingBar" style="width: {{ pendingPercent }}%">
+                        <span id="pendingPercentBar">{{ pendingPercent }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dark-card">
+            <div class="dark-card-header">
+                <span>Average Delivery Time</span>
+                <span>Vue rapide</span>
+            </div>
+            <div class="dark-card-body">
+                <div class="gauge-wrap">
+                    <div class="gauge"></div>
+                    <div class="gauge-text">
+                        <div class="big" id="avgDeliveryTime">{{ averageDeliveryTime|default('0h 0m') }}</div>
+                        <div class="small">Temps moyen réel</div>
+                    </div>
+                    <div class="gauge-dot left"><i class="fas fa-truck"></i></div>
+                    <div class="gauge-dot right"><i class="fas fa-box"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-card">
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <input type="text" id="deliverySearchInput" class="form-control" placeholder="Rechercher client, téléphone, adresse, commande...">
+            </div>
+
+            <div class="col-lg-3">
+                <select id="deliveryStatusFilter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="livree">Livrée</option>
+                    <option value="annulee">Annulée</option>
+                </select>
+            </div>
+
+            <div class="col-lg-3">
+                <select id="deliverySectionFilter" class="form-select">
+                    <option value="">Toutes les sections</option>
+                    <option value="pending">Commandes à livrer</option>
+                    <option value="active">Livraisons en cours</option>
+                    <option value="history">Historique</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2">
+                <button type="button" class="btn-reset" onclick="resetDeliveryFilters()">
+                    <i class="fas fa-undo"></i>&nbsp; Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="panel-card">
+            <div class="panel-header">📦 Commandes envoyées à First Delivery</div>
+            <div class="panel-body">
+                {% set hasFirstOrders = false %}
+
+                {% for commande in allCommandes %}
+                    {% if commande.fdgStatus is defined and commande.fdgStatus %}
+                        {% set hasFirstOrders = true %}
+                        <div class="livreur-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>Commande #{{ commande.id }}</strong>
+                                <span id="first-status-badge-{{ commande.id }}"
+                                    class="status-badge {{ commande.fdgStatus == 'sent' ? 'status-en_cours' : (commande.fdgStatus == 'packed' ? 'status-livree' : 'status-en_attente') }}">
+                                    {{ commande.fdgStatus }}
+                                </span>
                             </div>
-                            <div class="col-4">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-truck"></i> Affecter
+
+                            <p class="small mb-1">
+                                <i class="fas fa-user"></i>
+                                {{ commande.customerName ?? 'Client' }}
+                            </p>
+
+                            <p class="small mb-1">
+                                <i class="fas fa-phone"></i>
+                                {{ commande.phone ?? '—' }}
+                            </p>
+
+                            <div class="small-muted">
+                                {% if commande.fdgBarcode is defined and commande.fdgBarcode %}
+                                    Barcode: {{ commande.fdgBarcode }}
+                                {% else %}
+                                    Pas encore de barcode
+                                {% endif %}
+                            </div>
+
+                            {% if commande.fdgPrintLink is defined and commande.fdgPrintLink %}
+                                <div class="mt-2 d-flex gap-2 flex-wrap">
+                                    <a href="{{ commande.fdgPrintLink }}" target="_blank" class="btn-reset" style="height: 40px; width: auto; padding: 8px 14px;">
+                                        <i class="fas fa-print"></i>&nbsp; Imprimer
+                                    </a>
+                                    <button type="button" class="action-btn secondary-btn" onclick="cancelFirstDelivery({{ commande.id }})">
+                                        <i class="fas fa-times"></i> Annuler First
+                                    </button>
+                                    <button type="button" class="barcode-btn" onclick="openPackedModal({{ commande.id }}, '{{ commande.fdgBarcode|default('')|e('js') }}')">
+                                        <i class="fas fa-barcode"></i>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% if not hasFirstOrders %}
+                    <div class="alert alert-info mb-0">Aucune commande envoyée à First Delivery.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="delivery-table-card" id="pendingSection">
+            <div class="dark-card-header">
+                <span>📦 Commandes à livrer</span>
+                <span>{{ totalCommandes }} commande(s)</span>
+            </div>
+            <div class="dark-card-body">
+                {% for commande in commandes %}
+                    <div
+                        class="commande-card-modern filter-item pending-item"
+                        data-section="pending"
+                        data-status="en_attente"
+                        data-search="{{ ('commande #' ~ commande.id ~ ' ' ~ commande.customerName ~ ' ' ~ commande.location ~ ' ' ~ commande.phone)|lower }}"
+                    >
+                        <div class="commande-head">
+                            <div class="commande-title">Commande #{{ commande.id }}</div>
+                            <span class="status-badge status-en_attente">En attente</span>
+                        </div>
+
+                        <div class="commande-lines">
+                            <p><strong>👤 Client :</strong> {{ commande.customerName }}</p>
+                            <p><strong>📍 Adresse :</strong> {{ commande.location }}</p>
+                            <p><strong>📞 Téléphone :</strong> {{ commande.phone }}</p>
+                            <p><strong>📅 Date :</strong> {{ commande.createdAt ? commande.createdAt|date('d/m/Y H:i') : '—' }}</p>
+                        </div>
+
+                        <div class="inline-form-row">
+                            <select class="form-select livreur-select" data-commande-id="{{ commande.id }}">
+                                <option value="">Choisir un livreur</option>
+                                {% for livreur in livreurs %}
+                                    <option value="{{ livreur.idLivreur }}">{{ livreur.prenom }} {{ livreur.nom }} - {{ livreur.telephone }}</option>
+                                {% endfor %}
+                            </select>
+
+                            <button type="button" class="action-btn" onclick="assignLivreur({{ commande.id }})">
+                                <i class="fas fa-truck"></i> Affecter
+                            </button>
+
+                            <button type="button" class="action-btn secondary-btn" onclick="sendToFirstDelivery({{ commande.id }})">
+                                <i class="fas fa-paper-plane"></i> Envoyer société
+                            </button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-box">Aucune commande à livrer.</div>
+                {% endfor %}
+            </div>
+
+            <div class="pagination-wrap">
+                <div class="pagination-info" id="pendingPaginationInfo">Page 1 of 1</div>
+                <div class="pagination-buttons">
+                    <button type="button" class="pagination-btn" id="pendingPrevPageBtn" onclick="changePendingPage(-1)">Previous</button>
+                    <button type="button" class="pagination-btn" id="pendingNextPageBtn" onclick="changePendingPage(1)">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="delivery-table-card mb-4" id="activeSection">
+            <div class="dark-card-header">
+                <span>🚚 Livraisons en cours</span>
+                <span>{{ enCoursCount }} livraison(s)</span>
+            </div>
+            <div class="dark-card-body">
+                {% set hasActive = false %}
+                {% for livraison in livraisons %}
+                    {% if livraison.statutLivraison == 'en_cours' %}
+                        {% set hasActive = true %}
+                        <div
+                            class="commande-card-modern filter-item"
+                            data-section="active"
+                            data-status="{{ livraison.statutLivraison }}"
+                            data-search="{{ ('livraison #' ~ livraison.idLivraison ~ ' ' ~ livraison.adresse ~ ' ' ~ livraison.idCommande ~ ' ' ~ livraison.idLivreur)|lower }}"
+                        >
+                            <div class="commande-head">
+                                <div class="commande-title">Livraison #{{ livraison.idLivraison }}</div>
+                                <span class="status-badge status-en_cours" id="active-badge-{{ livraison.idLivraison }}">En cours</span>
+                            </div>
+
+                            <div class="commande-lines">
+                                <p><strong>📍 Adresse :</strong> {{ livraison.adresse }}</p>
+                                <p><strong>👤 Livreur ID :</strong> #{{ livraison.idLivreur }}</p>
+                                <p><strong>📦 Commande ID :</strong> #{{ livraison.idCommande }}</p>
+                            </div>
+
+                            <div class="inline-form-row">
+                                <select class="form-select status-select" id="active-status-{{ livraison.idLivraison }}">
+                                    <option value="en_cours" selected>En cours</option>
+                                    <option value="livree">Livrée</option>
+                                    <option value="annulee">Annulée</option>
+                                </select>
+
+                                <button type="button" class="action-btn" onclick="updateLivraisonStatus({{ livraison.idLivraison }})">
+                                    <i class="fas fa-save"></i> Mettre à jour
+                                </button>
+
+                                <button type="button" class="barcode-btn call-btn" onclick="openLivreurCallModal({{ livraison.idLivraison }})">
+                                    <i class="fas fa-phone"></i>
                                 </button>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12">
-                <div class="alert alert-info">Aucune commande à livrer.</div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Section Livraisons en cours -->
-    <div class="section-card">
-        <h4 class="section-title">🚚 Livraisons en cours</h4>
-        <div class="row">
-            {% for livraison in livraisons %}
-            {% if livraison.statutLivraison == 'en_cours' %}
-            <div class="col-md-6">
-                <div class="commande-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Livraison #{{ livraison.idLivraison }}</strong>
-                        <span class="status-badge status-en_cours">En cours</span>
-                    </div>
-                    <p><strong>📍 Adresse:</strong> {{ livraison.adresse }}</p>
-                    <p><strong>👤 Livreur ID:</strong> #{{ livraison.idLivreur }}</p>
-                    <p><strong>📦 Commande ID:</strong> #{{ livraison.idCommande }}</p>
-                    
-                    <form method="post" action="{{ path('app_admin_livraison_terminer', {id: livraison.idLivraison}) }}" class="mt-3">
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-check-circle"></i> Marquer comme livrée
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Section Historique des livraisons -->
-    <div class="section-card">
-        <h4 class="section-title">📋 Historique des livraisons</h4>
-        <div class="table-responsive">
-            <table class="table">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID Livraison</th>
-                        <th>Commande #</th>
-                        <th>Adresse</th>
-                        <th>Livreur ID</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for livraison in livraisons %}
-                    {% if livraison.statutLivraison == 'livree' %}
-                    <tr>
-                        <td>{{ livraison.idLivraison }}</td>
-                        <td>{{ livraison.idCommande }}</td>
-                        <td>{{ livraison.adresse|slice(0, 50) }}...</td>
-                        <td>{{ livraison.idLivreur }}</td>
-                        <td><span class="status-badge status-livree">Livrée</span></td>
-                    </tr>
                     {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+
+                {% if not hasActive %}
+                    <div class="empty-box">Aucune livraison en cours.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="delivery-table-card" id="historySection">
+            <div class="table-responsive">
+                <table class="table delivery-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID Livraison</th>
+                            <th>Commande #</th>
+                            <th>Adresse</th>
+                            <th>Livreur ID</th>
+                            <th>Statut</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for livraison in livraisons %}
+                            <tr
+                                class="history-main-row filter-item"
+                                data-section="history"
+                                data-status="{{ livraison.statutLivraison }}"
+                                data-search="{{ ('livraison #' ~ livraison.idLivraison ~ ' ' ~ livraison.idCommande ~ ' ' ~ livraison.adresse ~ ' ' ~ livraison.idLivreur ~ ' ' ~ livraison.statutLivraison)|lower }}"
+                            >
+                                <td>{{ livraison.idLivraison }}</td>
+                                <td>#{{ livraison.idCommande }}</td>
+                                <td>{{ livraison.adresse|slice(0, 50) }}{% if livraison.adresse|length > 50 %}...{% endif %}</td>
+                                <td>#{{ livraison.idLivreur }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ livraison.statutLivraison }}" id="history-badge-{{ livraison.idLivraison }}">
+                                        {% if livraison.statutLivraison == 'livree' %}
+                                            Livrée
+                                        {% elseif livraison.statutLivraison == 'en_cours' %}
+                                            En cours
+                                        {% elseif livraison.statutLivraison == 'annulee' %}
+                                            Annulée
+                                        {% else %}
+                                            En attente
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td style="text-align:right;">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                        <select class="form-select form-select-sm status-select" id="history-status-{{ livraison.idLivraison }}" style="width: 150px;">
+                                            <option value="en_attente" {% if livraison.statutLivraison == 'en_attente' %}selected{% endif %}>En attente</option>
+                                            <option value="en_cours" {% if livraison.statutLivraison == 'en_cours' %}selected{% endif %}>En cours</option>
+                                            <option value="livree" {% if livraison.statutLivraison == 'livree' %}selected{% endif %}>Livrée</option>
+                                            <option value="annulee" {% if livraison.statutLivraison == 'annulee' %}selected{% endif %}>Annulée</option>
+                                        </select>
+
+                                        <button type="button" class="action-btn secondary-btn" onclick="updateLivraisonStatus({{ livraison.idLivraison }}, 'history')">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+
+                                        <button type="button" class="action-btn" onclick="toggleHistoryDetails({{ livraison.idLivraison }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr id="history-details-row-{{ livraison.idLivraison }}" class="history-details-row">
+                                <td colspan="6">
+                                    <div class="details-box-wrap" id="history-details-content-{{ livraison.idLivraison }}">
+                                        <div class="loading-inline">Clique sur l’œil pour afficher les détails…</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-box">Aucune livraison trouvée.</div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-wrap">
+                <div class="pagination-info" id="paginationInfo">Page 1</div>
+                <div class="pagination-buttons">
+                    <button type="button" class="pagination-btn" id="prevPageBtn" onclick="changeHistoryPage(-1)">Previous</button>
+                    <button type="button" class="pagination-btn" id="nextPageBtn" onclick="changeHistoryPage(1)">Next</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<div id="livreurCallModalOverlay" class="call-modal-overlay">
+    <div class="call-modal">
+        <div class="call-modal-head">
+            <h4><i class="fas fa-phone-volume"></i> Appel livreur</h4>
+            <button type="button" onclick="closeLivreurCallModal()" style="border:none;background:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+        </div>
+
+        <div class="call-modal-body">
+            <input type="hidden" id="livreurCallLivraisonId" value="">
+
+            <div class="call-status-box">
+                <div class="call-status-label">Livraison</div>
+                <div class="call-status-value" id="livreurCallLivraisonLabel">#--</div>
+            </div>
+
+            <div class="call-status-box">
+                <div class="call-status-label">Etat de l'appel</div>
+                <div class="call-status-value" id="livreurCallStatus">Pret a appeler</div>
+            </div>
+
+            <div class="call-status-box">
+                <div class="call-status-label">Duree</div>
+                <div class="call-status-value" id="livreurCallTimer">00:00</div>
+            </div>
+
+            <div class="call-modal-actions">
+                <button type="button" class="action-btn" id="livreurStartCallBtn" onclick="startLivreurCall()">
+                    <i class="fas fa-phone"></i> Appeler
+                </button>
+
+                <button type="button" class="action-btn secondary-btn" id="livreurHangupCallBtn" onclick="hangupLivreurCall()" style="display:none;">
+                    <i class="fas fa-phone-slash"></i> Raccrocher
+                </button>
+            </div>
+
+            <audio id="livreurRemoteAudio" autoplay></audio>
+        </div>
+    </div>
+</div>
+
+<div id="barcodePackedModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+    <div style="width:min(420px, 92vw); background:#fff; border-radius:20px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.25); position:relative;">
+        <button type="button"
+                onclick="closePackedModal()"
+                style="position:absolute; top:12px; right:14px; border:none; background:none; font-size:22px; cursor:pointer;">
+            ×
+        </button>
+
+        <h4 style="margin:0 0 14px; color:#8B0000; font-weight:800;">
+            <i class="fas fa-barcode"></i> Valider le barcode
+        </h4>
+
+        <input type="hidden" id="packedCommandeId">
+
+        <div style="margin-bottom:12px; color:#444; font-weight:600;">
+            Colle le barcode reçu de First Delivery
+        </div>
+
+        <input type="text"
+               id="packedBarcodeInput"
+               class="form-control"
+               placeholder="Entrer le barcode..."
+               style="height:48px; border-radius:12px; margin-bottom:14px;">
+
+        <div id="packedAnimationBox" style="display:none; text-align:center; padding:18px 12px; border-radius:14px; background:#fff7f2; margin-bottom:14px;">
+            <div style="font-size:30px; margin-bottom:10px;">📦</div>
+            <div id="packedAnimationText" style="font-weight:800; color:#8B0000;">
+                Statut en cours...
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button"
+                    class="action-btn"
+                    style="flex:1;"
+                    onclick="confirmPackedStatus()">
+                <i class="fas fa-check"></i> Valider
+            </button>
+
+            <button type="button"
+                    class="action-btn secondary-btn"
+                    style="flex:1;"
+                    onclick="closePackedModal()">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let historyCurrentPage = 1;
+let pendingCurrentPage = 1;
+
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+    ]
+};
+
+const livreurCallState = {
+    pc: null,
+    localStream: null,
+    pollTimer: null,
+    livraisonId: null,
+    remoteAnswerApplied: false,
+    callStartedAt: null,
+    timerInterval: null,
+};
+
+const historyRowsPerPage = 5;
+const pendingRowsPerPage = 5;
+
+function setLivreurCallStatus(message) {
+    const el = document.getElementById('livreurCallStatus');
+    if (el) {
+        el.textContent = message;
+    }
+}
+
+function formatCallTimer(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    }
+
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+}
+
+function updateLivreurCallTimerDisplay() {
+    const el = document.getElementById('livreurCallTimer');
+    if (!el) {
+        return;
+    }
+
+    if (!livreurCallState.callStartedAt) {
+        el.textContent = '00:00';
+        return;
+    }
+
+    const totalSeconds = Math.max(0, Math.floor((Date.now() - livreurCallState.callStartedAt) / 1000));
+    el.textContent = formatCallTimer(totalSeconds);
+}
+
+function startLivreurCallTimer() {
+    if (livreurCallState.callStartedAt) {
+        return;
+    }
+
+    livreurCallState.callStartedAt = Date.now();
+    updateLivreurCallTimerDisplay();
+
+    if (livreurCallState.timerInterval) {
+        window.clearInterval(livreurCallState.timerInterval);
+    }
+
+    livreurCallState.timerInterval = window.setInterval(updateLivreurCallTimerDisplay, 1000);
+}
+
+function stopLivreurCallTimer() {
+    if (livreurCallState.timerInterval) {
+        window.clearInterval(livreurCallState.timerInterval);
+        livreurCallState.timerInterval = null;
+    }
+
+    livreurCallState.callStartedAt = null;
+    updateLivreurCallTimerDisplay();
+}
+
+function openLivreurCallModal(livraisonId) {
+    document.getElementById('livreurCallLivraisonId').value = livraisonId;
+    document.getElementById('livreurCallLivraisonLabel').textContent = '#' + livraisonId;
+    document.getElementById('livreurCallModalOverlay').style.display = 'flex';
+    document.getElementById('livreurHangupCallBtn').style.display = 'none';
+    setLivreurCallStatus('Pret a appeler');
+    stopLivreurCallTimer();
+}
+
+function closeLivreurCallModal() {
+    document.getElementById('livreurCallModalOverlay').style.display = 'none';
+}
+
+async function waitForIceGatheringComplete(pc) {
+    if (pc.iceGatheringState === 'complete') {
+        return;
+    }
+
+    await new Promise(resolve => {
+        const onChange = () => {
+            if (pc.iceGatheringState === 'complete') {
+                pc.removeEventListener('icegatheringstatechange', onChange);
+                resolve();
+            }
+        };
+
+        pc.addEventListener('icegatheringstatechange', onChange);
+    });
+}
+
+async function startLivreurCall() {
+    const livraisonId = document.getElementById('livreurCallLivraisonId').value;
+    if (!livraisonId) {
+        return;
+    }
+
+    try {
+        cleanupLivreurCallPeer(false);
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const pc = new RTCPeerConnection(rtcConfig);
+        const remoteAudio = document.getElementById('livreurRemoteAudio');
+
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+        pc.ontrack = (event) => {
+            if (event.streams && event.streams[0]) {
+                remoteAudio.srcObject = event.streams[0];
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'connected') {
+                setLivreurCallStatus('En communication');
+                startLivreurCallTimer();
+            } else if (['failed', 'disconnected'].includes(pc.connectionState)) {
+                setLivreurCallStatus('Connexion interrompue');
+            }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await waitForIceGatheringComplete(pc);
+
+        const response = await fetch('{{ path('app_delivery_call_start', {id: 0}) }}'.replace('/0/', '/' + livraisonId + '/'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                offer: pc.localDescription
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Erreur lors du lancement de l appel.');
+        }
+
+        livreurCallState.pc = pc;
+        livreurCallState.localStream = stream;
+        livreurCallState.livraisonId = livraisonId;
+        livreurCallState.remoteAnswerApplied = false;
+
+        document.getElementById('livreurHangupCallBtn').style.display = 'inline-flex';
+        setLivreurCallStatus('Appel en cours... en attente de reponse');
+
+        livreurCallState.pollTimer = window.setInterval(() => pollLivreurCall(livraisonId), 2000);
+        await pollLivreurCall(livraisonId);
+    } catch (error) {
+        setLivreurCallStatus(error.message || 'Impossible de lancer l appel');
+        cleanupLivreurCallPeer(false);
+    }
+}
+
+async function pollLivreurCall(livraisonId) {
+    try {
+        const response = await fetch('{{ path('app_delivery_call_poll', {id: 0}) }}'.replace('/0/', '/' + livraisonId + '/') + '?role=livreur');
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return;
+        }
+
+        const session = data.session || {};
+        const status = session.status || 'idle';
+
+        if (status === 'accepted' && session.answer && livreurCallState.pc && !livreurCallState.remoteAnswerApplied) {
+            await livreurCallState.pc.setRemoteDescription(session.answer);
+            livreurCallState.remoteAnswerApplied = true;
+            setLivreurCallStatus('En communication');
+            startLivreurCallTimer();
+        } else if (status === 'declined') {
+            setLivreurCallStatus('Appel refuse');
+            cleanupLivreurCallPeer(false);
+        } else if (status === 'ended') {
+            setLivreurCallStatus('Appel termine');
+            cleanupLivreurCallPeer(false);
+        }
+    } catch (error) {
+    }
+}
+
+async function hangupLivreurCall() {
+    const livraisonId = livreurCallState.livraisonId || document.getElementById('livreurCallLivraisonId').value;
+
+    if (livraisonId) {
+        try {
+            await fetch('{{ path('app_delivery_call_hangup', {id: 0}) }}'.replace('/0/', '/' + livraisonId + '/'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    role: 'livreur'
+                })
+            });
+        } catch (error) {
+        }
+    }
+
+    setLivreurCallStatus('Appel termine');
+    cleanupLivreurCallPeer(false);
+}
+
+function cleanupLivreurCallPeer(resetStatus = true) {
+    if (livreurCallState.pollTimer) {
+        window.clearInterval(livreurCallState.pollTimer);
+        livreurCallState.pollTimer = null;
+    }
+
+    if (livreurCallState.pc) {
+        try {
+            livreurCallState.pc.close();
+        } catch (error) {
+        }
+        livreurCallState.pc = null;
+    }
+
+    if (livreurCallState.localStream) {
+        livreurCallState.localStream.getTracks().forEach(track => track.stop());
+        livreurCallState.localStream = null;
+    }
+
+    livreurCallState.livraisonId = null;
+    livreurCallState.remoteAnswerApplied = false;
+    stopLivreurCallTimer();
+
+    const remoteAudio = document.getElementById('livreurRemoteAudio');
+    if (remoteAudio) {
+        remoteAudio.srcObject = null;
+    }
+
+    document.getElementById('livreurHangupCallBtn').style.display = 'none';
+
+    if (resetStatus) {
+        setLivreurCallStatus('Pret a appeler');
+    }
+}
+
+function resetDeliveryFilters() {
+    document.getElementById('deliverySearchInput').value = '';
+    document.getElementById('deliveryStatusFilter').value = '';
+    document.getElementById('deliverySectionFilter').value = '';
+    historyCurrentPage = 1;
+    pendingCurrentPage = 1;
+    applyDeliveryFilters();
+}
+
+function applyDeliveryFilters() {
+    const search = document.getElementById('deliverySearchInput').value.toLowerCase().trim();
+    const status = document.getElementById('deliveryStatusFilter').value;
+    const section = document.getElementById('deliverySectionFilter').value;
+
+    document.querySelectorAll('.filter-item').forEach(item => {
+        const itemSearch = item.dataset.search || '';
+        const itemStatus = item.dataset.status || '';
+        const itemSection = item.dataset.section || '';
+
+        const matchesSearch = !search || itemSearch.includes(search);
+        const matchesStatus = !status || itemStatus === status;
+        const matchesSection = !section || itemSection === section;
+
+        item.dataset.visibleMatch = (matchesSearch && matchesStatus && matchesSection) ? '1' : '0';
+
+        if (!item.classList.contains('history-main-row') && !item.classList.contains('pending-item')) {
+            item.style.display = (matchesSearch && matchesStatus && matchesSection) ? '' : 'none';
+        }
+    });
+
+    document.getElementById('pendingSection').style.display = (!section || section === 'pending') ? '' : 'none';
+    document.getElementById('activeSection').style.display = (!section || section === 'active') ? '' : 'none';
+    document.getElementById('historySection').style.display = (!section || section === 'history') ? '' : 'none';
+
+    historyCurrentPage = 1;
+    pendingCurrentPage = 1;
+
+    applyPendingPagination();
+    applyHistoryPagination();
+}
+
+function applyHistoryPagination() {
+    const historyRows = Array.from(document.querySelectorAll('.history-main-row'));
+    const visibleRows = historyRows.filter(row => row.dataset.visibleMatch !== '0');
+
+    historyRows.forEach(row => {
+        row.style.display = 'none';
+        const livraisonId = row.querySelector('[id^="history-badge-"]')?.id?.replace('history-badge-', '');
+        if (livraisonId) {
+            const detailsRow = document.getElementById('history-details-row-' + livraisonId);
+            if (detailsRow) {
+                detailsRow.style.display = 'none';
+                detailsRow.classList.remove('open');
+            }
+        }
+    });
+
+    const totalPages = Math.max(1, Math.ceil(visibleRows.length / historyRowsPerPage));
+    if (historyCurrentPage > totalPages) {
+        historyCurrentPage = totalPages;
+    }
+
+    const start = (historyCurrentPage - 1) * historyRowsPerPage;
+    const end = start + historyRowsPerPage;
+    const currentRows = visibleRows.slice(start, end);
+
+    currentRows.forEach(row => {
+        row.style.display = '';
+    });
+
+    const info = document.getElementById('paginationInfo');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+
+    if (info) {
+        info.textContent = 'Page ' + historyCurrentPage + ' of ' + totalPages;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = historyCurrentPage <= 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = historyCurrentPage >= totalPages;
+    }
+}
+
+function changeHistoryPage(direction) {
+    const historyRows = Array.from(document.querySelectorAll('.history-main-row'));
+    const visibleRows = historyRows.filter(row => row.dataset.visibleMatch !== '0');
+    const totalPages = Math.max(1, Math.ceil(visibleRows.length / historyRowsPerPage));
+
+    historyCurrentPage += direction;
+
+    if (historyCurrentPage < 1) historyCurrentPage = 1;
+    if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
+
+    applyHistoryPagination();
+}
+
+document.getElementById('deliverySearchInput').addEventListener('input', applyDeliveryFilters);
+document.getElementById('deliveryStatusFilter').addEventListener('change', applyDeliveryFilters);
+document.getElementById('deliverySectionFilter').addEventListener('change', applyDeliveryFilters);
+
+function assignLivreur(commandeId) {
+    const select = document.querySelector('.livreur-select[data-commande-id="' + commandeId + '"]');
+
+    if (!select || !select.value) {
+        alert('Choisir un livreur.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('livreur_id', select.value);
+
+    fetch('{{ path('app_admin_livraison_affecter', {id: 0}) }}'.replace('/0', '/' + commandeId), {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur serveur');
+        }
+        return response.text();
+    })
+    .then(data => {
+        try {
+            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+
+            if (parsed.stats) {
+                refreshDashboardStats(parsed.stats);
+            }
+
+            if (parsed.averageDeliveryTime) {
+                refreshAverageDelivery(parsed.averageDeliveryTime);
+            }
+        } catch (e) {}
+
+        const pendingCard = document.querySelector('.livreur-select[data-commande-id="' + commandeId + '"]')?.closest('.pending-item');
+        if (pendingCard) {
+            pendingCard.remove();
+            applyPendingPagination();
+        }
+    })
+    .catch(() => {
+        alert('Erreur lors de l’affectation du livreur.');
+    });
+}
+
+function updateLivraisonStatus(livraisonId, prefix = 'active') {
+    const selectId = prefix === 'history' ? 'history-status-' + livraisonId : 'active-status-' + livraisonId;
+    const badgeId = prefix === 'history' ? 'history-badge-' + livraisonId : 'active-badge-' + livraisonId;
+
+    const select = document.getElementById(selectId);
+    const badge = document.getElementById(badgeId);
+
+    if (!select) {
+        alert('Sélecteur de statut introuvable.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('status', select.value);
+
+    fetch('/admin/livraisons/status/' + livraisonId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(async response => {
+        const text = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Réponse non JSON:', text);
+            throw new Error('Le serveur ne retourne pas un JSON valide.');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur serveur');
+        }
+
+        return data;
+    })
+    .then(data => {
+        if (!data.success) {
+            alert(data.message || 'Erreur.');
+            return;
+        }
+
+        if (badge) {
+            badge.className = 'status-badge status-' + data.newStatus;
+            badge.textContent = data.badgeLabel;
+        }
+
+        if (data.stats) {
+            refreshDashboardStats(data.stats);
+        }
+
+        if (data.averageDeliveryTime) {
+            refreshAverageDelivery(data.averageDeliveryTime);
+        }
+
+        if (prefix === 'active' && (data.newStatus === 'livree' || data.newStatus === 'annulee')) {
+            const activeBadge = document.getElementById('active-badge-' + livraisonId);
+            const activeCard = activeBadge ? activeBadge.closest('.commande-card-modern') : null;
+
+            if (activeCard) {
+                activeCard.remove();
+            }
+        }
+
+        applyPendingPagination();
+        applyHistoryPagination();
+    })
+    .catch(error => {
+        console.error('Erreur updateLivraisonStatus:', error);
+        alert(error.message || 'Erreur lors de la mise à jour du statut.');
+    });
+}
+
+function toggleHistoryDetails(livraisonId) {
+    const row = document.getElementById('history-details-row-' + livraisonId);
+    const content = document.getElementById('history-details-content-' + livraisonId);
+
+    if (!row || !content) {
+        return;
+    }
+
+    if (row.classList.contains('open')) {
+        row.classList.remove('open');
+        row.style.display = 'none';
+        return;
+    }
+
+    document.querySelectorAll('.history-details-row.open').forEach(el => {
+        el.classList.remove('open');
+        el.style.display = 'none';
+    });
+
+    row.classList.add('open');
+    row.style.display = 'table-row';
+
+    if (content.dataset.loaded === '1') {
+        return;
+    }
+
+    content.innerHTML = '<div class="loading-inline">Chargement des détails...</div>';
+
+    fetch('/admin/livraisons/details/' + livraisonId, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur serveur');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success) {
+            content.innerHTML = '<div class="alert alert-danger mb-0">' + (data.message || 'Erreur.') + '</div>';
+            return;
+        }
+
+        content.innerHTML = data.html;
+        content.dataset.loaded = '1';
+    })
+    .catch(() => {
+        content.innerHTML = '<div class="alert alert-danger mb-0">Erreur réseau ou serveur.</div>';
+    });
+}
+
+function applyPendingPagination() {
+    const pendingItems = Array.from(document.querySelectorAll('.pending-item'));
+    const visibleItems = pendingItems.filter(item => item.dataset.visibleMatch !== '0');
+
+    pendingItems.forEach(item => {
+        item.style.display = 'none';
+    });
+
+    const totalPages = Math.max(1, Math.ceil(visibleItems.length / pendingRowsPerPage));
+
+    if (pendingCurrentPage > totalPages) {
+        pendingCurrentPage = totalPages;
+    }
+
+    const start = (pendingCurrentPage - 1) * pendingRowsPerPage;
+    const end = start + pendingRowsPerPage;
+    const currentItems = visibleItems.slice(start, end);
+
+    currentItems.forEach(item => {
+        item.style.display = '';
+    });
+
+    const info = document.getElementById('pendingPaginationInfo');
+    const prevBtn = document.getElementById('pendingPrevPageBtn');
+    const nextBtn = document.getElementById('pendingNextPageBtn');
+
+    if (info) {
+        info.textContent = 'Page ' + pendingCurrentPage + ' of ' + totalPages;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = pendingCurrentPage <= 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = pendingCurrentPage >= totalPages;
+    }
+}
+
+function changePendingPage(direction) {
+    const pendingItems = Array.from(document.querySelectorAll('.pending-item'));
+    const visibleItems = pendingItems.filter(item => item.dataset.visibleMatch !== '0');
+    const totalPages = Math.max(1, Math.ceil(visibleItems.length / pendingRowsPerPage));
+
+    pendingCurrentPage += direction;
+
+    if (pendingCurrentPage < 1) pendingCurrentPage = 1;
+    if (pendingCurrentPage > totalPages) pendingCurrentPage = totalPages;
+
+    applyPendingPagination();
+}
+
+function refreshDashboardStats(stats) {
+    const elLivreurs = document.getElementById('stat-livreurs');
+    const elCommandes = document.getElementById('stat-commandes');
+    const elLivrees = document.getElementById('stat-livrees');
+    const elEncours = document.getElementById('stat-encours');
+
+    const elDeliveredTop = document.getElementById('deliveredPercentTextTop');
+    const elAttenteTop = document.getElementById('attenteCountTop');
+
+    const elDeliveredLegend = document.getElementById('deliveredPercentLegend');
+    const elPendingLegend = document.getElementById('pendingPercentLegend');
+
+    const elDeliveredBar = document.getElementById('deliveredBar');
+    const elPendingBar = document.getElementById('pendingBar');
+
+    const elDeliveredBarText = document.getElementById('deliveredPercentBar');
+    const elPendingBarText = document.getElementById('pendingPercentBar');
+
+    if (elLivreurs) elLivreurs.textContent = stats.total_livreurs;
+    if (elCommandes) elCommandes.textContent = stats.total_commandes;
+    if (elLivrees) elLivrees.textContent = stats.livrees;
+    if (elEncours) elEncours.textContent = stats.en_cours;
+
+    if (elDeliveredTop) elDeliveredTop.textContent = stats.delivered_percent;
+    if (elAttenteTop) elAttenteTop.textContent = stats.attente;
+
+    if (elDeliveredLegend) elDeliveredLegend.textContent = stats.delivered_percent + '%';
+    if (elPendingLegend) elPendingLegend.textContent = stats.pending_percent + '%';
+
+    if (elDeliveredBar) elDeliveredBar.style.width = stats.delivered_percent + '%';
+    if (elPendingBar) elPendingBar.style.width = stats.pending_percent + '%';
+
+    if (elDeliveredBarText) elDeliveredBarText.textContent = stats.delivered_percent + '%';
+    if (elPendingBarText) elPendingBarText.textContent = stats.pending_percent + '%';
+}
+
+function refreshAverageDelivery(value) {
+    const avg = document.getElementById('avgDeliveryTime');
+    if (avg) {
+        avg.textContent = value;
+    }
+}
+
+function sendToFirstDelivery(commandeId) {
+    const formData = new FormData();
+
+    fetch('/admin/livraisons/send-first-delivery/' + commandeId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(async response => {
+        const text = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Réponse brute du serveur:', text);
+            alert(text);
+            throw new Error('Réponse serveur invalide.');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur serveur.');
+        }
+
+        return data;
+    })
+    .then(data => {
+        alert(data.message || 'Commande envoyée avec succès.');
+        console.log('Barcode:', data.barCode);
+        console.log('Print link:', data.printLink);
+    })
+    .catch(error => {
+        console.error('Erreur sendToFirstDelivery:', error);
+        alert(error.message || 'Erreur lors de l’envoi.');
+    });
+}
+
+function cancelFirstDelivery(commandeId) {
+    fetch('/admin/livraisons/cancel-first-delivery/' + commandeId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+        const text = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Réponse brute du serveur:', text);
+            throw new Error('Réponse serveur invalide.');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur serveur.');
+        }
+
+        return data;
+    })
+    .then(data => {
+        alert(data.message || 'Commande annulée.');
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Erreur cancelFirstDelivery:', error);
+        alert(error.message || 'Erreur lors de l’annulation.');
+    });
+}
+
+function openPackedModal(commandeId, barcode) {
+    document.getElementById('packedCommandeId').value = commandeId;
+    document.getElementById('packedBarcodeInput').value = barcode || '';
+    document.getElementById('packedAnimationBox').style.display = 'none';
+    document.getElementById('barcodePackedModal').style.display = 'flex';
+}
+
+function closePackedModal() {
+    document.getElementById('barcodePackedModal').style.display = 'none';
+}
+
+function confirmPackedStatus() {
+    const commandeId = document.getElementById('packedCommandeId').value;
+    const barcodeInput = document.getElementById('packedBarcodeInput').value.trim();
+    const animationBox = document.getElementById('packedAnimationBox');
+    const animationText = document.getElementById('packedAnimationText');
+
+    if (!barcodeInput) {
+        alert('Entre un barcode.');
+        return;
+    }
+
+    animationBox.style.display = 'block';
+    animationText.textContent = 'Vérification du barcode...';
+
+    setTimeout(() => {
+        animationText.textContent = 'Statut: sent';
+    }, 500);
+
+    setTimeout(() => {
+        animationText.textContent = 'Transition vers packed...';
+    }, 1100);
+
+    setTimeout(() => {
+        const badge = document.getElementById('first-status-badge-' + commandeId);
+
+        if (badge) {
+            badge.textContent = 'packed';
+            badge.className = 'status-badge status-livree';
+        }
+
+        closePackedModal();
+        alert('Commande passée de sent à packed.');
+    }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.history-main-row').forEach(row => {
+        row.dataset.visibleMatch = '1';
+    });
+
+    document.querySelectorAll('.pending-item').forEach(item => {
+        item.dataset.visibleMatch = '1';
+    });
+
+    applyPendingPagination();
+    applyHistoryPagination();
+});
+</script>
 {% endblock %}

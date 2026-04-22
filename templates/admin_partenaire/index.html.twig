@@ -5,54 +5,72 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-    .stats-cards {
+    .partners-page .stats-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 20px;
         margin-bottom: 30px;
     }
     
-    .stat-card {
+    .partners-page .stat-card {
         background: white;
         border-radius: 15px;
         padding: 20px;
         text-align: center;
         cursor: pointer;
-        border: 2px solid transparent;
+        border: 1px solid #f0e6d6;
         transition: all 0.3s ease;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(139, 0, 0, 0.1);
+    .partners-page .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(139, 0, 0, 0.12);
     }
     
-    .stat-card.active {
+    .partners-page .stat-card.active {
         border-color: #8B0000;
-        background: #FFF8F0;
+        background: linear-gradient(135deg, #fff7ef, #ffffff);
     }
     
-    .stat-number {
+    .partners-page .stat-number {
         font-size: 32px;
         font-weight: 800;
         color: #8B0000;
     }
     
-    .stat-label {
+    .partners-page .stat-label {
         font-size: 14px;
         color: #666;
     }
     
-    .filter-bar {
+    .partners-page .filter-bar {
         background: #FFF8F0;
         border-radius: 15px;
         padding: 20px;
         margin-bottom: 25px;
         border: 1px solid #E8D5B7;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
     }
     
-    .btn-reset {
+    .partners-page .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+    }
+
+    .partners-page .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+
+    .partners-page .btn-sm {
+        padding: 0.4rem 0.75rem;
+        border-radius: 10px;
+    }
+
+    .partners-page .btn-reset {
         background: #E8D5B7;
         border: none;
         color: #8B4513;
@@ -61,83 +79,280 @@
         transition: all 0.3s ease;
     }
     
-    .btn-reset:hover {
+    .partners-page .btn-reset:hover {
         background: #D4A574;
         color: white;
     }
     
-    .partenaire-card {
+    .partners-page .partenaire-card {
         background: white;
         border-radius: 15px;
         overflow: hidden;
         margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid #f0e6d6;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.08);
         transition: transform 0.3s ease;
     }
     
-    .partenaire-card:hover {
-        transform: translateY(-5px);
+    .partners-page .partenaire-card:hover {
+        transform: translateY(-4px);
     }
     
-    .partenaire-header {
+    .partners-page .partenaire-header {
         padding: 15px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         border-bottom: 1px solid #f0e6d6;
-        background: #fafafa;
+        background: linear-gradient(135deg, #fff, #faf6f0);
+        gap: 12px;
+        flex-wrap: wrap;
     }
     
-    .status-badge {
+    .partners-page .status-badge {
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
     }
     
-    .status-en_attente {
+    .partners-page .status-en_attente {
         background: #FF9800;
         color: white;
     }
     
-    .status-accepte {
+    .partners-page .status-accepte {
         background: #4CAF50;
         color: white;
     }
     
-    .status-refuse {
+    .partners-page .status-refuse {
         background: #f44336;
         color: white;
     }
     
-    .btn-action-group {
+    .partners-page .btn-action-group {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
     }
-    
-    .empty-state {
+
+    .partners-page .btn-info {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #fff;
+    }
+
+    .partners-page .btn-info:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #fff;
+    }
+
+    .partners-page .btn-primary {
+        background: #8B0000;
+        border-color: #8B0000;
+    }
+
+    .partners-page .btn-primary:hover {
+        background: #6f0000;
+        border-color: #6f0000;
+    }
+
+    .partners-page .btn-danger:hover,
+    .partners-page .btn-success:hover {
+        filter: brightness(0.95);
+    }
+
+    .partners-page .empty-state {
         text-align: center;
         padding: 60px 20px;
         background: white;
         border-radius: 15px;
     }
     
-    .empty-state i {
+    .partners-page .empty-state i {
         font-size: 64px;
         color: #ccc;
         margin-bottom: 20px;
+    }
+
+    .partners-page .partner-logo {
+        max-height: 90px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        padding: 6px;
+        background: #fff;
+    }
+
+    .partners-page .btn-risk {
+        background: linear-gradient(135deg, #7c3aed, #5b21b6);
+        border: none;
+        color: white;
+    }
+
+    .partners-page .btn-risk:hover {
+        background: linear-gradient(135deg, #6d28d9, #4c1d95);
+        color: white;
+    }
+
+    .risk-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .address-result-modal .modal-content {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+}
+
+.address-result-modal .modal-header {
+    background: linear-gradient(135deg, #8B0000, #b91c1c);
+    color: white;
+    border-bottom: none;
+}
+
+.address-result-modal .modal-body {
+    background: #fffdf9;
+    padding: 24px;
+}
+
+.address-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.address-status-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.address-status-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.address-details-card {
+    background: white;
+    border: 1px solid #f0e6d6;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+.address-detail-row {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.address-detail-row strong {
+    color: #8B0000;
+}
+
+.address-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #8B0000;
+    font-weight: 600;
+}
+
+    .risk-low {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .risk-medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .risk-high {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .partner-top-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .risk-inline-box {
+        margin-top: 15px;
+        border-radius: 14px;
+        padding: 15px;
+        display: none;
+        border: 1px solid #ede9fe;
+        background: linear-gradient(135deg, #faf5ff, #ffffff);
+    }
+
+    .risk-inline-box.show {
+        display: block;
+    }
+
+    .risk-score {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .risk-reasons {
+        margin: 12px 0 0 0;
+        padding-left: 18px;
+    }
+
+    .risk-reasons li {
+        margin-bottom: 6px;
+    }
+
+    .risk-loading {
+        color: #6b21a8;
+        font-weight: 600;
+    }
+
+    .risk-empty {
+        color: #666;
+        font-style: italic;
     }
 </style>
 {% endblock %}
 
 {% block admin_content %}
-<div class="admin-card">
+<div class="admin-card partners-page">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>🤝 Gestion des partenaires</h3>
     </div>
 
-    <!-- Cartes statistiques -->
+    <div class="alert alert-light border d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <strong>Intégrations admin:</strong>
+            Mapbox {{ mapboxConfigured ? 'configuré' : 'non configuré' }} ·
+            Calendly {{ calendlyUrl ? 'configuré' : 'non configuré' }}
+        </div>
+        {% if calendlyUrl %}
+            <a href="{{ calendlyUrl }}" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                <i class="fas fa-calendar-check"></i> Ouvrir Calendly
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                Calendly non configuré
+            </button>
+        {% endif %}
+    </div>
+
     <div class="stats-cards">
         <div class="stat-card {% if statutFiltre == '' %}active{% endif %}" onclick="filterByStatut('')">
             <div class="stat-number">{{ stats.total|default(0) }}</div>
@@ -157,7 +372,6 @@
         </div>
     </div>
 
-    <!-- Barre de recherche -->
     <div class="filter-bar">
         <form method="get" id="filterForm">
             <div class="row g-3">
@@ -179,6 +393,9 @@
                 <div class="col-12">
                     <a href="{{ path('app_admin_partenaires_index') }}" class="btn btn-reset">
                         <i class="fas fa-undo"></i> Réinitialiser
+                    </a>
+                    <a href="{{ path('app_admin_collaborations_index') }}" class="btn btn-primary" style="margin-left: 10px;">
+                        <i class="fas fa-link"></i> Voir les collaborations
                     </a>
                 </div>
             </div>
@@ -205,16 +422,22 @@
                             <h5 class="mb-0">{{ partenaire.nom }}</h5>
                             <small class="text-muted">{{ partenaire.type }}</small>
                         </div>
-                        <span class="status-badge status-{{ partenaire.statut }}">
-                            {% if partenaire.statut == 'en_attente' %}
-                                ⏳ En attente
-                            {% elseif partenaire.statut == 'accepte' %}
-                                ✅ Accepté
-                            {% else %}
-                                ❌ Refusé
-                            {% endif %}
-                        </span>
+
+                        <div class="partner-top-badges">
+                            <span class="status-badge status-{{ partenaire.statut }}">
+                                {% if partenaire.statut == 'en_attente' %}
+                                    ⏳ En attente
+                                {% elseif partenaire.statut == 'accepte' %}
+                                    ✅ Accepté
+                                {% else %}
+                                    ❌ Refusé
+                                {% endif %}
+                            </span>
+
+                            <span id="riskBadge{{ partenaire.id }}" class="risk-badge" style="display:none;"></span>
+                        </div>
                     </div>
+
                     <div class="p-3">
                         <div class="row">
                             <div class="col-md-6">
@@ -224,19 +447,36 @@
                             </div>
                             <div class="col-md-6">
                                 {% if partenaire.logo %}
-                                    <img src="{{ partenaire.logo }}" class="img-fluid rounded" style="max-height: 80px;">
+                                    <img src="{{ partenaire.logo }}" class="img-fluid rounded partner-logo" alt="Logo {{ partenaire.nom }}">
                                 {% endif %}
                             </div>
                         </div>
+
                         {% if partenaire.description %}
                             <p><strong>📝 Description:</strong> {{ partenaire.description|slice(0, 100) }}{% if partenaire.description|length > 100 %}...{% endif %}</p>
                         {% endif %}
+
+                        <div id="riskBox{{ partenaire.id }}" class="risk-inline-box"></div>
                     </div>
+
                     <div class="card-footer bg-white p-3">
                         <div class="btn-action-group">
                             <a href="{{ path('app_admin_partenaire_voir', {id: partenaire.id}) }}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i> Voir détails
                             </a>
+
+                            <button type="button" class="btn btn-sm btn-secondary js-verify-address"
+                                    data-address="{{ partenaire.adresse|e('html_attr') }}">
+                                <i class="fas fa-map-marker-alt"></i> Vérifier adresse
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-risk"
+                                    onclick="detectPartnerRisk({{ partenaire.id }})"
+                                    id="riskBtn{{ partenaire.id }}">
+                                <i class="fas fa-shield-alt"></i> Risk Detection
+                            </button>
+
                             {% if partenaire.statut == 'en_attente' %}
                                 <form action="{{ path('app_admin_partenaire_accepter', {id: partenaire.id}) }}" method="post" style="display: inline-block;">
                                     <input type="hidden" name="statut" value="{{ statutFiltre|default('') }}">
@@ -245,10 +485,12 @@
                                         <i class="fas fa-check"></i> Accepter
                                     </button>
                                 </form>
+
                                 <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#refuseModal{{ partenaire.id }}">
                                     <i class="fas fa-times"></i> Refuser
                                 </button>
                             {% endif %}
+
                             <form action="{{ path('app_admin_partenaire_supprimer', {id: partenaire.id}) }}" method="post" style="display: inline-block;">
                                 <input type="hidden" name="statut" value="{{ statutFiltre|default('') }}">
                                 <input type="hidden" name="search" value="{{ search|default('') }}">
@@ -261,7 +503,6 @@
                 </div>
             </div>
 
-            <!-- Modal Refuser -->
             <div class="modal fade" id="refuseModal{{ partenaire.id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -294,6 +535,24 @@
         </div>
     {% endif %}
 </div>
+<div class="modal fade address-result-modal" id="addressCheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-map-marker-alt"></i> Vérification d’adresse
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="addressCheckModalBody">
+                <div class="address-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Vérification en cours...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 function filterByStatut(statut) {
@@ -305,6 +564,227 @@ function filterByStatut(statut) {
     }
     url.searchParams.delete('page');
     window.location.href = url.toString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text ?? '';
+    return div.innerHTML;
+}
+
+function showAddressModal(contentHtml) {
+    const body = document.getElementById('addressCheckModalBody');
+    body.innerHTML = contentHtml;
+
+    const modalEl = document.getElementById('addressCheckModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+document.querySelectorAll('.js-verify-address').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+        const address = btn.dataset.address || '';
+
+        if (!address.trim()) {
+            showAddressModal(`
+                <div class="address-status-badge address-status-error">
+                    ❌ Adresse vide
+                </div>
+                <div class="address-details-card">
+                    Aucune adresse n’a été fournie pour ce partenaire.
+                </div>
+            `);
+            return;
+        }
+
+        const initialText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+
+        showAddressModal(`
+            <div class="address-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Vérification de l’adresse en Tunisie...
+            </div>
+        `);
+
+        try {
+            const response = await fetch('{{ path('app_admin_partenaire_geocode') }}?address=' + encodeURIComponent(address), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const rawText = await response.text();
+
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error('Réponse non JSON:', rawText);
+                throw new Error('Le serveur a retourné une réponse invalide.');
+            }
+
+            if (!response.ok || !data.ok) {
+                showAddressModal(`
+                    <div class="address-status-badge address-status-error">
+                        ❌ Adresse non trouvée
+                    </div>
+                    <div class="address-details-card">
+                        <div class="address-detail-row">
+                            <strong>Adresse recherchée :</strong><br>
+                            ${escapeHtml(address)}
+                        </div>
+                        <div class="address-detail-row">
+                            <strong>Message :</strong><br>
+                            ${escapeHtml(data.message || 'Aucun résultat trouvé.')}
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
+            const result = data.data || {};
+
+            showAddressModal(`
+                <div class="address-status-badge address-status-success">
+                    ✅ Adresse trouvée
+                </div>
+
+                <div class="address-details-card">
+                    <div class="address-detail-row">
+                        <strong>Adresse validée :</strong><br>
+                        ${escapeHtml(result.label || address)}
+                    </div>
+
+                    <div class="address-detail-row">
+                        <strong>Latitude :</strong>
+                        ${escapeHtml(String(result.lat ?? '-'))}
+                    </div>
+
+                    <div class="address-detail-row">
+                        <strong>Longitude :</strong>
+                        ${escapeHtml(String(result.lon ?? '-'))}
+                    </div>
+
+                    <div class="address-detail-row">
+                        <strong>Type :</strong>
+                        ${escapeHtml(result.type || '-')}
+                    </div>
+
+                    <div class="address-detail-row">
+                        <strong>Niveau de confiance :</strong>
+                        ${escapeHtml(result.confidence || '-')}
+                    </div>
+                </div>
+            `);
+        } catch (e) {
+            console.error(e);
+
+            showAddressModal(`
+                <div class="address-status-badge address-status-error">
+                    ❌ Erreur
+                </div>
+                <div class="address-details-card">
+                    Une erreur réseau ou serveur est survenue pendant la vérification.
+                </div>
+            `);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = initialText;
+        }
+    });
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+}
+
+function renderRiskBadge(partnerId, riskLevel, score) {
+    const badge = document.getElementById('riskBadge' + partnerId);
+    if (!badge) return;
+
+    let className = 'risk-low';
+    let icon = '🟢';
+    let label = 'Faible';
+
+    if (riskLevel === 'medium') {
+        className = 'risk-medium';
+        icon = '🟡';
+        label = 'Moyen';
+    } else if (riskLevel === 'high') {
+        className = 'risk-high';
+        icon = '🔴';
+        label = 'Élevé';
+    }
+
+    badge.className = 'risk-badge ' + className;
+    badge.style.display = 'inline-flex';
+    badge.innerHTML = icon + ' Risque ' + label + ' (' + score + '/100)';
+}
+
+function detectPartnerRisk(partnerId) {
+    const box = document.getElementById('riskBox' + partnerId);
+    const btn = document.getElementById('riskBtn' + partnerId);
+
+    if (!box || !btn) return;
+
+    const initialText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+
+    box.classList.add('show');
+    box.innerHTML = '<div class="risk-loading"><i class="fas fa-spinner fa-spin"></i> Analyse du risque en cours...</div>';
+
+    fetch('/admin/partenaires/' + partnerId + '/risk-detection', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.message || 'Erreur pendant l’analyse.');
+        }
+
+        renderRiskBadge(partnerId, data.riskLevel, data.riskScore);
+
+        const reasonsHtml = (data.reasons && data.reasons.length)
+            ? '<ul class="risk-reasons">' + data.reasons.map(reason => '<li>' + escapeHtml(reason) + '</li>').join('') + '</ul>'
+            : '<div class="risk-empty">Aucun risque particulier détecté.</div>';
+
+        box.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <div class="risk-score">${data.riskScore}/100</div>
+                    <div>
+                        <span class="risk-badge ${data.riskLevel === 'high' ? 'risk-high' : (data.riskLevel === 'medium' ? 'risk-medium' : 'risk-low')}">
+                            ${data.riskLevel === 'high' ? '🔴' : (data.riskLevel === 'medium' ? '🟡' : '🟢')}
+                            Risque ${escapeHtml(data.riskLabel)}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-muted" style="max-width: 320px;">
+                    ${escapeHtml(data.summary)}
+                </div>
+            </div>
+            ${reasonsHtml}
+        `;
+    })
+    .catch((error) => {
+        box.innerHTML = '<div class="alert alert-danger mb-0">❌ ' + escapeHtml(error.message) + '</div>';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = initialText;
+    });
 }
 </script>
 {% endblock %}

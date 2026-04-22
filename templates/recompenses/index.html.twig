@@ -5,17 +5,35 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+    :root {
+        --bordeaux: #8B0000;
+        --bordeaux-clair: #A52A2A;
+        --bordeaux-fonce: #5C0000;
+        --bordeaux-light: #D32F2F;
+        --gold: #FFD700;
+        --beige: #FFF8F0;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Carte des points - Style bordeaux */
     .points-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--bordeaux) 0%, var(--bordeaux-clair) 100%);
         border-radius: 20px;
         padding: 30px;
         color: white;
         margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(139,0,0,0.2);
     }
     
     .points-number {
         font-size: 48px;
         font-weight: bold;
+        margin: 10px 0;
     }
     
     .progress-custom {
@@ -25,20 +43,31 @@
     }
     
     .progress-custom .progress-bar {
-        background: #FFD700;
+        background: var(--gold);
         border-radius: 10px;
+    }
+    
+    .palier-section {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid #e0e0e0;
     }
     
     .recompense-card {
         border-radius: 15px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
         margin-bottom: 20px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        position: relative;
+        overflow: hidden;
     }
     
     .recompense-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(139,0,0,0.15);
     }
     
     .recompense-card.disabled {
@@ -59,10 +88,24 @@
     .recompense-points {
         font-size: 24px;
         font-weight: bold;
-        color: #FF6B6B;
+        color: var(--bordeaux);
+        margin: 10px 0;
     }
     
-    .badge-obtenu {
+    .badge-verrouille {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #999;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+    }
+    
+    .badge-obtenue {
         position: absolute;
         top: 10px;
         right: 10px;
@@ -71,137 +114,272 @@
         padding: 5px 10px;
         border-radius: 20px;
         font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
     }
     
-    .palier-section {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 30px;
+    /* Boutons en rouge bordeaux */
+    .btn-echanger {
+        background: linear-gradient(135deg, var(--bordeaux) 0%, var(--bordeaux-clair) 100%);
+        border: none;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 30px;
+        font-weight: 700;
+        transition: all 0.3s;
+        width: 100%;
+        font-size: 14px;
+        cursor: pointer;
     }
     
-    .recompense-obtenue {
+    .btn-echanger:hover:not(:disabled) {
+        transform: scale(1.02);
+        box-shadow: 0 5px 20px rgba(139,0,0,0.4);
+        background: linear-gradient(135deg, var(--bordeaux-fonce) 0%, var(--bordeaux) 100%);
+    }
+    
+    .btn-echanger:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 30px;
+        width: 100%;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .btn-secondary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .alert-info {
+        background: #fef5e8;
+        color: var(--bordeaux);
+        padding: 12px;
+        border-radius: 10px;
+        border-left: 4px solid var(--bordeaux);
+    }
+    
+    /* Toast notification */
+    .toast-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        max-width: 350px;
+    }
+    
+    .toast-success {
         border-left: 4px solid #4CAF50;
-        background: #f0fff4;
+    }
+    
+    .toast-error {
+        border-left: 4px solid var(--bordeaux);
+    }
+    
+    .toast-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .toast-title i {
+        margin-right: 8px;
+    }
+    
+    .toast-message {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
     
     @keyframes pulse {
         0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+        50% { transform: scale(1.02); }
         100% { transform: scale(1); }
     }
     
-    .btn-echanger {
+    .btn-echanger:not(:disabled) {
         animation: pulse 2s infinite;
+    }
+    
+    /* Alert success personnalisée */
+    .alert-success-custom {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        .points-number {
+            font-size: 36px;
+        }
+        .toast-notification {
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            max-width: calc(100% - 40px);
+        }
+        .recompense-card .card-body {
+            padding: 15px;
+        }
+        .recompense-icon {
+            font-size: 36px;
+        }
+        .recompense-points {
+            font-size: 20px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container py-5">
+<div class="container py-4">
     <!-- Carte des points -->
     <div class="points-card">
         <div class="row align-items-center">
-            <div class="col-md-6">
-                <h2>⭐ Programme de Fidélité</h2>
+            <div class="col-md-8">
+                <h2><i class="fas fa-star"></i> Programme de Fidélité</h2>
                 <p class="mb-2">Vos points accumulés</p>
-                <div class="points-number">{{ pointsActuels }} points</div>
+                <div class="points-number">{{ pointsActuels|default(0) }} points</div>
             </div>
-            <div class="col-md-6">
-                <div class="text-md-end">
-                    <i class="fas fa-gem" style="font-size: 64px; opacity: 0.5;"></i>
-                </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-crown" style="font-size: 64px; opacity: 0.8;"></i>
             </div>
         </div>
     </div>
     
     <!-- Progression vers la prochaine récompense -->
-    {% if prochaineRecompense %}
+    {% if prochaineRecompense is defined and prochaineRecompense %}
     <div class="palier-section">
-        <h4 class="mb-3">🎯 Prochaine récompense</h4>
-        <div class="d-flex justify-content-between mb-2">
-            <span>
-                <i class="fas {{ prochaineRecompense.icone|default('fa-gift') }}"></i>
-                {{ prochaineRecompense.nom }}
-            </span>
-            <span>{{ progression.pointsActuels }} / {{ progression.pointsNecessaires }} points</span>
+        <h4><i class="fas fa-bullseye"></i> Prochaine récompense</h4>
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+            <div>
+                <i class="fas {{ prochaineRecompense.icone|default('fa-gift') }} fa-2x me-2" style="color: var(--bordeaux);"></i>
+                <strong>{{ prochaineRecompense.nom|default('Récompense') }}</strong>
+            </div>
+            <span class="badge" style="background: var(--bordeaux);">{{ progression.pointsActuels|default(0) }} / {{ progression.pointsNecessaires|default(0) }} points</span>
         </div>
-        <div class="progress progress-custom mb-2">
-            <div class="progress-bar" style="width: {{ progression.pourcentage }}%"></div>
+        <div class="progress progress-custom mb-3">
+            <div class="progress-bar" style="width: {{ progression.pourcentage|default(0) }}%"></div>
         </div>
-        <small class="text-muted">
-            Plus que {{ progression.pointsRestants }} points pour obtenir cette récompense !
-        </small>
-    </div>
-    {% else %}
-    <div class="palier-section text-center">
-        <i class="fas fa-trophy" style="font-size: 48px; color: #FFD700;"></i>
-        <h4 class="mt-3">Félicitations !</h4>
-        <p>Vous avez débloqué toutes les récompenses disponibles</p>
+        <div class="alert-info p-3 rounded">
+            <i class="fas fa-info-circle"></i> 
+            Plus que <strong>{{ progression.pointsRestants|default(0) }}</strong> points pour obtenir cette récompense !
+        </div>
     </div>
     {% endif %}
     
     <!-- Récompenses disponibles -->
-    <h3 class="mb-4">🎁 Récompenses disponibles</h3>
+    <h3 class="mb-4 mt-4"><i class="fas fa-gift"></i> Récompenses disponibles</h3>
     <div class="row">
-        {% for recompense in recompenses %}
-            {% set accessible = recompense.pointsRequis <= pointsActuels %}
-            <div class="col-md-4">
-                <div class="card recompense-card {% if not accessible %}disabled{% endif %}">
-                    {% if not accessible %}
-                        <div class="badge-obtenu" style="background: #999;">🔒 Verrouillé</div>
-                    {% endif %}
-                    <div class="card-body">
-                        <div class="recompense-icon">
-                            <i class="fas {{ recompense.icone|default('fa-gift') }}"></i>
-                        </div>
-                        <h5 class="card-title">{{ recompense.nom }}</h5>
-                        <p class="card-text">{{ recompense.description }}</p>
-                        <div class="recompense-points">
-                            {{ recompense.pointsRequis }} points
-                        </div>
-                        {% if accessible %}
-                            <button class="btn btn-primary mt-3 btn-echanger" 
-                                    onclick="echangerRecompense({{ recompense.idRecompense }}, '{{ recompense.nom }}')">
-                                <i class="fas fa-exchange-alt"></i> Échanger
-                            </button>
-                        {% else %}
-                            <button class="btn btn-secondary mt-3" disabled>
-                                <i class="fas fa-lock"></i> Points insuffisants
-                            </button>
+        {% if recompenses is defined and recompenses|length > 0 %}
+            {% for recompense in recompenses %}
+                {% set accessible = recompense.pointsRequis <= pointsActuels|default(0) %}
+                {% set dejaObtenue = recompense.idRecompense in idsRecompensesObtenues|default([]) %}
+                <div class="col-md-4">
+                    <div class="card recompense-card {% if not accessible or dejaObtenue %}disabled{% endif %}">
+                        {% if dejaObtenue %}
+                            <div class="badge-obtenue">
+                                <i class="fas fa-check-circle"></i> Déjà obtenue
+                            </div>
+                        {% elseif not accessible %}
+                            <div class="badge-verrouille">
+                                <i class="fas fa-lock"></i> Verrouillé
+                            </div>
                         {% endif %}
+                        <div class="card-body">
+                            <div class="recompense-icon">
+                                <i class="fas {{ recompense.icone|default('fa-gift') }}"></i>
+                            </div>
+                            <h5 class="card-title">{{ recompense.nom|default('Récompense') }}</h5>
+                            <p class="card-text text-muted">{{ recompense.description|default('Description') }}</p>
+                            <div class="recompense-points">
+                                <i class="fas fa-coins"></i> {{ recompense.pointsRequis|default(0) }} points
+                            </div>
+                            {% if dejaObtenue %}
+                                <button class="btn-secondary mt-3" disabled>
+                                    <i class="fas fa-check"></i> Déjà obtenue
+                                </button>
+                            {% elseif accessible %}
+                                <button class="btn-echanger mt-3" 
+                                        data-id="{{ recompense.idRecompense }}"
+                                        data-nom="{{ recompense.nom|e('js') }}"
+                                        data-points="{{ recompense.pointsRequis }}"
+                                        onclick="echangerRecompense(this)">
+                                    <i class="fas fa-exchange-alt"></i> Échanger
+                                </button>
+                            {% else %}
+                                <button class="btn-secondary mt-3" disabled>
+                                    <i class="fas fa-lock"></i> Points insuffisants
+                                </button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-info-circle"></i> Aucune récompense disponible pour le moment.
+                </div>
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
     
     <!-- Récompenses obtenues -->
-    {% if recompensesObtenues|length > 0 %}
-    <h3 class="mb-4 mt-5">🏆 Mes récompenses obtenues</h3>
+    {% if recompensesObtenues is defined and recompensesObtenues|length > 0 %}
+    <h3 class="mb-4 mt-5"><i class="fas fa-trophy"></i> Mes récompenses obtenues</h3>
     <div class="row">
         {% for recompenseUser in recompensesObtenues %}
             <div class="col-md-4">
-                <div class="card recompense-card recompense-obtenue">
-                    <div class="badge-obtenu">
-                        {% if recompenseUser.utilise %}✅ Utilisé{% else %}🎁 À utiliser{% endif %}
+                <div class="card recompense-card">
+                    <div class="badge-obtenue" style="background: {% if recompenseUser.utilise %}#999{% else %}#4CAF50{% endif %};">
+                        {% if recompenseUser.utilise %}
+                            <i class="fas fa-check-circle"></i> Utilisé
+                        {% else %}
+                            <i class="fas fa-gift"></i> À utiliser
+                        {% endif %}
                     </div>
                     <div class="card-body">
                         <div class="recompense-icon">
                             <i class="fas {{ recompenseUser.recompense.icone|default('fa-check-circle') }}" style="color: #4CAF50;"></i>
                         </div>
-                        <h5 class="card-title">{{ recompenseUser.recompense.nom }}</h5>
-                        <p class="card-text">{{ recompenseUser.recompense.description }}</p>
+                        <h5 class="card-title">{{ recompenseUser.recompense.nom|default('Récompense') }}</h5>
+                        <p class="card-text">{{ recompenseUser.recompense.description|default('') }}</p>
                         {% if not recompenseUser.utilise %}
-                            <div class="alert alert-success mt-2">
-                                <strong>Code: {{ recompenseUser.code }}</strong>
+                            <div class="alert-success-custom mt-2">
+                                <strong>🎫 Code: {{ recompenseUser.code|default('XXXX-XXXX') }}</strong>
                             </div>
                             <small class="text-muted">
-                                Obtenu le {{ recompenseUser.dateObtention|date('d/m/Y') }}
+                                <i class="fas fa-calendar"></i> Obtenu le {{ recompenseUser.dateObtention|date('d/m/Y') }}
                             </small>
                         {% else %}
                             <small class="text-muted">
-                                Utilisé le {{ recompenseUser.dateUtilisation|date('d/m/Y') }}
+                                <i class="fas fa-check"></i> Utilisé le {{ recompenseUser.dateUtilisation|date('d/m/Y') }}
                             </small>
                         {% endif %}
                     </div>
@@ -213,27 +391,116 @@
 </div>
 
 <script>
-function echangerRecompense(id, nom) {
-    if (confirm(`Échanger ${nom} contre vos points ?`)) {
-        fetch(`/recompenses/echanger/${id}`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message + '\nCode: ' + data.code);
-                location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Une erreur est survenue');
-        });
-    }
+// Récupérer les IDs des récompenses déjà obtenues depuis le template
+const idsRecompensesObtenues = {{ idsRecompensesObtenues|default([])|json_encode|raw }};
+
+function showToast(title, message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-title">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            ${title}
+        </div>
+        <div class="toast-message">${message}</div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+    }, 4000);
 }
+
+function echangerRecompense(button) {
+    const id = parseInt(button.getAttribute('data-id'));
+    const nom = button.getAttribute('data-nom');
+    const points = parseInt(button.getAttribute('data-points'));
+    const pointsActuels = {{ pointsActuels|default(0) }};
+    
+    // Vérifier si la récompense est déjà obtenue
+    if (idsRecompensesObtenues.includes(id)) {
+        showToast('Récompense déjà obtenue', `Vous possédez déjà "${nom}" non utilisée.`, 'error');
+        return;
+    }
+    
+    if (points > pointsActuels) {
+        showToast('Points insuffisants', `Vous n'avez pas assez de points pour échanger "${nom}".`, 'error');
+        return;
+    }
+    
+    if (!confirm(`⚠️ Êtes-vous sûr de vouloir échanger "${nom}" contre ${points} points ?\n\nCette action est irréversible.`)) {
+        return;
+    }
+    
+    // Sauvegarder le texte original et désactiver le bouton
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement en cours...';
+    button.disabled = true;
+    
+    fetch(`/recompenses/echanger/${id}`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur réseau');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast(
+                '🎉 Échange réussi !', 
+                `${data.message}\n\n🎫 Code: ${data.code}\n\nConservez ce code précieusement !`,
+                'success'
+            );
+            // Recharger la page après 2 secondes
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showToast('❌ Erreur', data.message || 'Une erreur est survenue', 'error');
+            // Restaurer le bouton
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showToast('❌ Erreur', 'Une erreur est survenue. Veuillez réessayer.', 'error');
+        // Restaurer le bouton
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+// Animation des points au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const pointsElement = document.querySelector('.points-number');
+    if (pointsElement) {
+        const finalPoints = parseInt(pointsElement.innerText);
+        let currentPoints = 0;
+        pointsElement.innerText = '0 points';
+        
+        const interval = setInterval(() => {
+            if (currentPoints >= finalPoints) {
+                clearInterval(interval);
+                pointsElement.innerText = finalPoints + ' points';
+            } else {
+                currentPoints += Math.ceil(finalPoints / 30);
+                if (currentPoints > finalPoints) currentPoints = finalPoints;
+                pointsElement.innerText = currentPoints + ' points';
+            }
+        }, 30);
+    }
+});
 </script>
 {% endblock %}

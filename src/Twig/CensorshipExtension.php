@@ -9,28 +9,10 @@ use Twig\TwigFilter;
 class CensorshipExtension extends AbstractExtension
 {
     private array $badWords = [
-        'fuck you',
-        'fuck',
-        'merde',
-        'putain',
-        'connard',
-        'salope',
-        'bordel',
-        'enculé',
-        'bite',
-        'nique',
-        'niquer',
-        'fdp',
-        'pd',
-        'trou du cul',
-        'batard',
-        'bâtard',
-        'pute',
-        'prostituée',
-        'suce',
-        'sucer',
-        'branleur',
-        'branleuse',
+        'fuck you', 'fuck', 'merde', 'putain', 'connard', 'salope', 'bordel',
+        'enculé', 'bite', 'nique', 'niquer', 'fdp', 'pd', 'trou du cul',
+        'batard', 'bâtard', 'pute', 'prostituée', 'suce', 'sucer',
+        'branleur', 'branleuse', 'tuer', 'mort', 'sang', 'violence'
     ];
 
     public function getFilters(): array
@@ -48,14 +30,12 @@ class CensorshipExtension extends AbstractExtension
 
         $censored = $text;
         
-        // Trier par longueur décroissante pour remplacer les expressions longues d'abord
-        usort($this->badWords, function($a, $b) {
-            return strlen($b) - strlen($a);
-        });
+        // Trier par longueur décroissante (les expressions longues d'abord)
+        usort($this->badWords, fn($a, $b) => strlen($b) - strlen($a));
 
         foreach ($this->badWords as $word) {
-            // Remplacer par trois étoiles
-            $censored = preg_replace('/\b' . preg_quote($word, '/') . '\b/i', '***', $censored);
+            $pattern = '/\b' . preg_quote($word, '/') . '\b/i';
+            $censored = preg_replace($pattern, '****', $censored);
         }
         
         return $censored;

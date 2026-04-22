@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes favoris{% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 800px;">
+    <h2 class="mb-4">⭐ Mes publications favorites</h2>
+    {% for favori in favoris %}
+        <div class="post-card mb-3 p-3 bg-white rounded shadow-sm">
+            <h5>
+                <a href="{{ path('app_post_show', {id: favori.post.id}) }}">{{ favori.post.title }}</a>
+            </h5>
+            <p>{{ favori.post.content|censor|slice(0, 150) }}...</p>
+            <small class="text-muted">Ajouté le {{ favori.createdAt|date('d/m/Y') }}</small>
+        </div>
+    {% else %}
+        <div class="alert alert-info">Aucun favori pour le moment.</div>
+    {% endfor %}
+</div>
+{% endblock %}

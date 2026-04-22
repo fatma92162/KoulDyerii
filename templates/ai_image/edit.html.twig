@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}AI Image Edit{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-4 p-lg-5">
+                        <h1 class="h3 mb-3">AI Image Edit</h1>
+                        <p class="text-muted mb-4">
+                            Upload an image, choose an action, and let the API generate the edited result.
+                        </p>
+
+                        {% if error %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                        {% endif %}
+
+                        <form method="post" enctype="multipart/form-data" class="mb-4">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Image</label>
+                                <input id="image" type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="action-select" class="form-label">Action</label>
+                                <select name="action" class="form-select" id="action-select">
+                                    <option value="remove_background">Remove background</option>
+                                    <option value="replace_background">Replace background with prompt</option>
+                                    <option value="cleanup">Remove object with mask</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="prompt-wrapper" style="display:none;">
+                                <label for="prompt" class="form-label">Prompt</label>
+                                <input
+                                    id="prompt"
+                                    type="text"
+                                    name="prompt"
+                                    class="form-control"
+                                    placeholder="Example: a modern blue studio background"
+                                >
+                            </div>
+
+                            <div class="mb-4" id="mask-wrapper" style="display:none;">
+                                <label for="mask" class="form-label">Mask image</label>
+                                <input id="mask" type="file" name="mask" class="form-control" accept=".png">
+                                <div class="form-text">Use a PNG mask: white removes, black keeps.</div>
+                            </div>
+
+                            <button class="btn btn-primary px-4">Edit image</button>
+                        </form>
+
+                        {% if result %}
+                            <hr class="my-4">
+                            <h2 class="h5 mb-3">Edited image</h2>
+                            <img src="{{ result.public_path }}" alt="Edited image" class="img-fluid rounded-4 shadow-sm mb-3">
+                            <div class="small text-muted">
+                                Saved to <code>{{ result.public_path }}</code>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const actionSelect = document.getElementById('action-select');
+        const promptWrapper = document.getElementById('prompt-wrapper');
+        const maskWrapper = document.getElementById('mask-wrapper');
+
+        function updateFields() {
+            const action = actionSelect.value;
+            promptWrapper.style.display = action === 'replace_background' ? 'block' : 'none';
+            maskWrapper.style.display = action === 'cleanup' ? 'block' : 'none';
+        }
+
+        actionSelect.addEventListener('change', updateFields);
+        updateFields();
+    </script>
+{% endblock %}

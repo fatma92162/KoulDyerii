@@ -1,0 +1,364 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Résultat du Quiz — {{ formation.titre }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .result-hero {
+        padding: 50px 0 30px;
+        text-align: center;
+    }
+
+    .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-weight: 800;
+        font-size: 40px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .score-circle:hover { transform: scale(1.05); }
+
+    .score-circle.success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: 6px solid #1e7e34;
+    }
+
+    .score-circle.failure {
+        background: linear-gradient(135deg, #fd7e14, #dc3545);
+        color: white;
+        border: 6px solid #c0392b;
+    }
+
+    .score-circle small {
+        font-size: 14px;
+        font-weight: 400;
+        opacity: 0.9;
+    }
+
+    .progress-bar-container {
+        background: #e9ecef;
+        border-radius: 999px;
+        height: 20px;
+        overflow: hidden;
+        margin: 12px 0;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 1.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .progress-bar-fill.success-bar  { background: linear-gradient(90deg, #20c997, #28a745); }
+    .progress-bar-fill.failure-bar  { background: linear-gradient(90deg, #fd7e14, #dc3545); }
+
+    .threshold-line {
+        position: relative;
+        margin: 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: #6c757d;
+    }
+
+    .threshold-line::before {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #dee2e6;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+        border: 1px solid #e8d5b7;
+    }
+
+    .feedback-section {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 20px;
+    }
+
+    .feedback-section h5 {
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .feedback-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .cert-banner {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 30px rgba(139,0,0,0.3);
+    }
+
+    .cert-banner .cert-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+    }
+
+    .nopass-banner {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 20px;
+        padding: 28px;
+        text-align: center;
+        margin-bottom: 24px;
+        color: #664d03;
+    }
+
+    .btn-cert {
+        background: white;
+        color: #8B0000;
+        border: none;
+        border-radius: 50px;
+        padding: 14px 36px;
+        font-size: 17px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .btn-cert:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: #8B0000;
+    }
+
+    .btn-retry {
+        background: linear-gradient(135deg, #8B0000, #A52A2A);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 28px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-retry:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+        color: white;
+    }
+
+    .quiz-qr-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        border: 1px solid #e8d5b7;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        margin-top: 18px;
+    }
+
+    .quiz-qr-img {
+        width: 200px;
+        height: 200px;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        background: white;
+        padding: 6px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container result-hero">
+
+    {# ── Messages Flash ── #}
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for msg in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# ── Cercle de score ── #}
+    {% set passed = result.percentage >= threshold|default(80) %}
+
+    <div class="score-circle {{ passed ? 'success' : 'failure' }}">
+        {{ result.percentage|number_format(0) }}%
+        <small>{{ result.score }}/{{ result.totalQuestions }}</small>
+    </div>
+
+    <h2 class="fw-bold mb-1">{{ formation.titre }}</h2>
+    <p class="text-muted">Résultat du quiz</p>
+
+    {# ── Barre de progression ── #}
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Votre score</span>
+            <span>Seuil de certification : {{ threshold|default(80) }}%</span>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill {{ passed ? 'success-bar' : 'failure-bar' }}"
+                 style="width: 0%"
+                 data-target="{{ result.percentage }}">
+                {{ result.percentage|number_format(0) }}%
+            </div>
+        </div>
+        <div class="threshold-line">
+            <span>{{ passed ? '🏆 Seuil atteint !' : '⚠️ Seuil non atteint — ' ~ threshold|default(80) ~ '% requis' }}</span>
+        </div>
+    </div>
+
+</div>
+
+<div class="container pb-5">
+    <div class="col-md-8 mx-auto">
+
+        {# ── Bannière certificat ou message d'échec ── #}
+{% if passed %}
+            <div class="cert-banner">
+                <div class="cert-icon">🏅</div>
+                <h3 class="fw-bold">Félicitations !</h3>
+                <p class="mb-0 opacity-90">
+                    Vous avez obtenu <strong>{{ result.percentage|number_format(0) }}%</strong>
+                    ({{ result.score }}/{{ result.totalQuestions }} bonnes réponses).<br>
+                    Votre certificat de réussite est disponible.
+                </p>
+                {% if result.certificate %}
+                    <a href="{{ path('app_certificate_show', {id: result.certificate.id}) }}" class="btn-cert">
+                        <i class="fas fa-certificate me-2"></i> Voir mon certificat
+                    </a>
+                {% endif %}
+            </div>
+            {% if result.certificate and publicPdfUrl %}
+                <div class="quiz-qr-card">
+                    <h5 class="fw-bold mb-2">QR Code du certificat</h5>
+                    <img id="result-qr-img"
+                         class="quiz-qr-img"
+                         src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ publicPdfUrl|url_encode }}"
+                         data-fallback="https://quickchart.io/qr?size=200&text={{ publicPdfUrl|url_encode }}"
+                         alt="QR Code certificat">
+                    <div class="small text-muted">Scannez pour ouvrir le PDF.</div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="nopass-banner">
+                <div style="font-size: 56px; margin-bottom: 12px;">📖</div>
+                <h4 class="fw-bold">Score insuffisant pour la certification</h4>
+                <p class="mb-2">
+                    Votre score : <strong>{{ result.percentage|number_format(0) }}%</strong>
+                    ({{ result.score }}/{{ result.totalQuestions }}).<br>
+                    Il vous faut <strong>{{ threshold|default(80) }}%</strong> minimum pour obtenir le certificat.
+                </p>
+                <a href="{{ path('app_formations_quiz_start', {id: formation.idFormation}) }}" class="btn-retry">
+                    <i class="fas fa-redo me-2"></i> Réessayer le quiz
+                </a>
+            </div>
+        {% endif %}
+
+        {# ── Feedback IA ── #}
+        <div class="result-card">
+            <h5 class="fw-bold mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Analyse de votre performance</h5>
+
+            <p class="mb-2 text-success fw-semibold"><i class="fas fa-thumbs-up me-1"></i> Points forts</p>
+            <ul class="list-unstyled mb-4">
+                {% for item in feedback.strengths %}
+                    <li class="feedback-item">
+                        <span class="text-success mt-1">✔</span>
+                        <span>{{ item }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <p class="mb-2 text-danger fw-semibold"><i class="fas fa-thumbs-down me-1"></i> Points à améliorer</p>
+            <ul class="list-unstyled mb-0">
+                {% for item in feedback.weaknesses %}
+                    <li class="feedback-item">
+                        <span class="text-danger mt-1">✖</span>
+                        <span>{{ item }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {# ── Boutons de navigation ── #}
+        <div class="d-flex gap-3 flex-wrap justify-content-center">
+            <a href="{{ path('app_formations_show', {id: formation.idFormation}) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Retour à la formation
+            </a>
+            <a href="{{ path('app_formations_index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-graduation-cap me-2"></i> Toutes les formations
+            </a>
+            {% if not passed %}
+                <a href="{{ path('app_formations_quiz_start', {id: formation.idFormation}) }}" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i> Réessayer
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Animation de la barre de progression
+    const bar = document.querySelector('.progress-bar-fill');
+    if (bar) {
+        const target = parseFloat(bar.dataset.target);
+        setTimeout(() => { bar.style.width = Math.min(target, 100) + '%'; }, 200);
+    }
+
+    const qrImg = document.getElementById('result-qr-img');
+    if (qrImg) {
+        qrImg.addEventListener('error', function () {
+            const fallback = qrImg.dataset.fallback;
+            if (fallback && qrImg.src !== fallback) {
+                qrImg.src = fallback;
+                return;
+            }
+            qrImg.insertAdjacentHTML('afterend', '<div class="alert alert-warning mt-3 mb-0">QR indisponible, utilisez le bouton PDF du certificat.</div>');
+        });
+    }
+});
+</script>
+{% endblock %}

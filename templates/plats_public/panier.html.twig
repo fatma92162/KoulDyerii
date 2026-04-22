@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Panier plats{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">🛒 Panier plats</h1>
+
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+    {% for msg in app.flashes('info') %}
+        <div class="alert alert-info alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+
+    {% if lignes|length == 0 %}
+        <p class="text-muted">Votre panier est vide.</p>
+        <a href="{{ path('app_plats_public') }}" class="btn btn-outline-primary">Voir les plats</a>
+    {% else %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Plat</th>
+                        <th class="text-end">Prix</th>
+                        <th style="width:140px;">Qté</th>
+                        <th class="text-end">Sous-total</th>
+                        <th style="width:100px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for ligne in lignes %}
+                    <tr>
+                        <td>
+                            <strong>{{ ligne.plat.nom }}</strong>
+                            {% if ligne.plat.partenaire is defined and ligne.plat.partenaire %}
+                                <br><small class="text-muted">{{ ligne.plat.partenaire.nom }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ ligne.plat.prix|number_format(2, ',', ' ') }} €</td>
+                        <td>
+                            <form action="{{ path('app_plat_panier_maj', {id: ligne.plat.id}) }}" method="post" class="d-flex gap-1">
+                                <input type="number" name="quantite" class="form-control form-control-sm" min="1" value="{{ ligne.quantite }}">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">OK</button>
+                            </form>
+                        </td>
+                        <td class="text-end fw-semibold">{{ ligne.sous_total|number_format(2, ',', ' ') }} €</td>
+                        <td>
+                            <form action="{{ path('app_plat_panier_supprimer', {id: ligne.plat.id}) }}" method="post" onsubmit="return confirm('Retirer ce plat ?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Retirer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total</th>
+                        <th class="text-end">{{ total|number_format(2, ',', ' ') }} €</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Coordonnées de livraison</div>
+                    <div class="card-body">
+                        <form action="{{ path('app_plat_panier_commander') }}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" name="customer_name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="text" name="phone" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Adresse / lieu</label>
+                                <input type="text" name="location" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Valider la commande</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex flex-column gap-2 align-items-start">
+                <a href="{{ path('app_plats_public') }}" class="btn btn-outline-secondary">← Continuer mes achats</a>
+                <form action="{{ path('app_plat_panier_vider') }}" method="post" onsubmit="return confirm('Vider tout le panier plats ?');">
+                    <button type="submit" class="btn btn-outline-danger">Vider le panier</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

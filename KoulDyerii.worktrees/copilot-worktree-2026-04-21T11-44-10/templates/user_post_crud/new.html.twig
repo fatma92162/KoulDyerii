@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel article{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Créer un article</h1>
+    {{ include('user_post_crud/_form.html.twig') }}
+    <a href="{{ path('user_forum') }}" class="btn btn-secondary mt-3">Retour au forum</a>
+</div>
+{% endblock %}

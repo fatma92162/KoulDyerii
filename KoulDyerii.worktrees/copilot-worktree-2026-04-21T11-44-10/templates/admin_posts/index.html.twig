@@ -1,0 +1,518 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block admin_title %}Gestion des publications{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .posts-container { 
+        max-width: 100%; 
+        margin: 0 auto; 
+    }
+
+    .search-bar {
+        background: white;
+        border-radius: 20px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .search-bar .form-control,
+    .search-bar .form-select {
+        border-radius: 50px;
+        border: 1px solid #f0e6d6;
+        padding: 10px 18px;
+    }
+    
+    .search-bar .form-control:focus,
+    .search-bar .form-select:focus {
+        border-color: #FF6B6B;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.15);
+    }
+    
+    .search-bar .btn {
+        border-radius: 50px;
+        padding: 10px 25px;
+        white-space: nowrap;
+    }
+
+    .post-card {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+    .post-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    .post-card.pinned {
+        border-left: 5px solid #5bc0de;
+        background: #f8fcff;
+    }
+
+    .pin-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #5bc0de;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .post-author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .author-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .author-avatar span {
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .author-info strong {
+        display: block;
+        color: #333;
+        font-size: 15px;
+    }
+
+    .author-info small {
+        color: #999;
+        font-size: 12px;
+    }
+
+    .post-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .post-content {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .post-image {
+        width: 100%;
+        max-height: 350px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .post-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 15px;
+        border-top: 1px solid #f0e6d6;
+        flex-wrap: wrap;
+    }
+
+    .btn-comment, 
+    .btn-read-more {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #999;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-comment:hover, 
+    .btn-read-more:hover { 
+        border-color: #FF6B6B; 
+        color: #FF6B6B; 
+        background: #fff0f0; 
+    }
+
+    /* ✅ Style pour le bouton like */
+    .btn-like {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #999;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-like:hover {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+        background: #fff0f0;
+    }
+
+    .btn-like.reacted {
+        border-color: #FF6B6B;
+        color: #FF6B6B;
+        background: #fff0f0;
+    }
+
+    .btn-edit {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #f0ad4e;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit:hover {
+        border-color: #f0ad4e;
+        color: #f0ad4e;
+        background: #fff8f0;
+    }
+
+    .btn-delete {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #d9534f;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        border-color: #d9534f;
+        color: #d9534f;
+        background: #fff0f0;
+    }
+
+    .btn-pin-admin {
+        background: none;
+        border: 2px solid #f0e6d6;
+        border-radius: 50px;
+        padding: 7px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #5bc0de;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-pin-admin:hover {
+        border-color: #5bc0de;
+        color: #5bc0de;
+        background: #f0f8ff;
+    }
+
+    .btn-pin-admin.pinned {
+        border-color: #5bc0de;
+        color: white;
+        background: #5bc0de;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .btn-new-post {
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-new-post:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,107,107,0.4);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .search-bar form {
+            flex-direction: column;
+        }
+        .search-bar .btn {
+            width: 100%;
+        }
+        .post-actions {
+            flex-direction: column;
+        }
+        .post-actions a, .post-actions button {
+            width: 100%;
+            justify-content: center;
+        }
+        .post-author {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .ms-auto {
+            margin-left: 0 !important;
+            margin-top: 10px;
+        }
+        .header-actions {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="posts-container">
+
+    <div class="search-bar">
+        <div class="d-flex justify-content-between align-items-center mb-3 header-actions">
+            <h4 class="mb-0">📝 Toutes les publications</h4>
+            <a href="{{ path('app_admin_post_new') }}" class="btn-new-post">
+                <i class="fas fa-plus"></i> Nouvelle publication
+            </a>
+        </div>
+        <form method="get" action="{{ path('app_admin_posts_index') }}" class="d-flex gap-2">
+            <div class="flex-grow-1">
+                <input type="text" 
+                       name="search" 
+                       class="form-control" 
+                       placeholder="🔍 Rechercher un post par titre, contenu ou auteur..." 
+                       value="{{ search|default('') }}">
+            </div>
+            <div>
+                <select name="sort" class="form-select">
+                    <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>📅 Les plus récents</option>
+                    <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>📅 Les plus anciens</option>
+                    <option value="popular" {{ sort == 'popular' ? 'selected' : '' }}>🔥 Les plus populaires</option>
+                    <option value="pinned" {{ sort == 'pinned' ? 'selected' : '' }}>📌 Épinglés d'abord</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Chercher
+            </button>
+        </form>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% for post in posts %}
+        <div class="post-card {% if post.isPinned %}pinned{% endif %}" id="post-card-{{ post.id }}">
+            
+            {% if post.isPinned %}
+                <div class="pin-badge">
+                    <i class="fas fa-thumbtack"></i> Épinglé
+                </div>
+            {% endif %}
+            
+            <div class="post-card-body" style="padding: 20px 25px;">
+
+                <div class="post-author">
+                    <div class="author-avatar">
+                        {% if post.utilisateur and post.utilisateur.photo %}
+                            <img src="{{ post.utilisateur.photo }}" alt="Photo de profil">
+                        {% else %}
+                            <span>{% if post.utilisateur %}{{ post.utilisateur.nom|first|upper }}{% else %}?{% endif %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="author-info">
+                        <strong>{% if post.utilisateur %}{{ post.utilisateur.nom }}{% else %}Utilisateur inconnu{% endif %}</strong>
+                        <small>{{ post.createdAt|date('d/m/Y à H:i') }}</small>
+                    </div>
+                    
+                    <div class="ms-auto">
+                        <div class="btn-group" role="group">
+                            <button class="btn-pin-admin {% if post.isPinned %}pinned{% endif %}" 
+                                    onclick="togglePin({{ post.id }})"
+                                    id="pin-btn-{{ post.id }}">
+                                <i class="fas fa-thumbtack"></i>
+                                <span id="pin-text-{{ post.id }}">{{ post.isPinned ? 'Désépingler' : 'Épingler' }}</span>
+                            </button>
+                            
+                            {% if app.user and post.utilisateur and post.utilisateur.idUtilisateur == app.user.idUtilisateur %}
+                                <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn-edit">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" 
+                                      onsubmit="return confirm('Supprimer cette publication ?')" style="display: inline;">
+                                    <button type="submit" class="btn-delete">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="post-title">{{ post.title }}</div>
+                <div class="post-content">
+                    {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                </div>
+
+                {% if post.imagePath %}
+                    <img src="{{ post.imagePath }}" class="post-image" alt="Image du post" loading="lazy">
+                {% endif %}
+
+                <div class="post-actions">
+                    <!-- ✅ Bouton Like -->
+                    <button class="btn-like {% if userLikes[post.id] is defined and userLikes[post.id] %}reacted{% endif %}" 
+                            onclick="toggleLike({{ post.id }})"
+                            id="like-btn-{{ post.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span id="like-count-{{ post.id }}">{{ likesCount[post.id]|default(0) }}</span>
+                    </button>
+
+                    <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="btn-comment">
+                        <i class="fas fa-comment"></i> Commentaires ({{ post.commentaires|length }})
+                    </a>
+                    <a href="{{ path('app_admin_post_show', {id: post.id}) }}" class="btn-read-more">
+                        Lire la suite <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Aucune publication trouvée.</p>
+            <a href="{{ path('app_admin_post_new') }}" class="btn-new-post">
+                <i class="fas fa-plus"></i> Créer la première publication
+            </a>
+        </div>
+    {% endfor %}
+
+</div>
+
+<script>
+function togglePin(postId) {
+    fetch(`/admin/posts/${postId}/pin`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(err => {
+        console.error('Erreur épinglage :', err);
+        alert('Erreur de connexion');
+    });
+}
+
+// ✅ Fonction pour liker/unliker un post
+function toggleLike(postId) {
+    fetch(`/admin/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: 'like' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const countEl = document.getElementById('like-count-' + postId);
+            const btn = document.getElementById('like-btn-' + postId);
+            
+            if (countEl) countEl.textContent = data.count;
+            
+            if (data.liked) {
+                btn.classList.add('reacted');
+            } else {
+                btn.classList.remove('reacted');
+            }
+        }
+    })
+    .catch(err => console.error('Erreur like:', err));
+}
+</script>
+{% endblock %}

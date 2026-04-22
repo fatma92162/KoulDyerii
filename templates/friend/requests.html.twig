@@ -1,0 +1,652 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter des amis{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* ===== STYLE VERTICAL SNAPCHAT/INSTAGRAM ===== */
+    :root {
+        --bordeaux: #8B0000;
+        --bordeaux-clair: #A52A2A;
+        --bordeaux-fonce: #5C0000;
+        --bordeaux-light: #D32F2F;
+        --beige: #FFF8F0;
+        --gold: #FFD700;
+    }
+
+    body {
+        background: linear-gradient(135deg, #FFF8F0 0%, #F5E6D3 100%);
+    }
+
+    .friends-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        background: transparent;
+    }
+
+    /* Header */
+    .friends-header {
+        margin-bottom: 25px;
+        padding: 0 10px;
+    }
+
+    .friends-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--bordeaux);
+        letter-spacing: -0.5px;
+        margin-bottom: 5px;
+    }
+
+    .friends-header p {
+        font-size: 14px;
+        color: #888;
+    }
+
+    /* Barre de recherche */
+    .search-bar {
+        background: white;
+        border-radius: 30px;
+        padding: 12px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid rgba(139,0,0,0.1);
+    }
+
+    .search-bar i {
+        color: var(--bordeaux);
+        font-size: 18px;
+    }
+
+    .search-bar input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        background: transparent;
+    }
+
+    .search-bar input::placeholder {
+        color: #bbb;
+    }
+
+    /* Section titre */
+    .section-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 0 10px;
+    }
+
+    .section-title h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--bordeaux);
+    }
+
+    .section-title span {
+        font-size: 13px;
+        color: var(--bordeaux-light);
+        font-weight: 600;
+    }
+
+    /* Liste des demandes - vertical */
+    .requests-list {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .request-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0e6d6;
+        transition: all 0.3s;
+    }
+
+    .request-item:last-child {
+        border-bottom: none;
+    }
+
+    .request-item:hover {
+        background: #fef5f5;
+    }
+
+    .request-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+    }
+
+    .request-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--bordeaux-light);
+    }
+
+    .avatar-placeholder {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .request-details {
+        flex: 1;
+    }
+
+    .request-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #1a1a2e;
+        margin-bottom: 3px;
+    }
+
+    .request-username {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 5px;
+    }
+
+    .request-badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 50px;
+        background: #f0f0f0;
+        color: var(--bordeaux);
+        font-weight: 600;
+    }
+
+    .request-badge i {
+        margin-right: 3px;
+        font-size: 9px;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-accept {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-accept:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(139,0,0,0.3);
+    }
+
+    .btn-decline {
+        background: transparent;
+        border: 1px solid #e0e0e0;
+        color: #999;
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-decline:hover {
+        background: #f5f5f5;
+    }
+
+    /* Liste des suggestions - vertical */
+    .suggestions-list {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0e6d6;
+        transition: all 0.3s;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background: #fef5f5;
+    }
+
+    .suggestion-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+    }
+
+    .suggestion-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--gold);
+    }
+
+    .suggestion-avatar-placeholder {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+        border: 2px solid var(--gold);
+    }
+
+    .suggestion-details {
+        flex: 1;
+    }
+
+    .suggestion-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #1a1a2e;
+        margin-bottom: 3px;
+    }
+
+    .suggestion-username {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 5px;
+    }
+
+    .suggestion-badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 50px;
+        background: #f0f0f0;
+        color: var(--bordeaux);
+        font-weight: 600;
+    }
+
+    .suggestion-mutual {
+        display: inline-block;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 50px;
+        background: rgba(139,0,0,0.1);
+        color: var(--bordeaux);
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .suggestion-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+        color: white;
+        border: none;
+        padding: 8px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-add:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(139,0,0,0.3);
+    }
+
+    .btn-pending {
+        background: #ffc107;
+        color: #333;
+        border: none;
+        padding: 8px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .btn-friend {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .request-item, .suggestion-item {
+        animation: fadeInUp 0.3s ease-out forwards;
+    }
+
+    /* No results */
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border-radius: 20px;
+    }
+
+    .no-results i {
+        font-size: 50px;
+        color: var(--bordeaux-light);
+        opacity: 0.5;
+        margin-bottom: 15px;
+    }
+
+    .no-results h3 {
+        color: var(--bordeaux);
+        margin-bottom: 5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 550px) {
+        .friends-container {
+            padding: 15px;
+        }
+        .request-item, .suggestion-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+        }
+        .request-info, .suggestion-info {
+            flex-direction: column;
+        }
+        .request-actions, .suggestion-actions {
+            width: 100%;
+        }
+        .btn-accept, .btn-add, .btn-pending, .btn-friend {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="friends-container">
+    <!-- Header -->
+    <div class="friends-header">
+        <h1>Ajouter des amis</h1>
+        <p>Trouver des ami-e-s</p>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Rechercher par nom...">
+    </div>
+
+    <!-- Section "Ils m'ont ajouté-e" -->
+    <div class="section-title">
+        <h3><i class="fas fa-user-plus"></i> Ils m'ont ajouté-e</h3>
+        <span>{{ pendingRequests|length }} demande{% if pendingRequests|length > 1 %}s{% endif %}</span>
+    </div>
+
+    <div class="requests-list" id="requestsList">
+        {% if pendingRequests|length > 0 %}
+            {% for request in pendingRequests %}
+            <div class="request-item">
+                <div class="request-info">
+                    {% if request.sender.photo %}
+                        <img src="{{ request.sender.photo }}" class="request-avatar" alt="{{ request.sender.nom }}">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            {{ request.sender.nom|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="request-details">
+                        <div class="request-name">{{ request.sender.nom }}</div>
+                        <div class="request-username">@{{ request.sender.email|split('@')|first }}</div>
+                        <span class="request-badge">
+                            <i class="fas fa-clock"></i> {{ request.createdAt|date('d/m/Y') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="request-actions">
+                    <button class="btn-accept" onclick="acceptRequest({{ request.id }})">
+                        <i class="fas fa-check"></i> Accepter
+                    </button>
+                    <button class="btn-decline" onclick="rejectRequest({{ request.id }})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="request-item">
+                <div class="request-info">
+                    <div class="avatar-placeholder" style="background: #f0f0f0; color: #999;">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <div class="request-details">
+                        <div class="request-name">Aucune demande</div>
+                        <div class="request-username">Les demandes d'amis apparaîtront ici</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Section Suggestions / PAR AJOUT RAPIDE -->
+    <div class="section-title">
+        <h3><i class="fas fa-users"></i> Suggestions</h3>
+        <span>PAR AJOUT RAPIDE</span>
+    </div>
+
+    <div class="suggestions-list" id="suggestionsList">
+        {% for item in users %}
+            <div class="suggestion-item" data-user-name="{{ item.user.nom|lower }}" data-user-email="{{ item.user.email|lower }}">
+                <div class="suggestion-info">
+                    {% if item.user.photo %}
+                        <img src="{{ item.user.photo }}" class="suggestion-avatar" alt="{{ item.user.nom }}">
+                    {% else %}
+                        <div class="suggestion-avatar-placeholder">
+                            {{ item.user.nom|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="suggestion-details">
+                        <div class="suggestion-name">{{ item.user.nom }}</div>
+                        <div class="suggestion-username">@{{ item.user.email|split('@')|first }}</div>
+                        <div>
+                            {% set mutualFriends = item.user.friendsCount|default(0) %}
+                            {% if mutualFriends > 0 %}
+                                <span class="suggestion-mutual">
+                                    <i class="fas fa-user-friends"></i> {{ mutualFriends }} ami{% if mutualFriends > 1 %}s{% endif %} en commun
+                                </span>
+                            {% else %}
+                                <span class="suggestion-badge">PAR AJOUT RAPIDE</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="suggestion-actions">
+                    {% if item.status == 'friends' %}
+                        <button class="btn-friend" disabled>
+                            <i class="fas fa-check-circle"></i> Amis
+                        </button>
+                    {% elseif item.status == 'pending_sent' %}
+                        <button class="btn-pending" disabled>
+                            <i class="fas fa-clock"></i> En attente
+                        </button>
+                    {% elseif item.status == 'pending_received' %}
+                        <button class="btn-add" onclick="acceptRequestFromUser({{ item.user.idUtilisateur }})">
+                            <i class="fas fa-user-check"></i> Accepter
+                        </button>
+                    {% else %}
+                        <button class="btn-add" onclick="sendFriendRequest({{ item.user.idUtilisateur }})">
+                            <i class="fas fa-user-plus"></i> Ajouter
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="suggestion-item">
+                <div class="suggestion-info">
+                    <div class="suggestion-avatar-placeholder" style="background: #f0f0f0; color: #999;">
+                        <i class="fas fa-users-slash"></i>
+                    </div>
+                    <div class="suggestion-details">
+                        <div class="suggestion-name">Aucune suggestion</div>
+                        <div class="suggestion-username">Revenez plus tard pour découvrir de nouveaux amis</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Message aucun résultat recherche -->
+    <div id="noResults" class="no-results" style="display: none;">
+        <i class="fas fa-search"></i>
+        <h3>Aucun résultat</h3>
+        <p class="text-muted">Aucun membre ne correspond à votre recherche</p>
+    </div>
+</div>
+
+<script>
+// Recherche
+const searchInput = document.getElementById('searchInput');
+const suggestionItems = document.querySelectorAll('.suggestion-item');
+const suggestionsList = document.getElementById('suggestionsList');
+const noResults = document.getElementById('noResults');
+
+function filterSuggestions() {
+    const searchTerm = searchInput.value.toLowerCase();
+    let visibleCount = 0;
+    
+    suggestionItems.forEach(item => {
+        const userName = item.dataset.userName || '';
+        const userEmail = item.dataset.userEmail || '';
+        
+        if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+            item.style.display = 'flex';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    if (visibleCount === 0 && searchTerm !== '') {
+        suggestionsList.style.display = 'none';
+        noResults.style.display = 'block';
+    } else {
+        suggestionsList.style.display = 'block';
+        noResults.style.display = 'none';
+    }
+}
+
+searchInput.addEventListener('input', filterSuggestions);
+
+// Fonctions API
+function sendFriendRequest(userId) {
+    fetch(`/friend/send/${userId}`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function acceptRequest(requestId) {
+    fetch(`/friend/accept/${requestId}`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function rejectRequest(requestId) {
+    fetch(`/friend/reject/${requestId}`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function acceptRequestFromUser(userId) {
+    fetch(`/friend/accept-from-user/${userId}`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+</script>
+{% endblock %}

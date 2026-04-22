@@ -1,0 +1,481 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'messages.conversation_with'|trans({'%name%': otherUser.nom}) }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>💬 {{ 'messages.conversation_with'|trans({'%name%': otherUser.nom}) }}</h2>
+        <div>
+            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteConversation()">
+                <i class="fas fa-trash-alt"></i> {{ 'messages.delete_conversation'|trans }}
+            </button>
+            <a href="{{ path('app_messages_inbox') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> {{ 'common.back'|trans }}
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-user-circle"></i> {{ otherUser.nom }}
+                {% if otherUser.role == 'assistant' or 'Assistant IA' in otherUser.nom %}
+                    <span class="badge bg-info ms-2">🤖 {{ 'messages.ai_assistant'|trans }}</span>
+                {% endif %}
+            </div>
+            <div>
+                <label class="small">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                    {{ 'messages.select_all'|trans }}
+                </label>
+                <button class="btn btn-danger btn-sm ms-2" id="deleteSelectedBtn" onclick="deleteSelectedMessages()" style="display: none;">
+                    <i class="fas fa-trash"></i> {{ 'common.delete'|trans }}
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body" style="height: 450px; overflow-y: auto; background: var(--beige-clair);" id="message-list">
+            {% for msg in messages %}
+                <div class="mb-3 message-item" data-message-id="{{ msg.id }}" data-sender-id="{{ msg.sender.idUtilisateur }}">
+                    <div class="message-row {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}is-sent{% else %}is-received{% endif %}">
+                        {% if msg.sender.idUtilisateur != app.user.idUtilisateur %}
+                            <div class="me-2">
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 12px;">
+                                    {{ otherUser.nom|first|upper }}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="message-bubble {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}sent{% else %}received{% endif %}">
+                            <div class="message-content">
+                                {{ msg.content|nl2br }}
+                            </div>
+                            <div class="message-meta small text-muted mt-1 d-flex align-items-center gap-2">
+                                <span>
+                                    <i class="far fa-clock"></i> {{ msg.createdAt|date('H:i, d/m/Y') }}
+                                    {% if msg.isRead and msg.sender.idUtilisateur == app.user.idUtilisateur %}
+                                        <i class="fas fa-check-double ms-1 text-success" title="{{ 'messages.read'|trans }}"></i>
+                                    {% elseif msg.sender.idUtilisateur == app.user.idUtilisateur %}
+                                        <i class="fas fa-check ms-1 text-muted" title="{{ 'messages.sent'|trans }}"></i>
+                                    {% endif %}
+                                </span>
+                                
+                                {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}
+                                    <span>
+                                        <button class="btn btn-sm btn-link text-primary p-0 me-2" onclick="editMessage({{ msg.id }}, {{ msg.content|json_encode|raw }})" title="{{ 'common.edit'|trans }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteMessage({{ msg.id }})" title="{{ 'common.delete'|trans }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <input type="checkbox" class="message-checkbox ms-2" value="{{ msg.id }}" style="display: none;" onchange="updateDeleteButton()">
+                                    </span>
+                                {% else %}
+                                    <span>
+                                        <input type="checkbox" class="message-checkbox ms-2" value="{{ msg.id }}" style="display: none;" onchange="updateDeleteButton()">
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if msg.sender.idUtilisateur == app.user.idUtilisateur %}
+                            <div class="ms-2">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 12px;">
+                                    {{ app.user.nom|first|upper }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-comments fa-3x mb-3"></i>
+                    <p>{{ 'messages.empty'|trans }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card-footer bg-white">
+            <form method="post" id="messageForm">
+                <div class="input-group">
+                    <textarea name="content" id="messageContent" class="form-control" rows="2" placeholder="{{ 'messages.placeholder'|trans }}" required></textarea>
+                    <button class="btn btn-primary" type="submit" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i> {{ 'messages.send'|trans }}
+                    </button>
+                </div>
+                <div class="small text-muted mt-2">
+                    <i class="fas fa-info-circle"></i> {{ 'messages.ctrl_enter'|trans }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour modifier un message -->
+<div class="modal fade" id="editMessageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">✏️ {{ 'messages.edit_title'|trans }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="editMessageContent" class="form-control" rows="4"></textarea>
+                <div class="small text-muted mt-2">
+                    <i class="fas fa-clock"></i> {{ 'messages.edit_time_limit'|trans }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'common.cancel'|trans }}</button>
+                <button type="button" class="btn btn-primary" onclick="submitEdit()">{{ 'common.save'|trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal confirmation suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚠️ {{ 'common.confirmation'|trans }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="deleteConfirmMessage">
+                {{ 'messages.confirm_delete'|trans }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'common.cancel'|trans }}</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">{{ 'common.delete'|trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.message-item {
+    display: flex;
+    flex-direction: column;
+}
+.message-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+.message-row.is-sent {
+    justify-content: flex-end;
+}
+.message-row.is-received {
+    justify-content: flex-start;
+}
+.message-bubble {
+    position: relative;
+    word-wrap: break-word;
+    padding: 10px 14px;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    max-width: 70%;
+}
+.message-bubble.sent {
+    background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+    color: #fff;
+    border-radius: 18px 18px 6px 18px;
+}
+.message-bubble.received {
+    background: #fff;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 18px 18px 18px 6px;
+}
+.message-bubble.sent::after,
+.message-bubble.received::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    width: 12px;
+    height: 12px;
+    transform: rotate(45deg);
+}
+.message-bubble.sent::after {
+    right: -5px;
+    background: linear-gradient(135deg, var(--bordeaux), var(--bordeaux-clair));
+}
+.message-bubble.received::after {
+    left: -5px;
+    background: #fff;
+    border-left: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+.message-content {
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.message-meta {
+    width: 100%;
+    justify-content: space-between;
+    font-size: 11px;
+    opacity: 0.8;
+    margin-top: 6px;
+}
+.message-bubble.sent .message-meta {
+    color: rgba(255,255,255,0.8);
+}
+.message-bubble.received .message-meta {
+    color: #7a4a2a;
+}
+.message-item:hover .message-checkbox {
+    display: inline-block !important;
+}
+#message-list::-webkit-scrollbar {
+    width: 8px;
+}
+#message-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+#message-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+#message-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+
+<script>
+let currentMessageId = null;
+let editMessageId = null;
+
+// Auto-scroll en bas de la conversation
+const msgList = document.getElementById('message-list');
+if (msgList) {
+    msgList.scrollTop = msgList.scrollHeight;
+}
+
+// Envoyer avec Ctrl+Entrée
+document.getElementById('messageContent')?.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('messageForm').submit();
+    }
+});
+
+// ==================== FONCTIONS CRUD ====================
+
+// ÉDITER un message
+function editMessage(id, content) {
+    editMessageId = id;
+    document.getElementById('editMessageContent').value = content;
+    new bootstrap.Modal(document.getElementById('editMessageModal')).show();
+}
+
+function submitEdit() {
+    const newContent = document.getElementById('editMessageContent').value.trim();
+    if (!newContent) {
+        alert('Le message ne peut pas être vide');
+        return;
+    }
+    
+    fetch(`/messages/${editMessageId}/edit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `content=${encodeURIComponent(newContent)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Erreur lors de la modification');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de la modification');
+    });
+}
+
+// SUPPRIMER un message
+function deleteMessage(id) {
+    currentMessageId = id;
+    document.getElementById('deleteConfirmMessage').innerHTML = 'Êtes-vous sûr de vouloir supprimer ce message ? Cette action est irréversible.';
+    new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+}
+
+// Utiliser un event listener séparé pour éviter les problèmes Twig
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!currentMessageId) return;
+            
+            fetch(`/messages/${currentMessageId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: '_token={{ csrf_token('delete_message') }}'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Erreur lors de la suppression');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de la suppression');
+            })
+            .finally(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                if (modal) modal.hide();
+                currentMessageId = null;
+            });
+        });
+    }
+});
+
+// SUPPRIMER PLUSIEURS MESSAGES
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.message-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = selectAll.checked;
+        cb.style.display = selectAll.checked ? 'inline-block' : 'none';
+    });
+    updateDeleteButton();
+}
+
+function updateDeleteButton() {
+    const checkedBoxes = document.querySelectorAll('.message-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    if (deleteBtn) {
+        deleteBtn.style.display = checkedBoxes.length > 0 ? 'inline-block' : 'none';
+    }
+}
+
+function deleteSelectedMessages() {
+    const checkedBoxes = document.querySelectorAll('.message-checkbox:checked');
+    const messageIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (messageIds.length === 0) {
+        alert('Aucun message sélectionné');
+        return;
+    }
+    
+    if (confirm(`Supprimer ${messageIds.length} message(s) ? Cette action est irréversible.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('app_messages_bulk_delete') }}';
+        
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '_token';
+        tokenInput.value = '{{ csrf_token('bulk_delete') }}';
+        form.appendChild(tokenInput);
+        
+        messageIds.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'message_ids[]';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// SUPPRIMER TOUTE LA CONVERSATION
+function confirmDeleteConversation() {
+    if (confirm('⚠️ Supprimer toute la conversation avec {{ otherUser.nom }} ? Cette action est irréversible.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ path('app_messages_delete_conversation', {id: otherUser.idUtilisateur}) }}';
+        
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '_token';
+        tokenInput.value = '{{ csrf_token('delete_conversation') }}';
+        form.appendChild(tokenInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Marquer un message comme lu (AJAX)
+function markAsRead(messageId) {
+    fetch(`/messages/${messageId}/mark-read`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+}
+
+// Marquer comme lu automatiquement pour les messages reçus
+document.querySelectorAll('.message-item[data-sender-id!="{{ app.user.idUtilisateur }}"]').forEach(item => {
+    const messageId = item.dataset.messageId;
+    if (messageId) {
+        markAsRead(messageId);
+    }
+});
+
+// Rafraîchissement automatique des messages (optionnel - toutes les 10 secondes)
+let autoRefreshInterval = null;
+
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(() => {
+        fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newMessages = doc.getElementById('message-list');
+            if (newMessages && msgList && msgList.innerHTML !== newMessages.innerHTML) {
+                const oldScrollHeight = msgList.scrollHeight;
+                msgList.innerHTML = newMessages.innerHTML;
+                const newScrollHeight = msgList.scrollHeight;
+                if (newScrollHeight > oldScrollHeight) {
+                    msgList.scrollTop = newScrollHeight;
+                }
+            }
+        })
+        .catch(error => console.error('Auto-refresh error:', error));
+    }, 10000);
+}
+
+// Démarrer l'auto-refresh si la page est active
+if (document.visibilityState === 'visible') {
+    startAutoRefresh();
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        if (!autoRefreshInterval) startAutoRefresh();
+    } else {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+});
+</script>
+{% endblock %}

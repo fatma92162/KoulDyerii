@@ -10,6 +10,11 @@ use App\Repository\PlatRepository;
 #[ORM\Table(name: 'plat')]
 class Plat
 {
+    /** Valeurs équivalentes « pending / approved / rejected » côté métier. */
+    public const STATUT_PENDING = 'en_attente';
+    public const STATUT_APPROVED = 'accepte';
+    public const STATUT_REJECTED = 'refuse';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -39,13 +44,29 @@ class Plat
     #[ORM\Column(type: 'string', nullable: true, options: ['default' => 'en_attente'])]
     private ?string $statut = 'en_attente';
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'propose_par_id', referencedColumnName: 'idUtilisateur', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $proposePar = null;
+
+    #[ORM\Column(name: 'reject_comment', type: 'text', nullable: true)]
+    private ?string $rejectComment = null;
+
     #[ORM\Column(name: 'date_creation', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
-    // Propriété virtuelle
+    // ✅ Nouveau : compteur de ventes (best-seller tracking)
+    #[ORM\Column(name: 'sales_count', type: 'integer', options: ['default' => 0])]
+    private int $salesCount = 0;
+
+    // ✅ Nouveau : flag best-seller (activé quand salesCount >= 10)
+    #[ORM\Column(name: 'is_best_seller', type: 'boolean', options: ['default' => false])]
+    private bool $isBestSeller = false;
+
+    // Propriété virtuelle (non mappée)
     private $partenaire;
 
-    // Getters et Setters
+    // ─── Getters & Setters existants (inchangés) ─────────────────────────────
+
     public function getId(): ?int { return $this->id; }
     public function getNom(): ?string { return $this->nom; }
     public function setNom(?string $nom): self { $this->nom = $nom; return $this; }
@@ -67,4 +88,55 @@ class Plat
     public function setDateCreation(?\DateTimeInterface $dateCreation): self { $this->dateCreation = $dateCreation; return $this; }
     public function getPartenaire() { return $this->partenaire; }
     public function setPartenaire($partenaire): self { $this->partenaire = $partenaire; return $this; }
+
+    // ─── Nouveaux Getters & Setters (best-seller) ────────────────────────────
+
+    public function getSalesCount(): int { return $this->salesCount; }
+    public function setSalesCount(int $salesCount): self { $this->salesCount = max(0, $salesCount); return $this; }
+
+    /**
+     * Incrémente le compteur de ventes et met à jour le flag best-seller.
+     */
+    public function incrementSalesCount(): self
+    {
+        return $this->addSoldUnits(1);
+    }
+
+    /**
+     * Ajoute des unités vendues (ex. quantité commandée) et met à jour le flag best-seller.
+     */
+    public function addSoldUnits(int $quantity): self
+    {
+        $q = max(0, $quantity);
+        $this->salesCount += $q;
+        if ($this->salesCount >= 10) {
+            $this->isBestSeller = true;
+        }
+        return $this;
+    }
+
+    public function getIsBestSeller(): bool { return $this->isBestSeller; }
+    public function setIsBestSeller(bool $isBestSeller): self { $this->isBestSeller = $isBestSeller; return $this; }
+
+    public function getProposePar(): ?Utilisateur
+    {
+        return $this->proposePar;
+    }
+
+    public function setProposePar(?Utilisateur $proposePar): self
+    {
+        $this->proposePar = $proposePar;
+        return $this;
+    }
+
+    public function getRejectComment(): ?string
+    {
+        return $this->rejectComment;
+    }
+
+    public function setRejectComment(?string $rejectComment): self
+    {
+        $this->rejectComment = $rejectComment;
+        return $this;
+    }
 }

@@ -26,6 +26,10 @@ class Commentaire
     #[ORM\Column(name: 'gif_url', length: 500, nullable: true)]
     private ?string $gif_url = null;
 
+    // NOUVEAU : champ pour l'audio
+    #[ORM\Column(name: 'audio_path', length: 500, nullable: true)]
+    private ?string $audio_path = null;
+
     // Relations
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: false)]
@@ -84,6 +88,18 @@ class Commentaire
     public function setGifUrl(?string $gif_url): self
     {
         $this->gif_url = $gif_url;
+        return $this;
+    }
+
+    // Nouveau getter/setter pour l'audio
+    public function getAudioPath(): ?string
+    {
+        return $this->audio_path;
+    }
+
+    public function setAudioPath(?string $audio_path): self
+    {
+        $this->audio_path = $audio_path;
         return $this;
     }
 

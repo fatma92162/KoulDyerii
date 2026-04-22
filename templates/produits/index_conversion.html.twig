@@ -1,0 +1,1173 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Produits - Koul Dyeri{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root{
+    --cv-bg:#f5f5f5;
+    --cv-card:#ffffff;
+    --cv-border:#dfe4ea;
+    --cv-text:#1f2328;
+    --cv-muted:#6b7280;
+    --cv-primary:#111111;
+    --cv-red:#d82020;
+    --cv-gold:#f0c54d;
+    --cv-shadow:0 18px 42px rgba(0,0,0,.08);
+    --cv-radius:20px;
+}
+
+body{
+    background: var(--cv-bg);
+    color: var(--cv-text);
+}
+
+/* HEADER HERO */
+.conv2-hero{
+    padding: 28px 0 18px;
+}
+
+.conv2-shell{
+    background: linear-gradient(135deg, #111 0%, #2a1212 100%);
+    border-radius: 30px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 25px 60px rgba(0,0,0,.16);
+    position: relative;
+    overflow: hidden;
+}
+
+.conv2-shell::after{
+    content:"";
+    position:absolute;
+    width:220px;
+    height:220px;
+    border-radius:50%;
+    right:-80px;
+    top:-60px;
+    background: rgba(255,255,255,.06);
+}
+
+.conv2-grid{
+    display:grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 24px;
+    align-items:center;
+}
+
+.conv2-kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-radius:999px;
+    background: rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    padding:9px 14px;
+    font-size:13px;
+    font-weight:900;
+    margin-bottom:16px;
+}
+
+.conv2-title{
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.04;
+    font-weight: 900;
+    margin-bottom: 14px;
+}
+
+.conv2-title span{
+    color: #ffe09e;
+}
+
+.conv2-sub{
+    max-width: 620px;
+    color: rgba(255,255,255,.84);
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.conv2-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.conv2-btn{
+    border:none;
+    border-radius:999px;
+    padding:13px 20px;
+    font-weight:900;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+.conv2-btn-main{
+    background: linear-gradient(135deg, #f0c54d 0%, #ffd970 100%);
+    color:#111;
+}
+
+.conv2-btn-soft{
+    background: rgba(255,255,255,.08);
+    color:white;
+    border:1px solid rgba(255,255,255,.12);
+}
+
+.conv2-visual{
+    position:relative;
+}
+
+.conv2-visual img{
+    width:100%;
+    height:340px;
+    object-fit:cover;
+    border-radius:24px;
+    box-shadow: 0 18px 35px rgba(0,0,0,.16);
+}
+
+.conv2-float{
+    position:absolute;
+    right:16px;
+    bottom:16px;
+    background:white;
+    color:#111;
+    border-radius:18px;
+    padding:12px 16px;
+    font-weight:900;
+    box-shadow:0 12px 30px rgba(0,0,0,.12);
+}
+
+/* PRODUCTS */
+.conv2-section{
+    padding: 26px 0 48px;
+}
+
+.conv2-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+}
+
+.conv2-head h2{
+    margin:0;
+    font-size:2rem;
+    font-weight:900;
+}
+
+.conv2-head p{
+    margin:8px 0 0;
+    color: var(--cv-muted);
+    max-width: 620px;
+}
+
+.conv2-products{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.conv2-card{
+    background: linear-gradient(180deg, #fff 0%, #fdfdfd 100%);
+    border:1px solid var(--cv-border);
+    border-radius: 24px;
+    overflow:hidden;
+    box-shadow: var(--cv-shadow);
+    transition:.28s ease;
+    cursor:pointer;
+}
+
+.conv2-card:hover{
+    transform: translateY(-7px);
+    box-shadow: 0 24px 48px rgba(0,0,0,.12);
+}
+
+.conv2-img-wrap{
+    position:relative;
+    height:240px;
+    background: #f0f0f0;
+    overflow:hidden;
+}
+
+.conv2-img-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:.4s ease;
+}
+
+.conv2-card:hover .conv2-img-wrap img{
+    transform: scale(1.06);
+}
+
+.conv2-discount{
+    position:absolute;
+    top:14px;
+    left:14px;
+    background:#111;
+    color:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+    font-weight:900;
+    font-size:14px;
+    display:none;
+}
+
+.conv2-body{
+    padding:18px;
+}
+
+.conv2-name{
+    font-size:1.15rem;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.conv2-desc{
+    color:var(--cv-muted);
+    line-height:1.7;
+    min-height:68px;
+    margin-bottom:16px;
+}
+
+.conv2-price-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    gap:12px;
+}
+
+.conv2-card-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    align-items:stretch;
+    min-width:150px;
+}
+
+.conv2-fast-btn{
+    border:none;
+    border-radius:12px;
+    background:#f3f4f6;
+    color:#111;
+    font-weight:800;
+    padding:10px 14px;
+    transition:.2s ease;
+}
+
+.conv2-fast-btn:hover{
+    background:#e5e7eb;
+}
+
+.conv2-prices{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.conv2-old{
+    color:#9ca3af;
+    text-decoration:line-through;
+    font-size:14px;
+    font-weight:700;
+    display:none;
+}
+
+.conv2-new{
+    color:var(--cv-red);
+    font-size:2rem;
+    font-weight:900;
+    line-height:1;
+}
+
+.conv2-cta{
+    border:none;
+    border-radius:14px;
+    background:#111;
+    color:#fff;
+    font-weight:900;
+    padding:12px 16px;
+}
+
+.conv2-stock{
+    margin-top:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:900;
+}
+
+.conv2-stock-ok{ background:#edf8ef; color:#166534; }
+.conv2-stock-low{ background:#fff1bf; color:#8a6d00; animation:pulseConv2 1.2s infinite; }
+.conv2-stock-out{ background:#ffe1e1; color:#b42318; }
+
+@keyframes pulseConv2{
+    0% { transform:scale(1); box-shadow:0 0 0 0 rgba(216,32,32,.25);}
+    70% { transform:scale(1.03); box-shadow:0 0 0 12px rgba(216,32,32,0);}
+    100% { transform:scale(1); box-shadow:0 0 0 0 rgba(216,32,32,0);}
+}
+
+/* CHECKOUT MODAL */
+.checkout-overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.55);
+    z-index:9998;
+    opacity:0;
+    visibility:hidden;
+    transition:.25s ease;
+}
+
+.checkout-overlay.open{
+    opacity:1;
+    visibility:visible;
+}
+
+.checkout-modal{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -48%) scale(.96);
+    width:min(1120px, calc(100vw - 24px));
+    max-height:calc(100vh - 24px);
+    background:#fff;
+    border-radius:26px;
+    overflow:hidden;
+    z-index:9999;
+    opacity:0;
+    visibility:hidden;
+    transition:.25s ease;
+    box-shadow:0 28px 70px rgba(0,0,0,.25);
+}
+
+.checkout-modal.open{
+    opacity:1;
+    visibility:visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.checkout-header{
+    background:#111;
+    color:white;
+    padding:16px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.checkout-title{
+    margin:0;
+    font-size:24px;
+    font-weight:900;
+}
+
+.checkout-close{
+    border:none;
+    background:#fff;
+    color:#111;
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:900;
+}
+
+.checkout-body{
+    padding:0;
+    display:grid;
+    grid-template-columns: 1.05fr .95fr;
+    max-height: calc(100vh - 90px);
+    overflow:auto;
+}
+
+.checkout-form-side{
+    padding:28px;
+    background:#f8f9fb;
+}
+
+.checkout-image-side{
+    padding:24px;
+    background:#fff;
+    border-left:1px solid #ececec;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.checkout-image-side img{
+    width:100%;
+    max-height:520px;
+    object-fit:cover;
+    border-radius:20px;
+}
+
+.checkout-product-name{
+    font-size:1.8rem;
+    font-weight:900;
+    text-align:right;
+    margin-bottom:8px;
+}
+
+.checkout-prices{
+    text-align:right;
+    margin-bottom:16px;
+}
+
+.checkout-prices .old{
+    color:#94a3b8;
+    text-decoration:line-through;
+    font-size:18px;
+    margin-left:8px;
+}
+
+.checkout-prices .new{
+    color:var(--cv-red);
+    font-size:2.1rem;
+    font-weight:900;
+}
+
+.checkout-label-title{
+    text-align:right;
+    font-weight:900;
+    color:#334155;
+    margin: 18px 0 12px;
+    font-size:1.2rem;
+}
+
+.checkout-form-side .form-control,
+.checkout-form-side .form-select{
+    min-height:50px;
+    border-radius:16px;
+    border:1px solid #d6dbe3;
+    background:#ffffff;
+    text-align:right;
+    font-size:17px;
+    font-weight:700;
+    color:#2b2b2b;
+    padding-inline:18px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
+}
+
+.field-error{
+    display:none;
+    margin-top:6px;
+    color:#d82020;
+    font-size:13px;
+    font-weight:700;
+    text-align:right;
+}
+
+.input-error{
+    border-color:#d82020 !important;
+    box-shadow: 0 0 0 3px rgba(216,32,32,.08) !important;
+}
+
+.checkout-summary{
+    border-top:1px solid #d8dee8;
+    border-bottom:1px solid #d8dee8;
+    padding:14px 0;
+    margin:18px 0;
+}
+
+.checkout-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    font-size:18px;
+}
+
+.checkout-row.total{
+    font-weight:900;
+    font-size:20px;
+}
+
+.checkout-qty-row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-top:12px;
+}
+
+.checkout-qty-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.checkout-qty-btn{
+    width:44px;
+    height:44px;
+    border:none;
+    border-radius:12px;
+    background:#8a8a8a;
+    color:#fff;
+    font-size:22px;
+    font-weight:900;
+}
+
+.checkout-qty-input{
+    width:78px;
+    height:44px;
+    border-radius:12px;
+    border:1px solid #d6dbe3;
+    text-align:center;
+    font-weight:900;
+    font-size:20px;
+}
+
+.checkout-buy-now{
+    width:100%;
+    min-height:54px;
+    border:none;
+    border-radius:16px;
+    background:#111;
+    color:#fff;
+    font-size:1.2rem;
+    font-weight:900;
+    margin-top:14px;
+    letter-spacing:.2px;
+    box-shadow: 0 10px 22px rgba(0,0,0,.12);
+}
+
+.checkout-fast{
+    width:100%;
+    min-height:52px;
+    border:1px solid #d7dce4;
+    border-radius:16px;
+    background:#f8fafc;
+    color:#111;
+    font-size:1rem;
+    font-weight:900;
+    margin-top:12px;
+}
+
+.checkout-alert{
+    display:none;
+    margin-bottom:14px;
+    border-radius:12px;
+}
+
+.cart-toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#111;
+    color:#fff;
+    padding:14px 18px;
+    border-radius:14px;
+    font-weight:900;
+    box-shadow:0 16px 30px rgba(0,0,0,.16);
+    z-index:10000;
+    opacity:0;
+    transform:translateY(18px);
+    pointer-events:none;
+    transition:.25s ease;
+}
+
+@media (max-width: 991px){
+    .checkout-body,
+    .conv2-grid,
+    .conv2-products{
+        grid-template-columns:1fr;
+    }
+
+    .checkout-image-side{
+        border-left:none;
+        border-top:1px solid #ececec;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="conv2-hero">
+    <div class="container">
+        {% set featured = produits|first %}
+        <div class="conv2-shell">
+            <div class="conv2-grid">
+                <div>
+                    <div class="conv2-kicker">
+                        <i class="fas fa-chart-line"></i> Theme Conversion
+                    </div>
+
+                    <h1 class="conv2-title">
+                        Une boutique pensée pour <span>acheter vite</span>
+                    </h1>
+
+                    <p class="conv2-sub">
+                        Mise en avant du prix, achat immédiat, formulaire ultra direct, et achat rapide basé sur les dernières infos client.
+                    </p>
+
+                    <div class="conv2-actions">
+                        <a href="#conversionGrid" class="conv2-btn conv2-btn-main">
+                            <i class="fas fa-bolt"></i> Voir les offres
+                        </a>
+                        <a href="{{ path('app_panier_index') }}" class="conv2-btn conv2-btn-soft">
+                            <i class="fas fa-shopping-cart"></i> Panier
+                        </a>
+                    </div>
+                </div>
+
+                <div class="conv2-visual">
+                    {% if featured and featured.photo %}
+                        <img src="{{ featured.photo }}" alt="{{ featured.nom }}">
+                    {% else %}
+                        <div style="height:340px;border-radius:24px;background:linear-gradient(135deg,#8B0000,#A52A2A);display:flex;align-items:center;justify-content:center;color:white;">
+                            <i class="fas fa-box fa-4x"></i>
+                        </div>
+                    {% endif %}
+                    <div class="conv2-float">🔥 Fast purchase actif</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container conv2-section">
+    <div class="conv2-head">
+        <div>
+            <h2>Choisis ton offre</h2>
+            <p>Un thème plus direct et plus agressif pour pousser la commande rapidement.</p>
+        </div>
+    </div>
+
+    <div class="conv2-products" id="conversionGrid">
+        {% for produit in produits %}
+            <div class="conv2-card"
+                 onclick="openConversionCheckout(this)"
+                 data-id="{{ produit.idProduit }}"
+                 data-nom="{{ produit.nom|e('html_attr') }}"
+                 data-description="{{ produit.description|default('')|e('html_attr') }}"
+                 data-prix="{{ produit.prix }}"
+                 data-photo="{{ produit.photo|default('')|e('html_attr') }}"
+                 data-quantite="{{ produit.quantite|default(0) }}"
+                 data-bundle-active="{{ produit.bundleActive ? 1 : 0 }}"
+                 data-bundle-type="{{ produit.bundleType|default('')|e('html_attr') }}"
+                 data-bundle-buy="{{ produit.bundleBuyQty|default('') }}"
+                 data-bundle-pay="{{ produit.bundlePayQty|default('') }}"
+                 data-bundle-discount="{{ produit.bundleDiscountPercent|default('') }}">
+                <div class="conv2-img-wrap">
+                    {% if produit.photo %}
+                        <img src="{{ produit.photo }}" alt="{{ produit.nom }}">
+                    {% else %}
+                        <div style="height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#8B0000,#A52A2A);color:white;">
+                            <i class="fas fa-box fa-3x"></i>
+                        </div>
+                    {% endif %}
+                    <div class="conv2-discount" id="card-badge-{{ produit.idProduit }}" style="display:none;"></div>
+                </div>
+
+                <div class="conv2-body">
+                    <div class="conv2-name">{{ produit.nom }}</div>
+                    <div class="conv2-desc">
+                        {{ produit.description|slice(0, 95) }}{% if produit.description|length > 95 %}...{% endif %}
+                    </div>
+
+                    <div class="conv2-price-row">
+                        <div class="conv2-prices">
+                            <span class="conv2-old" id="card-old-{{ produit.idProduit }}" style="display:none;"></span>
+                            <span class="conv2-new">{{ produit.prix|number_format(2, ',', ' ') }} د.ت</span>
+                        </div>
+
+                        <div class="conv2-card-actions">
+                            <button type="button" class="conv2-cta">
+                                Acheter
+                            </button>
+
+                            <button
+                                type="button"
+                                class="conv2-fast-btn"
+                                onclick="event.stopPropagation(); quickFastPurchase({{ produit.idProduit }}, {{ produit.prix }})"
+                            >
+                                Achat rapide
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if produit.quantite is defined and produit.quantite <= 0 %}
+                        <span class="conv2-stock conv2-stock-out">❌ Rupture</span>
+                    {% elseif produit.quantite is defined and produit.quantite < 10 %}
+                        <span class="conv2-stock conv2-stock-low">⚠️ Ça part vite</span>
+                    {% else %}
+                        <span class="conv2-stock conv2-stock-ok">✅ Disponible</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="conversionOverlay" class="checkout-overlay" onclick="closeConversionCheckout()"></div>
+
+<div id="conversionModal" class="checkout-modal">
+    <div class="checkout-header">
+        <h3 class="checkout-title">Finaliser votre commande</h3>
+        <button type="button" class="checkout-close" onclick="closeConversionCheckout()">✕</button>
+    </div>
+
+    <div class="checkout-body">
+        <div class="checkout-form-side">
+            <div id="conversionAlert" class="alert checkout-alert"></div>
+
+            <div class="checkout-product-name" id="checkoutProductName">Produit</div>
+
+            <div class="checkout-prices">
+                <span class="old" id="checkoutOldPrice">0.00 د.ت</span>
+                <span class="new" id="checkoutNewPrice">0.00 د.ت</span>
+            </div>
+
+            <div class="checkout-label-title">Informations personnelles</div>
+
+            <form id="conversionBuyForm" novalidate>
+                <input type="hidden" id="conversionProductId" name="product_id">
+                <input type="hidden" id="conversionMode" name="mode" value="classic">
+
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="conversionName" name="customer_name" placeholder="Votre nom">
+                    <div id="error-conversionName" class="field-error">Veuillez entrer votre nom.</div>
+                </div>
+
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="conversionPhone" name="phone" placeholder="Numéro téléphone">
+                    <div id="error-conversionPhone" class="field-error">Veuillez entrer un numéro téléphone valide.</div>
+                </div>
+
+                <div class="mb-3">
+                    <select class="form-select" id="conversionCity" name="city">
+                        <option value="">Ville / région</option>
+<option value="Tunis">Tunis</option>
+<option value="Ariana">Ariana</option>
+<option value="Ben Arous">Ben Arous</option>
+<option value="Manouba">Manouba</option>
+
+<option value="Nabeul">Nabeul</option>
+<option value="Zaghouan">Zaghouan</option>
+<option value="Bizerte">Bizerte</option>
+<option value="Béja">Béja</option>
+
+<option value="Jendouba">Jendouba</option>
+<option value="Le Kef">Le Kef</option>
+<option value="Siliana">Siliana</option>
+
+<option value="Sousse">Sousse</option>
+<option value="Monastir">Monastir</option>
+<option value="Mahdia">Mahdia</option>
+<option value="Sfax">Sfax</option>
+
+<option value="Kairouan">Kairouan</option>
+<option value="Kasserine">Kasserine</option>
+<option value="Sidi Bouzid">Sidi Bouzid</option>
+
+<option value="Gabès">Gabès</option>
+<option value="Medenine">Medenine</option>
+<option value="Tataouine">Tataouine</option>
+
+<option value="Gafsa">Gafsa</option>
+<option value="Tozeur">Tozeur</option>
+<option value="Kebili">Kebili</option>
+                    </select>
+                    <div id="error-conversionCity" class="field-error">Veuillez choisir une ville.</div>
+                </div>
+
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="conversionAddress" name="location" placeholder="Adresse complète">
+                    <div id="error-conversionAddress" class="field-error">Veuillez entrer votre adresse.</div>
+                </div>
+
+                <div class="checkout-summary">
+                    <div class="checkout-row">
+                        <span id="checkoutSubtotalValue">0.00 د.ت</span>
+                        <span>Sous-total</span>
+                    </div>
+                    <div class="checkout-row">
+                        <span id="checkoutDeliveryValue">7.20 د.ت</span>
+                        <span>Livraison</span>
+                    </div>
+                    <div class="checkout-row total">
+                        <span id="checkoutTotalValue">0.00 د.ت</span>
+                        <span>Total</span>
+                    </div>
+                </div>
+
+                <div class="checkout-qty-row">
+                    <div class="checkout-qty-box">
+                        <button type="button" class="checkout-qty-btn" onclick="changeConversionQty(1)">+</button>
+                        <input type="number" id="conversionQty" name="quantite" class="checkout-qty-input" value="1" min="1">
+                        <button type="button" class="checkout-qty-btn" onclick="changeConversionQty(-1)">-</button>
+                    </div>
+
+                    <button type="submit" class="checkout-buy-now">
+                        Acheter maintenant
+                    </button>
+                </div>
+
+                <button type="button" class="checkout-fast" onclick="addCurrentModalToCart()">
+                    Ajouter au panier
+                </button>
+            </form>
+        </div>
+
+        <div class="checkout-image-side">
+            <img id="checkoutProductImage" src="" alt="Produit">
+        </div>
+    </div>
+</div>
+
+<div id="cartToast" class="cart-toast">Produit ajouté au panier</div>
+
+<script>
+let conversionPrice = 0;
+let conversionOldPrice = 0;
+let conversionDelivery = 7.20;
+let conversionStock = 0;
+let conversionBundle = {
+    active: false,
+    type: '',
+    buyQty: null,
+    payQty: null,
+    discountPercent: null
+};
+
+function showCartToast(message) {
+    const toast = document.getElementById('cartToast');
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(18px)';
+    }, 1800);
+}
+
+function openConversionCheckout(card) {
+    conversionPrice = parseFloat(card.dataset.prix || '0');
+    conversionStock = parseInt(card.dataset.quantite || '0', 10);
+
+    conversionBundle = {
+        active: (card.dataset.bundleActive || '0') === '1',
+        type: card.dataset.bundleType || '',
+        buyQty: card.dataset.bundleBuy ? parseInt(card.dataset.bundleBuy, 10) : null,
+        payQty: card.dataset.bundlePay ? parseInt(card.dataset.bundlePay, 10) : null,
+        discountPercent: card.dataset.bundleDiscount ? parseInt(card.dataset.bundleDiscount, 10) : null
+    };
+
+    conversionOldPrice = conversionPrice;
+
+    if (conversionBundle.active) {
+        if (conversionBundle.type === 'discount' && conversionBundle.discountPercent) {
+            conversionOldPrice = conversionPrice * 2;
+        } else if (conversionBundle.type === 'bxgy' && conversionBundle.buyQty && conversionBundle.payQty) {
+            conversionOldPrice = conversionPrice * conversionBundle.buyQty;
+        }
+    }
+
+    document.getElementById('conversionProductId').value = card.dataset.id || '';
+    document.getElementById('checkoutProductName').textContent = card.dataset.nom || 'Produit';
+    document.getElementById('checkoutOldPrice').textContent = conversionOldPrice.toFixed(2) + ' د.ت';
+    document.getElementById('checkoutNewPrice').textContent = conversionPrice.toFixed(2) + ' د.ت';
+    document.getElementById('conversionQty').value = 1;
+
+    const photo = card.dataset.photo || '';
+    document.getElementById('checkoutProductImage').src = photo;
+
+    resetConversionValidation();
+    loadLastCustomerInfo();
+    updateConversionTotals();
+
+    document.getElementById('conversionModal').classList.add('open');
+    document.getElementById('conversionOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeConversionCheckout() {
+    document.getElementById('conversionModal').classList.remove('open');
+    document.getElementById('conversionOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function changeConversionQty(step) {
+    const input = document.getElementById('conversionQty');
+    let value = parseInt(input.value || '1', 10);
+    value += step;
+
+    if (value < 1) value = 1;
+    if (conversionStock > 0 && value > conversionStock) value = conversionStock;
+
+    input.value = value;
+    updateConversionTotals();
+}
+
+function updateConversionTotals() {
+    const qty = parseInt(document.getElementById('conversionQty').value || '1', 10);
+    let subtotal = conversionPrice * qty;
+
+    if (conversionBundle.active) {
+        if (conversionBundle.type === 'discount' && conversionBundle.discountPercent && qty >= 2) {
+            subtotal = (conversionPrice * qty) * (1 - (conversionBundle.discountPercent / 100));
+        }
+
+        if (conversionBundle.type === 'bxgy' && conversionBundle.buyQty && conversionBundle.payQty && qty >= conversionBundle.buyQty) {
+            const sets = Math.floor(qty / conversionBundle.buyQty);
+            const remaining = qty % conversionBundle.buyQty;
+            subtotal = (sets * conversionBundle.payQty * conversionPrice) + (remaining * conversionPrice);
+        }
+    }
+
+    const total = subtotal + conversionDelivery;
+
+    document.getElementById('checkoutSubtotalValue').textContent = subtotal.toFixed(2) + ' د.ت';
+    document.getElementById('checkoutDeliveryValue').textContent = conversionDelivery.toFixed(2) + ' د.ت';
+    document.getElementById('checkoutTotalValue').textContent = total.toFixed(2) + ' د.ت';
+}
+
+function saveLastCustomerInfo() {
+    const payload = {
+        customer_name: document.getElementById('conversionName').value,
+        phone: document.getElementById('conversionPhone').value,
+        city: document.getElementById('conversionCity').value,
+        location: document.getElementById('conversionAddress').value
+    };
+
+    localStorage.setItem('kd_last_customer_info', JSON.stringify(payload));
+}
+
+function loadLastCustomerInfo() {
+    const raw = localStorage.getItem('kd_last_customer_info');
+    if (!raw) return;
+
+    try {
+        const data = JSON.parse(raw);
+        document.getElementById('conversionName').value = data.customer_name || '';
+        document.getElementById('conversionPhone').value = data.phone || '';
+        document.getElementById('conversionCity').value = data.city || '';
+        document.getElementById('conversionAddress').value = data.location || '';
+    } catch (e) {}
+}
+
+function hideFieldError(inputId) {
+    const input = document.getElementById(inputId);
+    const error = document.getElementById('error-' + inputId);
+
+    if (input) input.classList.remove('input-error');
+    if (error) error.style.display = 'none';
+}
+
+function showFieldError(inputId, message) {
+    const input = document.getElementById(inputId);
+    const error = document.getElementById('error-' + inputId);
+
+    if (input) input.classList.add('input-error');
+    if (error) {
+        error.textContent = message;
+        error.style.display = 'block';
+    }
+}
+
+function resetConversionValidation() {
+    hideFieldError('conversionName');
+    hideFieldError('conversionPhone');
+    hideFieldError('conversionCity');
+    hideFieldError('conversionAddress');
+
+    const alertBox = document.getElementById('conversionAlert');
+    alertBox.style.display = 'none';
+    alertBox.className = 'alert checkout-alert';
+    alertBox.textContent = '';
+}
+
+function validateConversionForm() {
+    resetConversionValidation();
+
+    let valid = true;
+
+    const name = document.getElementById('conversionName').value.trim();
+    const phone = document.getElementById('conversionPhone').value.trim();
+    const city = document.getElementById('conversionCity').value.trim();
+    const address = document.getElementById('conversionAddress').value.trim();
+
+    if (name.length < 2) {
+        showFieldError('conversionName', 'Veuillez entrer votre nom.');
+        valid = false;
+    }
+
+    const cleanPhone = phone.replace(/\s+/g, '');
+    if (!/^\d{8,15}$/.test(cleanPhone)) {
+        showFieldError('conversionPhone', 'Veuillez entrer un numéro téléphone valide.');
+        valid = false;
+    }
+
+    if (!city) {
+        showFieldError('conversionCity', 'Veuillez choisir une ville.');
+        valid = false;
+    }
+
+    if (address.length < 3) {
+        showFieldError('conversionAddress', 'Veuillez entrer votre adresse.');
+        valid = false;
+    }
+
+    return valid;
+}
+
+async function addCurrentModalToCart() {
+    const productId = document.getElementById('conversionProductId').value;
+    const qty = parseInt(document.getElementById('conversionQty').value || '1', 10);
+
+    try {
+        const formData = new FormData();
+        formData.append('quantite', qty);
+
+        const response = await fetch(`/produits/${productId}/ajouter-panier`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            showCartToast(data.message || 'Erreur panier');
+            return;
+        }
+
+        showCartToast('Produit ajouté au panier');
+    } catch (e) {
+        showCartToast('Erreur panier');
+    }
+}
+
+async function quickFastPurchase(productId, prix) {
+    loadLastCustomerInfo();
+
+    const raw = localStorage.getItem('kd_last_customer_info');
+    if (!raw) {
+        const card = document.querySelector(`[data-id="${productId}"]`);
+        if (card) openConversionCheckout(card);
+        return;
+    }
+
+    let data;
+    try {
+        data = JSON.parse(raw);
+    } catch (e) {
+        const card = document.querySelector(`[data-id="${productId}"]`);
+        if (card) openConversionCheckout(card);
+        return;
+    }
+
+    if (!data.customer_name || !data.phone || !data.city || !data.location) {
+        const card = document.querySelector(`[data-id="${productId}"]`);
+        if (card) openConversionCheckout(card);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('customer_name', data.customer_name);
+    formData.append('phone', data.phone);
+    formData.append('city', data.city);
+    formData.append('location', data.location);
+    formData.append('quantite', 1);
+
+    try {
+        const response = await fetch('/produits/conversion-order', {
+            method: 'POST',
+            body: formData
+        });
+
+        const json = await response.json();
+
+        if (!response.ok || !json.success) {
+            showCartToast(json.message || 'Erreur achat rapide');
+            return;
+        }
+
+        showCartToast('Commande rapide enregistrée');
+    } catch (e) {
+        showCartToast('Erreur achat rapide');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    ['conversionName', 'conversionPhone', 'conversionCity', 'conversionAddress'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () { hideFieldError(id); });
+        el.addEventListener('change', function () { hideFieldError(id); });
+    });
+
+    const qtyInput = document.getElementById('conversionQty');
+    if (qtyInput) {
+        qtyInput.addEventListener('input', updateConversionTotals);
+    }
+
+    const form = document.getElementById('conversionBuyForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!validateConversionForm()) {
+                return;
+            }
+
+            saveLastCustomerInfo();
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/produits/conversion-order', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                const alertBox = document.getElementById('conversionAlert');
+
+                if (!response.ok || !data.success) {
+                    alertBox.style.display = 'block';
+                    alertBox.className = 'alert alert-danger checkout-alert';
+                    alertBox.textContent = data.message || 'Erreur serveur.';
+                    return;
+                }
+
+                alertBox.style.display = 'block';
+                alertBox.className = 'alert alert-success checkout-alert';
+                alertBox.textContent = data.message || 'Commande enregistrée avec succès.';
+
+                setTimeout(() => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                }, 900);
+            } catch (e) {
+                const alertBox = document.getElementById('conversionAlert');
+                alertBox.style.display = 'block';
+                alertBox.className = 'alert alert-danger checkout-alert';
+                alertBox.textContent = 'Erreur réseau ou serveur.';
+            }
+        });
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeConversionCheckout();
+    }
+});
+</script>
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "wbshd2gcag");
+</script>
+{% endblock %}

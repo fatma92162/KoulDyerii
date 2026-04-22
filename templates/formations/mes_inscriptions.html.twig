@@ -93,7 +93,14 @@
                 <div class="inscription-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{{ inscription.formation.titre }}</h5>
-                        <span class="badge bg-success">Inscrit</span>
+                        {# ✅ Badge statut coloré selon la valeur #}
+                        {% if inscription.statut == 'acceptee' %}
+                            <span class="badge bg-success">✅ Acceptée</span>
+                        {% elseif inscription.statut == 'refusee' %}
+                            <span class="badge bg-danger">❌ Refusée</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">⏳ En attente</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="p-4">
@@ -102,19 +109,73 @@
                             <p class="text-muted">{{ inscription.formation.description|slice(0, 150) }}...</p>
                             <p><strong>Date d'inscription :</strong> {{ inscription.dateInscription|date('d/m/Y H:i') }}</p>
                             <p><strong>Prix :</strong> {{ inscription.formation.prix|number_format(2, ',', ' ') }} €</p>
-                            <p><strong>Statut :</strong> 
-                                <span class="badge bg-warning text-dark">{{ inscription.statut|default('en_attente') }}</span>
+                            <p><strong>Statut :</strong>
+                                {% if inscription.statut == 'acceptee' %}
+                                    <span class="badge bg-success">✅ Inscription acceptée</span>
+                                {% elseif inscription.statut == 'refusee' %}
+                                    <span class="badge bg-danger">❌ Inscription refusée</span>
+                                    <small class="text-muted d-block mt-1">Contactez l'administrateur pour plus d'informations.</small>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">⏳ En attente de validation</span>
+                                    <small class="text-muted d-block mt-1">Un administrateur validera votre demande prochainement.</small>
+                                {% endif %}
                             </p>
+
+                            {# ── Score du dernier quiz ── #}
+                            {% set lastQuiz = quizResults[inscription.idFormation] ?? null %}
+                            {% if lastQuiz %}
+                                {% set passed = lastQuiz.percentage >= 80 %}
+                                <div class="mt-2 p-3 rounded border-start border-4 {{ passed ? 'border-success bg-success bg-opacity-10' : 'border-warning bg-warning bg-opacity-10' }}">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <strong>📊 Dernier quiz :</strong>
+                                        <span class="fw-bold fs-5 {{ passed ? 'text-success' : 'text-warning' }}">
+                                            {{ lastQuiz.percentage|number_format(0) }}%
+                                        </span>
+                                        <small class="text-muted">
+                                            ({{ lastQuiz.score }}/{{ lastQuiz.totalQuestions }} — {{ lastQuiz.submittedAt|date('d/m/Y') }})
+                                        </small>
+                                    </div>
+                                    {% if passed %}
+                                        <div class="mt-1">
+                                            <span class="badge bg-success">🎓 Certification obtenue</span>
+                                            {% if lastQuiz.certificate %}
+                                                <a href="{{ path('app_certificate_show', {id: lastQuiz.certificate.id}) }}"
+                                                   class="badge bg-primary ms-1 text-decoration-none">
+                                                    📄 Voir le certificat
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="mt-1">
+                                            <span class="badge bg-warning text-dark">⚠️ Certification non obtenue — seuil : 80%</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mt-2 mb-0">
+                                    <i class="fas fa-circle-info me-1"></i> Aucun quiz passé pour cette formation.
+                                </p>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ path('app_formations_show', {id: inscription.idFormation}) }}" class="btn btn-primary mb-2 w-100">
                                 <i class="fas fa-eye"></i> Voir la formation
                             </a>
+                            {# ✅ Bouton quizz visible uniquement si inscription acceptée #}
+                            {% if inscription.statut == 'acceptee' and inscription.formation.quiz is not null %}
+                                <a href="{{ path('app_formations_quiz_start', {id: inscription.idFormation}) }}"
+                                   class="btn btn-success mb-2 w-100">
+                                    <i class="fas fa-play-circle"></i> Faire le quiz
+                                </a>
+                            {% endif %}
+                            {# Ne pas permettre d'annuler une inscription acceptée #}
+                            {% if inscription.statut != 'acceptee' %}
                             <form action="{{ path('app_inscription_annuler', {id: inscription.idInscription}) }}" method="post">
                                 <button type="submit" class="btn-annuler w-100" onclick="return confirm('Annuler votre inscription ?')">
                                     <i class="fas fa-times"></i> Annuler l'inscription
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

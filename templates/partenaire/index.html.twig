@@ -5,6 +5,39 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+.cal-result-modal .modal-content {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+}
+
+.cal-result-modal .modal-header {
+    border-bottom: none;
+    color: white;
+}
+
+.cal-result-modal .modal-header.success {
+    background: linear-gradient(135deg, #198754, #28a745);
+}
+
+.cal-result-modal .modal-header.error {
+    background: linear-gradient(135deg, #b02a37, #dc3545);
+}
+
+.cal-result-body {
+    padding: 22px;
+    background: #fffdfb;
+}
+
+.cal-result-row {
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.cal-result-row strong {
+    color: #8B0000;
+}
     .page-header {
         background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
         padding: 40px 0;
@@ -12,7 +45,7 @@
         color: white;
         margin-bottom: 40px;
     }
-    
+
     .stat-card {
         background: white;
         border-radius: 15px;
@@ -22,23 +55,23 @@
         transition: transform 0.3s ease;
         height: 100%;
     }
-    
+
     .stat-card:hover {
         transform: translateY(-5px);
     }
-    
+
     .stat-number {
         font-size: 36px;
         font-weight: 800;
         color: #8B0000;
     }
-    
+
     .stat-label {
         font-size: 14px;
         color: #666;
         margin-top: 10px;
     }
-    
+
     .status-badge {
         display: inline-block;
         padding: 5px 15px;
@@ -46,22 +79,22 @@
         font-size: 12px;
         font-weight: 600;
     }
-    
+
     .status-en_attente {
         background: #FF9800;
         color: white;
     }
-    
+
     .status-accepte {
         background: #4CAF50;
         color: white;
     }
-    
+
     .status-refuse {
         background: #f44336;
         color: white;
     }
-    
+
     .btn-partenaire {
         background: linear-gradient(135deg, #8B0000, #A52A2A);
         border: none;
@@ -71,12 +104,12 @@
         font-weight: 600;
         transition: all 0.3s ease;
     }
-    
+
     .btn-partenaire:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(139,0,0,0.3);
     }
-    
+
     .btn-annuler {
         background: #dc3545;
         border: none;
@@ -87,13 +120,13 @@
         transition: all 0.3s ease;
         margin-top: 15px;
     }
-    
+
     .btn-annuler:hover {
         background: #c82333;
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
     }
-    
+
     .info-card {
         background: white;
         border-radius: 15px;
@@ -102,19 +135,124 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         border: 1px solid #E8D5B7;
     }
-    
+
     .alert {
         border-radius: 12px;
         border-left: 4px solid;
     }
+
     .alert-success {
         border-left-color: #28a745;
     }
+
     .alert-danger {
         border-left-color: #dc3545;
     }
+
     .alert-info {
         border-left-color: #17a2b8;
+    }
+
+    .cal-box {
+        background: linear-gradient(180deg, #fffdfb, #fff);
+        border: 1px solid #ead8bb;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .cal-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .cal-top h4 {
+        margin: 0;
+        color: #8B0000;
+    }
+
+    .cal-top small {
+        color: #666;
+    }
+
+    .cal-controls {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .cal-slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .cal-slot {
+        border: 1px solid #d9c2a0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: white;
+        cursor: pointer;
+        text-align: center;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .cal-slot:hover {
+        border-color: #8B0000;
+        transform: translateY(-1px);
+    }
+
+    .cal-slot.active {
+        background: #8B0000;
+        color: white;
+        border-color: #8B0000;
+    }
+
+    .cal-empty,
+    .cal-loading {
+        color: #666;
+        padding: 18px 8px;
+    }
+
+    .cal-book-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .cal-book-grid input {
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        padding: 12px;
+    }
+
+    .cal-book-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .cal-selected {
+        font-weight: 700;
+        color: #8B0000;
+    }
+
+    @media (max-width: 768px) {
+        .cal-controls,
+        .cal-book-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -134,23 +272,65 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
-    
+
     {% for message in app.flashes('error') %}
         <div class="alert alert-danger alert-dismissible fade show">
             <i class="fas fa-exclamation-circle"></i> {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
-    
+
     {% for message in app.flashes('info') %}
         <div class="alert alert-info alert-dismissible fade show">
             <i class="fas fa-info-circle"></i> {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
-    
+
+    <div class="cal-box">
+        <div class="cal-top">
+            <div>
+                <h4><i class="fas fa-calendar-check me-2"></i>Rendez-vous API</h4>
+                <small>Choisissez une date, un créneau, puis réservez directement dans l’application.</small>
+            </div>
+            {% if calApiEnabled %}
+                <span class="badge bg-success">Cal.com API prête</span>
+            {% else %}
+                <span class="badge bg-secondary">Cal.com non configuré</span>
+            {% endif %}
+        </div>
+
+        {% if calApiEnabled %}
+            <div class="cal-controls">
+                <input type="date" id="calDateInput" class="form-control">
+                <button type="button" id="loadCalSlotsBtn" class="btn btn-outline-danger">
+                    <i class="fas fa-search me-1"></i> Voir les créneaux
+                </button>
+            </div>
+
+            <div id="calFeedback" class="small mb-2 text-muted"></div>
+            <div id="calSlots" class="cal-slots"></div>
+
+            <div class="cal-book-grid">
+                <input type="text" id="calName" placeholder="Nom complet" value="{{ prefillName|default('') }}">
+                <input type="email" id="calEmail" placeholder="Email" value="{{ prefillEmail|default('') }}">
+                <input type="text" id="calPhone" placeholder="Téléphone" value="{{ prefillPhone|default('') }}">
+            </div>
+
+            <div class="cal-book-actions">
+                <button type="button" id="bookCalBtn" class="btn btn-danger" disabled>
+                    <i class="fas fa-paper-plane me-1"></i> Réserver
+                </button>
+                <span id="selectedSlotText" class="cal-selected">Aucun créneau sélectionné</span>
+            </div>
+        {% else %}
+            <div class="alert alert-warning mb-0">
+                Ajoutez d’abord la configuration Cal.com dans votre fichier <code>.env</code>.
+            </div>
+        {% endif %}
+    </div>
+
     {% if partenaire is null %}
-        <!-- Pas encore partenaire -->
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <div class="info-card">
@@ -164,7 +344,6 @@
             </div>
         </div>
     {% elseif partenaire.statut == 'en_attente' %}
-        <!-- Demande en attente -->
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <div class="info-card">
@@ -172,8 +351,7 @@
                     <h3>Demande en cours de traitement</h3>
                     <p>Votre demande de partenariat est en cours d'examen par notre équipe.</p>
                     <span class="status-badge status-en_attente">⏳ En attente</span>
-                    
-                    <!-- ✅ BOUTON POUR ANNULER LA DEMANDE -->
+
                     <div class="mt-4">
                         <form action="{{ path('app_partenaire_annuler') }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler votre demande de partenariat ?')">
                             <button type="submit" class="btn-annuler">
@@ -185,7 +363,6 @@
             </div>
         </div>
     {% elseif partenaire.statut == 'accepte' %}
-        <!-- Partenaire accepté -->
         <div class="row">
             <div class="col-md-4">
                 <div class="stat-card">
@@ -206,9 +383,9 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="row mt-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="info-card">
                     <h4><i class="fas fa-utensils"></i> Gestion des plats</h4>
                     <p>Ajoutez, modifiez ou supprimez vos plats</p>
@@ -220,7 +397,16 @@
                     </a>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="info-card">
+                    <h4><i class="fas fa-link"></i> Mes collaborations</h4>
+                    <p>Consultez et gérez vos collaborations produits</p>
+                    <a href="{{ path('app_partenaire_collaborations') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-link"></i> Voir les collaborations
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="info-card">
                     <h4><i class="fas fa-chart-line"></i> Informations</h4>
                     <p><strong>Restaurant:</strong> {{ partenaire.nom }}</p>
@@ -233,8 +419,87 @@
                 </div>
             </div>
         </div>
+
+        {% if recommendations|default([])|length > 0 %}
+        <div class="mt-4">
+            <div class="info-card" style="border: 2px solid #E8D5B7;">
+                <div class="d-flex align-items-center mb-3 gap-2">
+                    <span style="font-size:28px;">⭐</span>
+                    <div>
+                        <h4 class="mb-0">Produits recommandés pour vous</h4>
+                        <small class="text-muted">Sélectionnés selon vos plats — <strong>activez une collaboration</strong> directement sur un produit pour commencer à collaborer</small>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    {% for produit in recommendations %}
+                    {% set collab = collaborationParProduitId[produit.idProduit] ?? null %}
+                    <div class="col-md-4 col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm" style="border-radius:14px;overflow:hidden;transition:transform .25s ease;">
+                            <a href="{{ path('app_produits_show', {id: produit.idProduit}) }}" class="text-decoration-none text-dark">
+                            {% if produit.photo %}
+                                <img src="{{ produit.photo }}" alt="{{ produit.nom }}" class="card-img-top" style="height:130px;object-fit:cover;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center bg-light" style="height:130px;font-size:44px;">🛍️</div>
+                            {% endif %}
+                            </a>
+                            <div class="card-body p-3 d-flex flex-column">
+                                <h6 class="fw-bold mb-1">
+                                    <a href="{{ path('app_produits_show', {id: produit.idProduit}) }}" class="text-decoration-none text-dark">
+                                        {{ produit.nom }}
+                                    </a>
+                                </h6>
+                                {% if produit.description %}
+                                    <p class="text-muted small mb-2" style="line-height:1.4;">
+                                        {{ produit.description|slice(0,65) }}{% if produit.description|length > 65 %}…{% endif %}
+                                    </p>
+                                {% endif %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold" style="color:#8B0000;font-size:16px;">
+                                        {{ produit.prix|number_format(2, ',', ' ') }} €
+                                    </span>
+                                    <span class="badge bg-light text-dark border" style="font-size:11px;" title="Unités vendues (stock boutique)">
+                                        🛒 {{ produit.quantite }} ventes
+                                    </span>
+                                </div>
+                                <div class="d-grid gap-2 mt-3 position-relative" style="z-index:2;">
+                                    <a href="{{ path('app_produits_show', {id: produit.idProduit}) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>Voir le produit
+                                    </a>
+                                    {% if collab == 'validee' %}
+                                        <span class="badge bg-success text-wrap py-2">
+                                            <i class="fas fa-handshake me-1"></i>Collaboration active
+                                        </span>
+                                    {% elseif collab == 'refusee' %}
+                                        <span class="badge bg-danger mb-1">Collaboration refusée</span>
+                                        <form action="{{ path('app_partenaire_choisir_collaboration_produit', {produitId: produit.idProduit}) }}" method="post" onsubmit="return confirm('Activer la collaboration sur ce produit ?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                                <i class="fas fa-redo me-1"></i>Réessayer
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{{ path('app_partenaire_choisir_collaboration_produit', {produitId: produit.idProduit}) }}" method="post" onsubmit="return confirm('Activer la collaboration sur ce produit ?');">
+                                            <button type="submit" class="btn btn-sm w-100 text-white" style="background:#2e7d32;border:none;">
+                                                <i class="fas fa-handshake me-1"></i>Activer la collaboration
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="{{ path('app_partenaire_recommandations') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-1"></i>Actualiser via API
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     {% elseif partenaire.statut == 'refuse' %}
-        <!-- Demande refusée -->
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
                 <div class="info-card">
@@ -249,10 +514,242 @@
         </div>
     {% endif %}
 </div>
+<div class="modal fade cal-result-modal" id="calResultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div id="calResultHeader" class="modal-header success">
+                <h5 class="modal-title" id="calResultTitle">Résultat</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="cal-result-body" id="calResultBody">
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Animation du compteur de plats
+    const calDateInput = document.getElementById('calDateInput');
+    const loadCalSlotsBtn = document.getElementById('loadCalSlotsBtn');
+    const calSlots = document.getElementById('calSlots');
+    const calFeedback = document.getElementById('calFeedback');
+    const selectedSlotText = document.getElementById('selectedSlotText');
+    const bookCalBtn = document.getElementById('bookCalBtn');
+    const calName = document.getElementById('calName');
+    const calEmail = document.getElementById('calEmail');
+    const calPhone = document.getElementById('calPhone');
+
+    const calResultModalEl = document.getElementById('calResultModal');
+    const calResultHeader = document.getElementById('calResultHeader');
+    const calResultTitle = document.getElementById('calResultTitle');
+    const calResultBody = document.getElementById('calResultBody');
+
+    let selectedSlotStart = null;
+    let selectedSlotLabel = null;
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text ?? '';
+        return div.innerHTML;
+    }
+
+    function showResultModal(type, title, html) {
+        if (!calResultModalEl) return;
+
+        calResultHeader.classList.remove('success', 'error');
+        calResultHeader.classList.add(type === 'success' ? 'success' : 'error');
+        calResultTitle.innerHTML = title;
+        calResultBody.innerHTML = html;
+
+        const modal = bootstrap.Modal.getOrCreateInstance(calResultModalEl);
+        modal.show();
+    }
+
+    function setTodayIfNeeded() {
+        if (calDateInput && !calDateInput.value) {
+            const now = new Date();
+            const iso = now.toISOString().split('T')[0];
+            calDateInput.value = iso;
+        }
+    }
+
+    function resetSelection() {
+        selectedSlotStart = null;
+        selectedSlotLabel = null;
+
+        if (selectedSlotText) {
+            selectedSlotText.textContent = 'Aucun créneau sélectionné';
+        }
+
+        if (bookCalBtn) {
+            bookCalBtn.disabled = true;
+        }
+    }
+
+    function renderSlots(slots) {
+        if (!calSlots) return;
+
+        calSlots.innerHTML = '';
+        resetSelection();
+
+        if (!slots || slots.length === 0) {
+            calSlots.innerHTML = '<div class="cal-empty">Aucun créneau disponible pour cette date.</div>';
+            return;
+        }
+
+        slots.forEach((slot) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'cal-slot';
+            btn.textContent = slot.label || slot.start;
+            btn.dataset.start = slot.start || '';
+            btn.dataset.label = slot.label || slot.start || '';
+
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.cal-slot').forEach(el => el.classList.remove('active'));
+                btn.classList.add('active');
+
+                selectedSlotStart = btn.dataset.start;
+                selectedSlotLabel = btn.dataset.label;
+
+                selectedSlotText.textContent = 'Créneau sélectionné : ' + selectedSlotLabel;
+                bookCalBtn.disabled = false;
+            });
+
+            calSlots.appendChild(btn);
+        });
+    }
+
+    async function loadSlots() {
+        if (!calDateInput || !calDateInput.value) {
+            calFeedback.textContent = 'Choisissez une date.';
+            return;
+        }
+
+        calFeedback.textContent = 'Chargement des créneaux...';
+        calSlots.innerHTML = '<div class="cal-loading">Chargement...</div>';
+        resetSelection();
+
+        try {
+            const response = await fetch('{{ path('app_partenaire_cal_slots') }}?date=' + encodeURIComponent(calDateInput.value), {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || 'Erreur pendant le chargement.');
+            }
+
+            calFeedback.textContent = 'Fuseau horaire : ' + (data.timezone || 'UTC');
+            renderSlots(data.slots || []);
+        } catch (e) {
+            calFeedback.textContent = 'Erreur';
+            calSlots.innerHTML = '<div class="alert alert-danger mb-0">' + escapeHtml(e.message) + '</div>';
+        }
+    }
+
+    async function bookSlot() {
+        if (!selectedSlotStart) {
+            showResultModal(
+                'error',
+                'Créneau manquant',
+                '<div class="cal-result-row">Choisissez un créneau avant de réserver.</div>'
+            );
+            return;
+        }
+
+        const name = calName ? calName.value.trim() : '';
+        const email = calEmail ? calEmail.value.trim() : '';
+        const phone = calPhone ? calPhone.value.trim() : '';
+
+        if (!name || !email) {
+            showResultModal(
+                'error',
+                'Informations incomplètes',
+                '<div class="cal-result-row">Le nom et l’email sont obligatoires.</div>'
+            );
+            return;
+        }
+
+        const initialText = bookCalBtn.innerHTML;
+        bookCalBtn.disabled = true;
+        bookCalBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Réservation...';
+
+        try {
+            const response = await fetch('{{ path('app_partenaire_cal_book') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    start: selectedSlotStart,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    timeZone: '{{ calTimezone|default('Africa/Tunis') }}'
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || 'La réservation a échoué.');
+            }
+
+            showResultModal(
+                'success',
+                '✅ Réservation confirmée',
+                `
+                <div class="cal-result-row">
+                    <strong>Nom :</strong> ${escapeHtml(name)}
+                </div>
+                <div class="cal-result-row">
+                    <strong>Email :</strong> ${escapeHtml(email)}
+                </div>
+                <div class="cal-result-row">
+                    <strong>Téléphone :</strong> ${escapeHtml(phone || '-')}
+                </div>
+                <div class="cal-result-row">
+                    <strong>Créneau :</strong> ${escapeHtml(selectedSlotLabel || selectedSlotStart)}
+                </div>
+                <div class="cal-result-row">
+                    <strong>Message :</strong> ${escapeHtml(data.message || 'Rendez-vous réservé avec succès.')}
+                </div>
+                `
+            );
+
+            loadSlots();
+        } catch (e) {
+            showResultModal(
+                'error',
+                '❌ Réservation échouée',
+                `
+                <div class="cal-result-row">
+                    ${escapeHtml(e.message)}
+                </div>
+                `
+            );
+        } finally {
+            bookCalBtn.disabled = false;
+            bookCalBtn.innerHTML = initialText;
+        }
+    }
+
+    if (loadCalSlotsBtn) {
+        setTodayIfNeeded();
+        loadCalSlotsBtn.addEventListener('click', loadSlots);
+    }
+
+    if (bookCalBtn) {
+        bookCalBtn.addEventListener('click', bookSlot);
+    }
+
     const platCount = document.getElementById('platCount');
     if (platCount) {
         fetch('/partenaire/mes-plats/count')
@@ -274,8 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 platCount.textContent = '0';
             });
     }
-    
-    // Animation du compteur de commandes
+
     const commandeCount = document.getElementById('commandeCount');
     if (commandeCount) {
         fetch('/partenaire/commandes/count')
@@ -297,8 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 commandeCount.textContent = '0';
             });
     }
-    
-    // Animation du compteur de CA
+
     const caCount = document.getElementById('caCount');
     if (caCount) {
         fetch('/partenaire/ca/count')
@@ -322,4 +817,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
 {% endblock %}
